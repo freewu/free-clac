@@ -1,0 +1,203 @@
+import 'package:flutter/material.dart';
+
+import '../../plot/plot_presets.dart';
+import '../../state/plot_controller.dart';
+import '../../theme/app_theme.dart';
+
+/// 弹出示例曲线面板；选中后载入绘图页。
+Future<void> showPlotPresetSheet(
+  BuildContext context,
+  PlotController controller,
+) {
+  return showModalBottomSheet<void>(
+    context: context,
+    backgroundColor: AppColors.surface,
+    showDragHandle: true,
+    isScrollControlled: true,
+    constraints: const BoxConstraints(maxWidth: 640),
+    builder: (_) => PlotPresetSheet(controller: controller),
+  );
+}
+
+/// 示例曲线列表：一键把文章中的心形函数放进画布。
+class PlotPresetSheet extends StatelessWidget {
+  const PlotPresetSheet({super.key, required this.controller});
+
+  final PlotController controller;
+
+  void _apply(BuildContext context, PlotPreset preset) {
+    final messenger = ScaffoldMessenger.of(context);
+    controller.applyPreset(preset);
+    Navigator.of(context).pop();
+    messenger
+      ..clearSnackBars()
+      ..showSnackBar(
+        SnackBar(
+          content: Text(
+            preset.angleMode == null
+                ? '已载入示例：${preset.name}'
+                : '已载入示例：${preset.name}（角度模式切换为 '
+                      '${preset.angleMode!.shortLabel}）',
+          ),
+          duration: const Duration(seconds: 2),
+        ),
+      );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final height = MediaQuery.sizeOf(context).height * 0.78;
+    return SizedBox(
+      height: height,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(18, 0, 18, 8),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    const Icon(
+                      Icons.auto_awesome,
+                      size: 18,
+                      color: AppColors.primary,
+                    ),
+                    const SizedBox(width: 8),
+                    const Text(
+                      '示例曲线',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                        letterSpacing: 0.3,
+                      ),
+                    ),
+                    const Spacer(),
+                    Text(
+                      '${kPlotPresets.length}',
+                      style: const TextStyle(
+                        color: AppColors.textSecondary,
+                        fontSize: 12,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  '载入后会替换当前所有曲线，并自动调整视口。'
+                  '隐式方程 (x²+y²−1)³−x²y³=0 需要隐式绘图，暂未收录。',
+                  style: const TextStyle(
+                    color: AppColors.textSecondary,
+                    fontSize: 12,
+                    height: 1.4,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const Divider(height: 1, color: AppColors.outline),
+          Expanded(
+            child: ListView.separated(
+              padding: const EdgeInsets.symmetric(vertical: 6),
+              itemCount: kPlotPresets.length,
+              separatorBuilder: (_, _) => const Divider(
+                height: 1,
+                indent: 64,
+                endIndent: 16,
+                color: AppColors.outline,
+              ),
+              itemBuilder: (context, index) {
+                final preset = kPlotPresets[index];
+                return ListTile(
+                  onTap: () => _apply(context, preset),
+                  leading: Container(
+                    width: 36,
+                    height: 36,
+                    decoration: BoxDecoration(
+                      color: AppColors.surfaceHigh,
+                      borderRadius: BorderRadius.circular(10),
+                      border: Border.all(color: AppColors.outline),
+                    ),
+                    child: Icon(
+                      preset.modes.first.icon,
+                      size: 18,
+                      color: AppColors.secondary,
+                    ),
+                  ),
+                  title: Text(
+                    preset.name,
+                    style: const TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  subtitle: Padding(
+                    padding: const EdgeInsets.only(top: 3),
+                    child: Text(
+                      preset.description,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        color: AppColors.textSecondary,
+                        fontSize: 12,
+                        height: 1.35,
+                      ),
+                    ),
+                  ),
+                  trailing: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      if (preset.angleMode != null)
+                        Padding(
+                          padding: const EdgeInsets.only(right: 8),
+                          child: Text(
+                            preset.angleMode!.shortLabel,
+                            style: const TextStyle(
+                              color: AppColors.textSecondary,
+                              fontSize: 11,
+                              letterSpacing: 0.5,
+                            ),
+                          ),
+                        ),
+                      if (preset.curves.length > 1)
+                        Padding(
+                          padding: const EdgeInsets.only(right: 6),
+                          child: Text(
+                            '${preset.curves.length} 条',
+                            style: const TextStyle(
+                              color: AppColors.textSecondary,
+                              fontSize: 11,
+                            ),
+                          ),
+                        ),
+                      const Icon(
+                        Icons.add_circle_outline,
+                        size: 18,
+                        color: AppColors.textSecondary,
+                      ),
+                    ],
+                  ),
+                );
+              },
+            ),
+          ),
+          const SafeArea(
+            top: false,
+            child: Padding(
+              padding: EdgeInsets.fromLTRB(18, 8, 18, 10),
+              child: Text(
+                '来源：知乎《绘制出令人怦然心动的7种心形函数》\n$kPlotPresetSource',
+                style: TextStyle(
+                  color: AppColors.textSecondary,
+                  fontSize: 11,
+                  height: 1.5,
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
