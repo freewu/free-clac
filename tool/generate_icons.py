@@ -53,6 +53,12 @@ WINDOWS_ICO_SIZES = (16, 24, 32, 48, 64, 128, 256)
 # maskable / 自适应图标：图形占画布的比例（四周留白，避免被裁切）
 SAFE_ZONE = 0.72
 
+# 自适应图标 XML：AAPT2 要求根节点声明 android 命名空间，否则打包直接失败
+ANDROID_ADAPTIVE = (
+    "android/app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml",
+    "android/app/src/main/res/mipmap-anydpi-v26/ic_launcher_round.xml",
+)
+
 
 def load_logo() -> Image.Image:
     if not LOGO.exists():
@@ -130,11 +136,12 @@ def build_android(logo: Image.Image) -> list[Path]:
     )
     written.append(colors)
 
-    adaptive = res / "mipmap-anydpi-v26/ic_launcher.xml"
+    adaptive = ROOT / ANDROID_ADAPTIVE[0]
     adaptive.parent.mkdir(parents=True, exist_ok=True)
     adaptive.write_text(
         '<?xml version="1.0" encoding="utf-8"?>\n'
-        "<adaptive-icon>\n"
+        '<adaptive-icon xmlns:android='
+        '"http://schemas.android.com/apk/res/android">\n'
         '    <background android:drawable="@color/ic_launcher_background" />\n'
         '    <foreground android:drawable="@mipmap/ic_launcher_foreground" />\n'
         "</adaptive-icon>\n",
@@ -142,7 +149,7 @@ def build_android(logo: Image.Image) -> list[Path]:
     )
     written.append(adaptive)
 
-    round_icon = res / "mipmap-anydpi-v26/ic_launcher_round.xml"
+    round_icon = ROOT / ANDROID_ADAPTIVE[1]
     round_icon.write_text(adaptive.read_text(encoding="utf-8"), encoding="utf-8")
     written.append(round_icon)
     return written
@@ -178,12 +185,23 @@ def main() -> None:
                 for folder in ANDROID_LEGACY
                 for name in ("ic_launcher.png", "ic_launcher_foreground.png")
             ),
+            *(ROOT / name for name in ANDROID_ADAPTIVE),
         ]
         missing = [str(path.relative_to(ROOT)) for path in expected if not path.exists()]
         if missing:
             print("✗ 缺少图标文件：")
             for path in missing:
                 print(f"  - {path}")
+            sys.exit(1)
+        broken = [
+            name
+            for name in ANDROID_ADAPTIVE
+            if "xmlns:android" not in (ROOT / name).read_text(encoding="utf-8")
+        ]
+        if broken:
+            print("✗ 自适应图标缺少 xmlns:android，aapt2 会编译失败：")
+            for name in broken:
+                print(f"  - {name}")
             sys.exit(1)
         print(f"✓ 图标齐全（{len(expected)} 个文件）")
         return

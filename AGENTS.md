@@ -53,4 +53,5 @@ cmd.exe /c "cd /d $(wslpath -w "$PWD") && flutter test"
 - 改动计算逻辑或采样算法时，在 `test/` 补单元测试；改动交互时补 Widget 测试。
 - 新增曲线类型 / 视图行为时同步更新 README 的功能列表、示例表格与测试数量。
 - 界面有明显变化时用 `just shots` 重新生成截图，并在 README 引用。
+- Android 自适应图标 XML（`mipmap-anydpi-v26/*.xml`）必须声明 `xmlns:android`，否则 AAPT2 编译失败；`just icons-check` 会校验这一项。
 - **不要给 justfile 写 shebang 配方**（`#!/usr/bin/env sh`）：Windows 上 just 会用 `cygpath` 翻译解释器路径，而 Git for Windows 默认没把 `usr/bin` 放进 PATH，会直接报 `could not find cygpath`。用普通配方 + 行尾 `\` 连接（见 `build-apk`）。

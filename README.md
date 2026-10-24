@@ -151,42 +151,49 @@ just devices      # 列出设备
 
 ## Android 构建
 
-Android 构建需要本机具备 Android SDK 与 JDK（Web / Windows 构建不需要）。若未安装，`just build-apk` 会直接给出中文提示并退出：
+Android 构建需要本机具备 Android SDK 与 JDK 17+（Web / Windows 构建不需要）。若未安装，`just build-apk` 会直接给出中文提示并退出：
 
 ```
 ✗ 没有检测到 Android SDK，构建无法继续。
 ```
 
-安装步骤：
+### 方案一：Android Studio（图形界面，最省事）
 
-1. 安装 [Android Studio](https://developer.android.com/studio)（自带 SDK 与 JDK），或单独安装 commandline-tools
-2. 在 SDK Manager 中安装 **Android 14 (API 34)** 平台、**Build-Tools**、**Platform-Tools**
-3. 设置环境变量后重开终端：
+1. 安装 [Android Studio](https://developer.android.com/studio)，首次启动时用 SDK Manager 装好 SDK
+2. SDK Platforms 勾选 **Android 16 (API 36)**；SDK Tools 勾选 **Build-Tools 36.0.0**、**Platform-Tools**
+3. 设置环境变量（Android Studio 自带的 JBR 可直接当 JDK 用）：
 
    | 变量 | 示例值 |
    | --- | --- |
-   | `ANDROID_HOME` | `%LOCALAPPDATA%\Android\Sdk`（Android Studio 默认位置） |
-   | `JAVA_HOME` | `C:\Program Files\Android\Android Studio\jbr`（或任意 JDK 17+） |
+   | `ANDROID_HOME` | `%LOCALAPPDATA%\Android\Sdk` |
+   | `JAVA_HOME` | `C:\Program Files\Android\Android Studio\jbr` |
 
-   ```powershell
-   setx ANDROID_HOME "$env:LOCALAPPDATA\Android\Sdk"
-   setx JAVA_HOME "C:\Program Files\Android\Android Studio\jbr"
-   ```
+### 方案二：只装 commandline-tools（体积小，纯命令行）
 
-4. 接受许可并自检：
+```powershell
+# 1) JDK 17+：从 https://adoptium.net 下载 zip 解压即可（无需安装）
+# 2) commandline-tools 解压到 %LOCALAPPDATA%\Android\Sdk\cmdline-tools\latest
+#    https://developer.android.com/studio#command-line-tools-only
 
-   ```bash
-   flutter doctor --android-licenses
-   flutter doctor -v      # Android toolchain 应为 ✓
-   ```
+# 3) 写入用户环境变量，重开终端生效
+setx ANDROID_HOME "$env:LOCALAPPDATA\Android\Sdk"
+setx JAVA_HOME "C:\Users\<你>\jdks\jdk-21"
 
-5. 构建：
+# 4) 接受许可并安装 SDK 包（compileSdk 36 需要 android-36）
+sdkmanager --licenses
+sdkmanager "platform-tools" "platforms;android-36" "build-tools;36.0.0"
+```
 
-   ```bash
-   just build-apk         # 产物：build/app/outputs/flutter-apk/app-release.apk
-   just android           # 或直接连真机 / 模拟器调试
-   ```
+### 校验与构建
 
+```powershell
+flutter doctor -v      # Android toolchain 应为 ✓（会列出 SDK 路径与 Java 版本）
+just build-apk         # 产物：build/app/outputs/flutter-apk/app-release.apk
+just android           # 或直接连真机 / 模拟器调试
+```
+
+> **Gradle 发行包下载卡住**：首次构建要从 `services.gradle.org` 拉 Gradle（约 220 MB），国内网络常超时。可把 `android/gradle/wrapper/gradle-wrapper.properties` 里的 `distributionUrl` 临时换成镜像（如 `https://mirrors.cloud.tencent.com/gradle/gradle-9.1.0-all.zip`），或提前把 zip 放进 `%USERPROFILE%\.gradle\wrapper\dists\gradle-9.1.0-all\<hash>\` 并解压。
+>
 > 也可以不改环境变量，直接告诉 Flutter SDK 位置：`flutter config --android-sdk "C:\Users\<你>\AppData\Local\Android\Sdk"`。
 >
 > WSL 中执行 `just build-apk` 同样是调用 Windows 侧 Flutter，因此 SDK 需装在 Windows 上。
