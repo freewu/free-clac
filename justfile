@@ -23,7 +23,7 @@ wsl := if os() == "linux" {
 }
 # 在 WSL 中把当前目录换算成 Windows 路径后再调用可执行文件
 flutter := if wsl == "1" {
-  '_fl() { cmd.exe /c "cd /d $(wslpath -w "$PWD") && flutter $*"; }; _fl'
+  '_fl() { WSLENV="JAVA_HOME:ANDROID_HOME:ANDROID_SDK_ROOT:${WSLENV:-}" cmd.exe /c "cd /d $(wslpath -w "$PWD") && flutter $*"; }; _fl'
 } else {
   "flutter"
 }
@@ -77,7 +77,7 @@ windows:
 # 在 Android 设备 / 模拟器上调试
 [group('开发')]
 android:
-    @{{flutter}} run -d android
+    @. tool/android-env.sh; {{flutter}} run -d android
 
 # 列出可用设备
 [group('开发')]
@@ -156,7 +156,8 @@ build-web-offline:
 # 普通配方 + 行连接（\）在 PowerShell 与 WSL 下行为一致。
 [group('构建')]
 build-apk:
-    @log=$(mktemp) && status=$(mktemp) && \
+    @. tool/android-env.sh; \
+      log=$(mktemp) && status=$(mktemp) && \
       { {{flutter}} build apk --release 2>&1; echo $? > "$status"; } | tee "$log" && \
       code=$(cat "$status") && rm -f "$status" && \
       if [ "$code" -eq 0 ]; then \
@@ -181,7 +182,9 @@ build-apk:
       elif grep -qE "requires Java|JAVA_HOME|Unsupported class file" "$log"; then \
         echo ""; \
         echo "✗ 没有找到可用的 JDK。"; \
-        echo "  安装 JDK 17+（Android Studio 自带的 JBR 也可以），设置 JAVA_HOME 后重开终端。"; \
+        echo "  安装 JDK 17+（Android Studio 自带的 JBR 也可以），并设置 JAVA_HOME。"; \
+        echo "  如果刚设过变量，说明当前终端还没刷新：请新开一个终端再试。"; \
+        echo "  PowerShell 临时生效（不重开终端）：\$env:JAVA_HOME='C:\\path\\to\\jdk-21'"; \
       fi; \
       rm -f "$log"; exit 1
 
