@@ -84,7 +84,7 @@ class PlotPresetSheet extends StatelessWidget {
                 ),
                 const SizedBox(height: 6),
                 Text(
-                  '示例会追加到当前画布，并自动调整视口；重复载入不会叠加相同曲线。',
+                  '示例会追加到当前画布，视口自动扩展以容纳已有图形；重复载入不会叠加相同曲线。',
                   style: const TextStyle(
                     color: AppColors.textSecondary,
                     fontSize: 12,

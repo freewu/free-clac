@@ -325,6 +325,7 @@ void main() {
       final before = controller.functions
           .map((function) => function.expression)
           .toList();
+      final initialViewport = controller.viewport;
       final preset = kPlotPresets.firstWhere(
         (preset) => preset.name.contains('参数方程'),
       );
@@ -338,13 +339,26 @@ void main() {
             .map((function) => function.expression),
         before,
       );
-      // 视口跟随示例，采样条数与曲线数一致
-      expect(controller.viewport, preset.viewport);
+      // 视口取并集：既有视口与示例视口都在视野内，不会“看起来被清空”
+      expect(controller.viewport, initialViewport.union(preset.viewport));
       expect(controller.buildSamples(size).length, controller.functions.length);
+
+      // 再追加另一个示例：曲线继续累积，视口仍是并集
+      final second = kPlotPresets.firstWhere((preset) => preset.name == '玫瑰线');
+      final afterFirst = controller.viewport;
+      expect(controller.applyPreset(second), second.curves.length);
+      expect(controller.viewport, afterFirst.union(second.viewport));
+      expect(
+        controller.functions.length,
+        before.length + preset.curves.length + second.curves.length,
+      );
 
       // 重复载入不会叠加重复曲线
       expect(controller.applyPreset(preset), 0);
-      expect(controller.functions.length, before.length + preset.curves.length);
+      expect(
+        controller.functions.length,
+        before.length + preset.curves.length + second.curves.length,
+      );
     });
   });
 

@@ -208,7 +208,9 @@ class PlotController extends ChangeNotifier {
       );
       added++;
     }
-    _viewport = preset.viewport;
+    // 追加时取视口并集：不把已有图形挤出视野（否则看起来就像被清空了）。
+    // 深链启动（replaceAll）才直接使用示例视口。
+    _viewport = replaceAll ? preset.viewport : _viewport.union(preset.viewport);
     _viewportPinned = true;
     _trace = null;
     _lastError = null;

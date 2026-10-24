@@ -9,6 +9,7 @@ import 'package:free_clac/state/plot_controller.dart';
 import 'package:free_clac/ui/widgets/plot_export_dialog.dart';
 import 'package:free_clac/ui/widgets/calc_display.dart';
 import 'package:free_clac/ui/widgets/keypad.dart';
+import 'package:free_clac/plot/plot_painter.dart';
 import 'package:free_clac/ui/widgets/plot_canvas.dart';
 
 void main() {
@@ -240,10 +241,15 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('绘图页：从示例面板载入心形曲线', (tester) async {
+  testWidgets('绘图页：示例追加曲线且不把已有图形挤出视野', (tester) async {
     await pumpApp(tester, const Size(1440, 900));
     await tester.tap(find.text('绘图'));
     await tester.pumpAndSettle();
+
+    final canvasSize = tester.getSize(find.byType(PlotCanvas));
+    final before = _plotPainter(tester);
+    expect(before.samples.length, 2);
+    final beforeViewport = before.viewport;
 
     await tester.tap(find.byTooltip('示例曲线'));
     await tester.pumpAndSettle();
@@ -257,6 +263,55 @@ void main() {
     expect(find.byType(TextField), findsNWidgets(4));
     expect(find.textContaining('16sin(t)^3'), findsWidgets);
     expect(find.textContaining('0.12x^2 - 2'), findsWidgets);
+    expect(find.textContaining('已添加示例'), findsOneWidget);
+
+    // 画布实际绘制的曲线条数增加，且原有曲线仍在视野内
+    final after = _plotPainter(tester);
+    // 默认两条 + 参数方程一条
+    expect(after.samples.length, 3);
+    expect(after.viewport.minX, lessThanOrEqualTo(beforeViewport.minX));
+    expect(after.viewport.maxX, greaterThanOrEqualTo(beforeViewport.maxX));
+    expect(after.viewport.minY, lessThanOrEqualTo(beforeViewport.minY));
+    expect(after.viewport.maxY, greaterThanOrEqualTo(beforeViewport.maxY));
+    for (final sample in after.samples.take(2)) {
+      final visible = sample.curve.segments
+          .expand((segment) => segment)
+          .any(
+            (point) => after.viewport.containsData(
+              after.viewport.toData(point, canvasSize),
+            ),
+          );
+      expect(visible, isTrue, reason: sample.function.expression);
+    }
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('绘图页：连续载入两个示例后曲线都还在视野内', (tester) async {
+    await pumpApp(tester, const Size(1440, 900));
+    await tester.tap(find.text('绘图'));
+    await tester.pumpAndSettle();
+
+    for (final name in ['心形 · 极坐标', '玫瑰线']) {
+      await tester.tap(find.byTooltip('示例曲线'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text(name));
+      await tester.pumpAndSettle();
+    }
+
+    final canvasSize = tester.getSize(find.byType(PlotCanvas));
+    final painter = _plotPainter(tester);
+    // 两条默认曲线 + 心形 + 玫瑰线
+    expect(painter.samples.length, 4);
+    for (final sample in painter.samples) {
+      final visible = sample.curve.segments
+          .expand((segment) => segment)
+          .any(
+            (point) => painter.viewport.containsData(
+              painter.viewport.toData(point, canvasSize),
+            ),
+          );
+      expect(visible, isTrue, reason: sample.function.expression);
+    }
     expect(find.textContaining('已添加示例'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
@@ -415,3 +470,10 @@ class _FakeExporter extends PlotExporter {
     );
   }
 }
+
+/// 取绘图画布当前使用的绘制器。
+PlotPainter _plotPainter(WidgetTester tester) => tester
+    .widgetList<CustomPaint>(find.byType(CustomPaint))
+    .map((widget) => widget.painter)
+    .whereType<PlotPainter>()
+    .single;

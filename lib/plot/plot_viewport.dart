@@ -129,6 +129,14 @@ class PlotViewport {
     return copyWith(minX: low, maxX: high);
   }
 
+  /// 覆盖两个视口的并集（用于追加内容时不让已有图形跑到视野外）。
+  PlotViewport union(PlotViewport other) => PlotViewport(
+    minX: math.min(minX, other.minX),
+    maxX: math.max(maxX, other.maxX),
+    minY: math.min(minY, other.minY),
+    maxY: math.max(maxY, other.maxY),
+  );
+
   /// 把范围扩大（用于“缩放到合适”）。
   PlotViewport inflate(double fraction) {
     final dx = spanX * fraction / 2;
