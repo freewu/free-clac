@@ -253,10 +253,11 @@ void main() {
     await tester.tap(find.text('心形 · 参数方程'));
     await tester.pumpAndSettle();
 
-    // 示例替换原有曲线：只剩参数方程的两行输入
-    expect(find.byType(TextField), findsNWidgets(2));
+    // 示例只追加曲线：默认两条 + 参数方程的两行输入
+    expect(find.byType(TextField), findsNWidgets(4));
     expect(find.textContaining('16sin(t)^3'), findsWidgets);
-    expect(find.textContaining('已载入示例'), findsOneWidget);
+    expect(find.textContaining('0.12x^2 - 2'), findsWidgets);
+    expect(find.textContaining('已添加示例'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
 

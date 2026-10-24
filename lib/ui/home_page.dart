@@ -36,7 +36,8 @@ class _HomePageState extends State<HomePage> {
     super.initState();
     final preset = widget.initialPreset;
     if (preset != null && preset >= 0 && preset < kPlotPresets.length) {
-      _plot.applyPreset(kPlotPresets[preset]);
+      // 深链启动时只显示该示例，不叠加默认曲线
+      _plot.applyPreset(kPlotPresets[preset], replaceAll: true);
     }
   }
 

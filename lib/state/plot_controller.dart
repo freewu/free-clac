@@ -128,6 +128,16 @@ class PlotController extends ChangeNotifier {
     );
   }
 
+  /// 取下一个配色：优先选还没被占用的颜色，全部用完后再循环。
+  Color _nextColor() {
+    final used = _functions.map((function) => function.color).toSet();
+    for (final color in AppColors.curvePalette) {
+      if (!used.contains(color)) return color;
+    }
+    return AppColors.curvePalette[_functions.length %
+        AppColors.curvePalette.length];
+  }
+
   void _onEngineChanged() {
     _curveCache.clear();
     _surfaceCache.clear();
@@ -138,8 +148,7 @@ class PlotController extends ChangeNotifier {
   // ------------------------------------------------------------ 函数列表
 
   PlotFunction addFunction({PlotMode mode = PlotMode.cartesian}) {
-    final color = AppColors
-        .curvePalette[_functions.length % AppColors.curvePalette.length];
+    final color = _nextColor();
     final created = _create(
       switch (mode) {
         PlotMode.cartesian => 'x^2 / 4',
@@ -169,22 +178,35 @@ class PlotController extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// 载入示例：[preset] 的曲线替换全部现有曲线，并同步切换视口。
-  void applyPreset(PlotPreset preset) {
+  /// 把示例 [preset] 的曲线添加到画布，并同步切换视口。
+  ///
+  /// 默认**保留**已有曲线，只追加示例里还没有的曲线，因此重复点同一个示例
+  /// 不会堆出一串重复曲线；[replaceAll] 为 true 时才清空现有曲线
+  /// （Web 深链 `?preset=` 启动时用）。
+  ///
+  /// 返回实际新增的曲线数量。
+  int applyPreset(PlotPreset preset, {bool replaceAll = false}) {
+    if (replaceAll) _functions.clear();
     final mode = preset.angleMode;
     if (mode != null) engine.angleMode = mode;
-    _functions.clear();
-    var index = 0;
+    var added = 0;
     for (final curve in preset.curves) {
+      final exists = _functions.any(
+        (function) =>
+            function.mode == curve.mode &&
+            function.expression == curve.expression &&
+            function.secondExpression == curve.secondExpression,
+      );
+      if (exists) continue;
       _functions.add(
         _create(
           curve.expression,
-          color:
-              AppColors.curvePalette[index++ % AppColors.curvePalette.length],
+          color: _nextColor(),
           mode: curve.mode,
           secondExpression: curve.secondExpression,
         ),
       );
+      added++;
     }
     _viewport = preset.viewport;
     _viewportPinned = true;
@@ -192,6 +214,7 @@ class PlotController extends ChangeNotifier {
     _lastError = null;
     _revision++;
     notifyListeners();
+    return added;
   }
 
   void updateExpression(

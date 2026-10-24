@@ -27,17 +27,16 @@ class PlotPresetSheet extends StatelessWidget {
 
   void _apply(BuildContext context, PlotPreset preset) {
     final messenger = ScaffoldMessenger.of(context);
-    controller.applyPreset(preset);
+    final added = controller.applyPreset(preset);
     Navigator.of(context).pop();
     messenger
       ..clearSnackBars()
       ..showSnackBar(
         SnackBar(
           content: Text(
-            preset.angleMode == null
-                ? '已载入示例：${preset.name}'
-                : '已载入示例：${preset.name}（角度模式切换为 '
-                      '${preset.angleMode!.shortLabel}）',
+            added == 0
+                ? '「${preset.name}」已在图中'
+                : '已添加示例：${preset.name}（+$added 条）',
           ),
           duration: const Duration(seconds: 2),
         ),
@@ -85,8 +84,7 @@ class PlotPresetSheet extends StatelessWidget {
                 ),
                 const SizedBox(height: 6),
                 Text(
-                  '载入后会替换当前所有曲线，并自动调整视口。'
-                  '隐式方程 (x²+y²−1)³−x²y³=0 需要隐式绘图，暂未收录。',
+                  '示例会追加到当前画布，并自动调整视口；重复载入不会叠加相同曲线。',
                   style: const TextStyle(
                     color: AppColors.textSecondary,
                     fontSize: 12,

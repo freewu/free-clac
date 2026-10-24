@@ -308,13 +308,43 @@ void main() {
         ]) {
           engine.angleMode = requested;
           // 载入示例（必要时示例会把角度模式切回自己需要的一种）
-          controller.applyPreset(preset);
+          controller.applyPreset(preset, replaceAll: true);
           if (preset.angleMode != null) {
             expect(engine.angleMode, preset.angleMode, reason: preset.name);
           }
           _expectPresetRenders(controller, preset, size, requested);
         }
       }
+    });
+
+    test('示例曲线追加到画布而不清空已有曲线', () {
+      final engine = MathEngine();
+      final controller = PlotController(engine: engine);
+      addTearDown(controller.dispose);
+
+      final before = controller.functions
+          .map((function) => function.expression)
+          .toList();
+      final preset = kPlotPresets.firstWhere(
+        (preset) => preset.name.contains('参数方程'),
+      );
+
+      expect(controller.applyPreset(preset), preset.curves.length);
+      expect(controller.functions.length, before.length + preset.curves.length);
+      // 原有曲线仍在，且排在前面
+      expect(
+        controller.functions
+            .take(before.length)
+            .map((function) => function.expression),
+        before,
+      );
+      // 视口跟随示例，采样条数与曲线数一致
+      expect(controller.viewport, preset.viewport);
+      expect(controller.buildSamples(size).length, controller.functions.length);
+
+      // 重复载入不会叠加重复曲线
+      expect(controller.applyPreset(preset), 0);
+      expect(controller.functions.length, before.length + preset.curves.length);
     });
   });
 
@@ -326,7 +356,7 @@ void main() {
     final preset = kPlotPresets.firstWhere(
       (preset) => preset.name.contains('填充'),
     );
-    controller.applyPreset(preset);
+    controller.applyPreset(preset, replaceAll: true);
     final samples = controller.buildSamples(size);
     final curve = samples.single.curve;
     expect(curve.isEmpty, isFalse);
