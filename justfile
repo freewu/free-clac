@@ -149,41 +149,41 @@ build-web-offline:
     @{{flutter}} build web --release --no-web-resources-cdn
 
 # 构建 Android APK（缺少 Android SDK / JDK 时给出安装提示）
+#
+# 这里刻意不用 shebang 配方：just 在 Windows 上会用 cygpath 翻译 shebang 的
+# 解释器路径，而 Git for Windows 默认只把 cmd/ 和 bin/ 放进 PATH，
+# 缺少 cygpath 时直接报 “could not find `cygpath`”。
+# 普通配方 + 行连接（\）在 PowerShell 与 WSL 下行为一致。
 [group('构建')]
 build-apk:
-    #!/usr/bin/env sh
-    log="$(mktemp)"
-    status="$(mktemp)"
-    # 用子 shell 记录真实退出码：tee 会吞掉管道的状态
-    { {{flutter}} build apk --release 2>&1; echo $? > "$status"; } | tee "$log"
-    code="$(cat "$status")"
-    rm -f "$status"
-    if [ "$code" -eq 0 ]; then
-      rm -f "$log"
-      echo "✓ APK 输出：build/app/outputs/flutter-apk/app-release.apk"
-      exit 0
-    fi
-    if grep -qE "No Android SDK found|Unable to locate Android SDK|ANDROID_HOME" "$log"; then
-      echo ""
-      echo "✗ 没有检测到 Android SDK，构建无法继续。"
-      echo ""
-      echo "  安装步骤："
-      echo "   1) 安装 Android Studio（自带 SDK 与 JDK），或用 commandline-tools 单独安装"
-      echo "   2) 在 SDK Manager 里安装 Android 14 (API 34) 平台 + Build-Tools + Platform-Tools"
-      echo "   3) 设置环境变量并重开终端："
-      echo '        ANDROID_HOME = %LOCALAPPDATA%\Android\Sdk'
-      echo '        JAVA_HOME    = <JDK 17+ 目录>'
-      echo "   4) 接受许可：flutter doctor --android-licenses"
-      echo "   5) 验证：flutter doctor -v （Android toolchain 一项应为 ✓）"
-      echo ""
-      echo "  详见 README「Android 构建」一节。"
-    elif grep -qE "requires Java|JAVA_HOME|Unsupported class file" "$log"; then
-      echo ""
-      echo "✗ 没有找到可用的 JDK。"
-      echo "  安装 JDK 17+（Android Studio 自带的 JBR 也可以），设置 JAVA_HOME 后重开终端。"
-    fi
-    rm -f "$log"
-    exit 1
+    @log=$(mktemp) && status=$(mktemp) && \
+      { {{flutter}} build apk --release 2>&1; echo $? > "$status"; } | tee "$log" && \
+      code=$(cat "$status") && rm -f "$status" && \
+      if [ "$code" -eq 0 ]; then \
+        rm -f "$log"; \
+        echo "✓ APK 输出：build/app/outputs/flutter-apk/app-release.apk"; \
+        exit 0; \
+      fi; \
+      if grep -qE "No Android SDK found|Unable to locate Android SDK|ANDROID_HOME" "$log"; then \
+        echo ""; \
+        echo "✗ 没有检测到 Android SDK，构建无法继续。"; \
+        echo ""; \
+        echo "  安装步骤："; \
+        echo "   1) 安装 Android Studio（自带 SDK 与 JDK），或用 commandline-tools 单独安装"; \
+        echo "   2) 在 SDK Manager 里安装 Android 14 (API 34) 平台 + Build-Tools + Platform-Tools"; \
+        echo "   3) 设置环境变量并重开终端："; \
+        echo '        ANDROID_HOME = %LOCALAPPDATA%\Android\Sdk'; \
+        echo '        JAVA_HOME    = <JDK 17+ 目录>'; \
+        echo "   4) 接受许可：flutter doctor --android-licenses"; \
+        echo "   5) 验证：flutter doctor -v （Android toolchain 一项应为 ✓）"; \
+        echo ""; \
+        echo "  详见 README「Android 构建」一节。"; \
+      elif grep -qE "requires Java|JAVA_HOME|Unsupported class file" "$log"; then \
+        echo ""; \
+        echo "✗ 没有找到可用的 JDK。"; \
+        echo "  安装 JDK 17+（Android Studio 自带的 JBR 也可以），设置 JAVA_HOME 后重开终端。"; \
+      fi; \
+      rm -f "$log"; exit 1
 
 # 构建 Windows 桌面版
 [group('构建')]
