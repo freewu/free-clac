@@ -66,6 +66,20 @@ fi
 [ -n "${ANDROID_HOME:-}" ] && export ANDROID_HOME
 [ -n "${ANDROID_HOME:-}" ] && export ANDROID_SDK_ROOT="$ANDROID_HOME"
 
+# 让 adb / emulator / sdkmanager 直接可用（WSL 里这些是 Windows 程序，不掺和 PATH）
+if on_windows && [ -n "${ANDROID_HOME:-}" ]; then
+  for dir in \
+    "$ANDROID_HOME/platform-tools" \
+    "$ANDROID_HOME/emulator" \
+    "$ANDROID_HOME/cmdline-tools/latest/bin"; do
+    case ":$PATH:" in
+      *":$dir:"*) ;;
+      *) PATH="$dir:$PATH" ;;
+    esac
+  done
+  export PATH
+fi
+
 # WSL 里仅 export 不会传给 cmd.exe，要用 WSLENV 声明共享哪些变量
 if ! on_windows && [ -n "${WSL_DISTRO_NAME:-}" ]; then
   WSLENV="JAVA_HOME:ANDROID_HOME:ANDROID_SDK_ROOT:${WSLENV:-}"

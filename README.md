@@ -189,8 +189,26 @@ sdkmanager "platform-tools" "platforms;android-36" "build-tools;36.0.0"
 ```powershell
 flutter doctor -v      # Android toolchain 应为 ✓（会列出 SDK 路径与 Java 版本）
 just build-apk         # 产物：build/app/outputs/flutter-apk/app-release.apk
-just android           # 或直接连真机 / 模拟器调试
 ```
+
+### 在真机 / 模拟器上调试
+
+```powershell
+just emulator          # 启动第一个 AVD（模拟器窗口出现后等它开机完成）
+just android           # 自动选中第一个 Android 目标并 flutter run（Ctrl-C 退出）
+just devices           # 列出当前可用设备
+```
+
+首次用模拟器要先装模拟器与系统镜像、并创建一个 AVD：
+
+```powershell
+sdkmanager "emulator" "system-images;android-36;google_apis;x86_64"
+avdmanager create avd -n free_clac_api36 -k "system-images;android-36;google_apis;x86_64" -d pixel_7
+```
+
+> `just android` 依赖 `tool/android_target.py` 从 `flutter devices --machine` 里挑设备。旧写法是写死的 `-d android`：Flutter 的 `-d` 只按设备 id / 名称前缀匹配（模拟器叫 `emulator-5554`），所以永远报 `No supported devices found with name or id matching 'android'`。
+>
+> 模拟器一直停在 `offline`：多为上次非正常退出留下锁文件，删掉 `%USERPROFILE%\.android\avd\<名字>.avd\*.lock` 后重新启动即可；也可试试 `adb kill-server` → `adb start-server`。
 
 > `just build-apk` 会先执行 `tool/android-env.sh`：`JAVA_HOME` / `ANDROID_HOME` 没设或失效时，自动在 `%USERPROFILE%\jdks\*`、Android Studio 自带的 jbr、`%LOCALAPPDATA%\Android\Sdk` 里探测。所以刚写完环境变量、没重开终端也能构建；探测不到才会报错。WSL 里调用时会通过 `WSLENV` 把这两个变量传给 Windows 侧的 Flutter / Gradle。
 >
@@ -228,6 +246,7 @@ justfile        常用开发任务
 
 - **Windows 首次构建报 `Unsupported file type "notFound" ... flutter_windows.dll.pdb`**：Flutter SDK 的引擎产物下载不完整，执行 `just precache`（即 `flutter precache --windows --force`）重新下载即可。
 - **PowerShell 下 `just` 报 `$'\r': command not found`**：recipes 需要 Git Bash，确认 `sh.exe` 在 PATH 中（安装 Git for Windows）。
+- **`just android` 报 `No supported devices found with name or id matching 'android'`**：没有任何 Android 设备在线。真机需打开「开发者选项 → USB 调试」并允许本机调试；用模拟器则先 `just emulator`（首次需按上文创建 AVD）。
 - **`just build-apk` 报 `No Android SDK found`**：参见上文「Android 构建」，装好 SDK / JDK 并设置 `ANDROID_HOME`、`JAVA_HOME` 后重开终端。
 - **`just build-apk` 报 `Please set the JAVA_HOME variable`**：旧终端读不到新写入的用户变量。`tool/android-env.sh` 会自动探测常见 JDK 路径，探测不到时新开终端即可；也可在当前会话临时设置 `$env:JAVA_HOME='C:\Users\<你>\jdks\jdk-21'`。
 

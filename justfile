@@ -74,10 +74,33 @@ web:
 windows:
     @{{flutter}} run -d windows
 
-# 在 Android 设备 / 模拟器上调试
+# 在 Android 设备 / 模拟器上调试（自动选中第一个 Android 目标）
 [group('开发')]
 android:
-    @. tool/android-env.sh; {{flutter}} run -d android
+    @. tool/android-env.sh; \
+      id=$({{flutter}} devices --machine | {{python}} tool/android_target.py device); \
+      [ -n "$id" ] || { \
+        echo "✗ 没有检测到 Android 设备或模拟器。"; \
+        echo "  · 真机：设置里打开「开发者选项 → USB 调试」，插入后允许本机调试"; \
+        echo "  · 模拟器：先 just emulator 启动一个 AVD，再回来运行 just android"; \
+        exit 1; }; \
+      echo "  目标设备：$id"; \
+      {{flutter}} run -d "$id"
+
+# 启动 Android 模拟器（默认第一个 AVD）
+[group('开发')]
+emulator avd="":
+    @. tool/android-env.sh; \
+      id={{avd}}; \
+      [ -n "$id" ] || id=$({{flutter}} emulators | {{python}} tool/android_target.py emulator); \
+      [ -n "$id" ] || { \
+        echo "✗ 没有可用的 AVD。"; \
+        echo "  查看已有模拟器：{{flutter}} emulators"; \
+        echo "  新建一个：avdmanager create avd -n <名字> -k <镜像名>"; \
+        echo "  镜像名示例：system-images;android-36;google_apis;x86_64"; \
+        exit 1; }; \
+      echo "  启动模拟器：$id"; \
+      {{flutter}} emulators --launch "$id"
 
 # 列出可用设备
 [group('开发')]
@@ -133,7 +156,7 @@ cover:
 
 # 提交前检查：格式 + 分析 + 测试
 [group('质量')]
-check: fmt-check analyze test
+check: fmt-check analyze test tool-check
     @echo "✓ 检查全部通过"
 
 # ---------------------------------------------------------------- 构建
@@ -219,6 +242,11 @@ icons:
 [group('工具')]
 icons-check:
     @{{python}} tool/generate_icons.py --check
+
+# 自检 justfile 用到的 Python 辅助脚本（CI 可用）
+[group('工具')]
+tool-check:
+    @{{python}} tool/android_target.py --selftest
 
 # 重新生成 README 截图（docs/screenshots，离线构建以免 CDN 不可达时白屏）
 [group('工具')]
