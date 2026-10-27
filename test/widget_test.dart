@@ -7,6 +7,7 @@ import 'package:free_clac/plot/plot_export.dart';
 import 'package:free_clac/services/saved_plot_file.dart';
 import 'package:free_clac/state/plot_controller.dart';
 import 'package:free_clac/ui/widgets/plot_export_dialog.dart';
+import 'package:free_clac/ui/tools/bmi/bmi_page.dart';
 import 'package:free_clac/ui/widgets/calc_display.dart';
 import 'package:free_clac/ui/widgets/keypad.dart';
 import 'package:free_clac/plot/plot_painter.dart';
@@ -127,6 +128,89 @@ void main() {
     await tester.tap(find.text('绘图'));
     await tester.pumpAndSettle();
     expect(find.byType(PlotCanvas), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('工具页：进入并打开 BMI 计算', (tester) async {
+    await pumpApp(tester, const Size(1440, 900));
+
+    await tester.tap(find.text('工具'));
+    await tester.pumpAndSettle();
+    expect(find.text('BMI 计算'), findsOneWidget);
+    expect(find.text('复利计算'), findsOneWidget);
+
+    await tester.tap(find.text('BMI 计算'));
+    await tester.pumpAndSettle();
+
+    // 默认 170 cm / 65 kg → BMI 22.5，属于正常
+    expect(find.text('22.5'), findsOneWidget);
+    expect(find.text('正常'), findsWidgets);
+
+    // 体重改成 80 kg → 27.7，进入超重
+    await tester.enterText(find.byType(TextField).at(1), '80');
+    await tester.pumpAndSettle();
+    expect(find.text('27.7'), findsOneWidget);
+    expect(find.text('超重'), findsWidgets);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('工具页：复利计算显示本息与逐年表格', (tester) async {
+    await pumpApp(tester, const Size(1440, 900));
+
+    await tester.tap(find.text('工具'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('复利计算'));
+    await tester.pumpAndSettle();
+
+    // 10 万本金、5% 年利率、10 年，按年计息 → 162,889.46
+    expect(find.textContaining('162,889.46'), findsOneWidget);
+    expect(find.text('¥ 62,889.46'), findsOneWidget);
+    expect(find.text('逐年增长'), findsOneWidget);
+    expect(find.text('第 1 年'), findsOneWidget);
+
+    // 切换成按月计息后金额变高
+    await tester.tap(find.text('每月'));
+    await tester.pumpAndSettle();
+    expect(find.textContaining('164,700.95'), findsOneWidget);
+    expect(find.textContaining('每月计息'), findsWidgets);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('工具页：深链 ?tool=bmi 直接打开工具并可返回', (tester) async {
+    tester.view.physicalSize = const Size(1440, 900);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+
+    await tester.pumpWidget(
+      const FreeCalcApp(initialTab: 2, initialTool: 'bmi'),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.byType(BmiPage), findsOneWidget);
+    expect(find.text('22.5'), findsOneWidget);
+
+    await tester.pageBack();
+    await tester.pumpAndSettle();
+    expect(find.byType(BmiPage), findsNothing);
+    expect(find.text('复利计算'), findsOneWidget);
+  });
+
+  testWidgets('工具页：手机尺寸下卡片与工具页不溢出', (tester) async {
+    await pumpApp(tester, const Size(390, 844));
+
+    await tester.tap(find.text('工具'));
+    await tester.pumpAndSettle();
+    expect(find.text('BMI 计算'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+
+    await tester.tap(find.text('BMI 计算'));
+    await tester.pumpAndSettle();
+    expect(tester.takeException(), isNull);
+
+    await tester.pageBack();
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('复利计算'));
+    await tester.pumpAndSettle();
     expect(tester.takeException(), isNull);
   });
 

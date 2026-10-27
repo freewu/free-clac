@@ -3,13 +3,19 @@ import 'package:flutter/material.dart';
 import 'app.dart';
 
 void main() {
-  // Web 端支持 ?page=plot 直接打开绘图页，?preset=0 直接载入第 1 个示例。
+  // Web 端支持 ?page=plot / ?page=tools 直接打开对应页面，
+  // ?preset=0 载入第 1 个示例曲线，?tool=bmi 直接打开 BMI 计算。
   final query = Uri.base.queryParameters;
   final page = query['page'];
   runApp(
     FreeCalcApp(
-      initialTab: page == 'plot' ? 1 : 0,
+      initialTab: switch (page) {
+        'plot' => 1,
+        'tools' => 2,
+        _ => 0,
+      },
       initialPreset: int.tryParse(query['preset'] ?? ''),
+      initialTool: query['tool'],
     ),
   );
 }

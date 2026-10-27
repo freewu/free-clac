@@ -7,12 +7,13 @@ import '../theme/app_theme.dart';
 import '../plot/plot_presets.dart';
 import 'calculator_page.dart';
 import 'plot_page.dart';
+import 'tools_page.dart';
 
-/// 应用主框架：计算器 / 绘图两个页面，共享同一个计算引擎。
+/// 应用主框架：计算器 / 绘图 / 工具三个页面，共享同一个计算引擎。
 class HomePage extends StatefulWidget {
   const HomePage({super.key, this.initialTab = 0, this.initialPreset});
 
-  /// 初始页面：0 计算器，1 绘图。
+  /// 初始页面：0 计算器，1 绘图，2 工具。
   final int initialTab;
 
   /// 启动时载入的示例曲线下标，越界时忽略。
@@ -29,7 +30,7 @@ class _HomePageState extends State<HomePage> {
   );
   late final PlotController _plot = PlotController(engine: _engine);
 
-  late int _index = widget.initialTab.clamp(0, 1);
+  late int _index = widget.initialTab.clamp(0, 2);
 
   @override
   void initState() {
@@ -59,6 +60,7 @@ class _HomePageState extends State<HomePage> {
           children: [
             CalculatorPage(controller: _calculator),
             PlotPage(controller: _plot),
+            const ToolsPage(),
           ],
         );
 
@@ -104,6 +106,11 @@ class _HomePageState extends State<HomePage> {
                         selectedIcon: Icon(Icons.insights),
                         label: Text('绘图'),
                       ),
+                      NavigationRailDestination(
+                        icon: Icon(Icons.apps_outlined),
+                        selectedIcon: Icon(Icons.apps),
+                        label: Text('工具'),
+                      ),
                     ],
                   ),
                   Container(width: 1, color: AppColors.outline),
@@ -130,6 +137,11 @@ class _HomePageState extends State<HomePage> {
                 icon: Icon(Icons.insights_outlined),
                 selectedIcon: Icon(Icons.insights),
                 label: '绘图',
+              ),
+              NavigationDestination(
+                icon: Icon(Icons.apps_outlined),
+                selectedIcon: Icon(Icons.apps),
+                label: '工具',
               ),
             ],
           ),

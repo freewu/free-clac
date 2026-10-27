@@ -148,6 +148,15 @@ void main() {
       expect(formatNumber(double.nan), 'NaN');
     });
 
+    test('金额格式（千分位）', () {
+      expect(formatMoney(1234567.891), '1,234,567.89');
+      expect(formatMoney(999.999), '1,000.00');
+      expect(formatMoney(-88, decimals: 0), '-88');
+      expect(formatMoney(0), '0.00');
+      expect(formatMoney(-0.0001), '0.00');
+      expect(formatMoney(12.5, decimals: 0), '13');
+    });
+
     test('自动闭包求值（绘图用）', () {
       final curve = engine.compileCurve('x^2');
       expect(curve(3), 9);
