@@ -5,8 +5,12 @@ import '../../../core/number_format.dart';
 import '../../../theme/app_theme.dart';
 import '../../../tools/distance.dart';
 import '../widgets/tool_field.dart';
+import '../widgets/tool_select.dart';
 
 /// 长度换算页：公制 / 英制 / 市制共 25 个单位互转，输入即算。
+///
+/// 上排两个下拉框选「计量体系」和「单位」，下面填数值；
+/// 结果按体系分成三个 tab，切 tab 不改变输入，只是换个角度看结果。
 class DistancePage extends StatefulWidget {
   const DistancePage({super.key});
 
@@ -14,16 +18,31 @@ class DistancePage extends StatefulWidget {
   State<DistancePage> createState() => _DistancePageState();
 }
 
-class _DistancePageState extends State<DistancePage> {
+class _DistancePageState extends State<DistancePage>
+    with SingleTickerProviderStateMixin {
   /// 输入单位，默认米。
   DistanceUnit _from = distanceUnitById('m')!;
 
   final TextEditingController _value = TextEditingController(text: '1');
 
+  /// 结果 tab，跟输入单位所在体系联动。
+  late final TabController _tabs = TabController(
+    length: DistanceSystem.values.length,
+    vsync: this,
+  )..addListener(_onTabChanged);
+
   @override
   void dispose() {
+    _tabs
+      ..removeListener(_onTabChanged)
+      ..dispose();
     _value.dispose();
     super.dispose();
+  }
+
+  void _onTabChanged() {
+    // 指示器动画期间也要重绘内容，避免 tab 已切换但列表还停在上一组
+    if (mounted) setState(() {});
   }
 
   double? get _amount {
@@ -32,14 +51,26 @@ class _DistancePageState extends State<DistancePage> {
     return value;
   }
 
-  /// 当前单位所在体系，决定下面显示哪一排单位按钮。
+  /// 当前单位所在体系。
   DistanceSystem get _system => _from.system;
+
+  /// 当前展示的结果体系（由 tab 决定）。
+  DistanceSystem get _tabSystem => DistanceSystem.values[_tabs.index];
 
   void _switchSystem(DistanceSystem system) {
     if (system == _system) return;
-    // 切体系时落到该体系的第一个单位，数值保持不变（1 米 → 1 千米不是用户想要的，
-    // 但体系切换本身就是换基准，这里只换单位不换数值，配合参照物更快）。
-    setState(() => _from = distanceUnitsOf(system).first);
+    // 切体系时落到该体系的第一个单位；数值保持不变，配合下面的参照物更快
+    setState(() {
+      _from = distanceUnitsOf(system).first;
+      _tabs.index = system.index;
+    });
+  }
+
+  void _selectUnit(DistanceUnit unit) {
+    setState(() {
+      _from = unit;
+      _tabs.index = unit.system.index;
+    });
   }
 
   /// 点击参照物：把数值与单位一起代入。
@@ -49,6 +80,7 @@ class _DistancePageState extends State<DistancePage> {
     setState(() {
       _from = unit;
       _value.text = _trim(sample.value);
+      _tabs.index = unit.system.index;
     });
   }
 
@@ -90,67 +122,39 @@ class _DistancePageState extends State<DistancePage> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Expanded(
+                            child: ToolSelect<DistanceSystem>(
+                              key: const Key('distance-system'),
+                              label: '计量体系',
+                              value: _system,
+                              items: DistanceSystem.values,
+                              labelOf: (system) => system.label,
+                              onChanged: _switchSystem,
+                            ),
+                          ),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            flex: 2,
+                            child: ToolSelect<DistanceUnit>(
+                              key: const Key('distance-unit'),
+                              label: '单位',
+                              value: _from,
+                              items: distanceUnitsOf(_system),
+                              labelOf: _unitLabel,
+                              onChanged: _selectUnit,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 12),
                       ToolNumberField(
                         label: '数值',
                         suffix: _from.symbol,
                         controller: _value,
                         onChanged: (_) => setState(() {}),
-                      ),
-                      const SizedBox(height: 12),
-                      const Text(
-                        '计量体系',
-                        style: TextStyle(
-                          color: AppColors.textSecondary,
-                          fontSize: 11.5,
-                        ),
-                      ),
-                      const SizedBox(height: 6),
-                      Wrap(
-                        spacing: 6,
-                        runSpacing: 6,
-                        children: [
-                          for (final system in DistanceSystem.values)
-                            ChoiceChip(
-                              label: Text(
-                                system.label,
-                                style: const TextStyle(fontSize: 11.5),
-                              ),
-                              selected: _system == system,
-                              onSelected: (_) => _switchSystem(system),
-                              visualDensity: VisualDensity.compact,
-                              labelPadding: const EdgeInsets.symmetric(
-                                horizontal: 4,
-                              ),
-                            ),
-                        ],
-                      ),
-                      const SizedBox(height: 12),
-                      Text(
-                        '${_system.label}单位',
-                        style: const TextStyle(
-                          color: AppColors.textSecondary,
-                          fontSize: 11.5,
-                        ),
-                      ),
-                      const SizedBox(height: 6),
-                      Wrap(
-                        spacing: 6,
-                        runSpacing: 6,
-                        children: [
-                          for (final unit in distanceUnitsOf(_system))
-                            ChoiceChip(
-                              label: Text(
-                                unit.label,
-                                style: const TextStyle(fontSize: 11.5),
-                              ),
-                              selected: _from == unit,
-                              onSelected: (_) => setState(() => _from = unit),
-                              visualDensity: VisualDensity.compact,
-                              labelPadding: const EdgeInsets.symmetric(
-                                horizontal: 4,
-                              ),
-                            ),
-                        ],
                       ),
                       if (_from.note.isNotEmpty) ...[
                         const SizedBox(height: 8),
@@ -172,10 +176,49 @@ class _DistancePageState extends State<DistancePage> {
                   ToolSection(
                     title: '换算结果',
                     icon: Icons.swap_horiz_rounded,
-                    child: _ResultList(
-                      amount: amount,
-                      from: _from,
-                      onCopy: _copy,
+                    padding: const EdgeInsets.fromLTRB(14, 14, 14, 12),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        Text(
+                          '${formatNumber(amount, significantDigits: 10)} '
+                          '${_from.label}',
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(
+                            fontSize: 24,
+                            height: 1.15,
+                            fontWeight: FontWeight.w700,
+                            color: AppColors.primary,
+                            fontFeatures: [FontFeature.tabularFigures()],
+                          ),
+                        ),
+                        const SizedBox(height: 6),
+                        _SystemTabs(controller: _tabs),
+                        const SizedBox(height: 2),
+                        for (final unit in distanceUnitsOf(_tabSystem))
+                          _ResultRow(
+                            unit: unit,
+                            text: _format(
+                              convertDistance(amount, from: _from, to: unit),
+                            ),
+                            highlighted: unit == _from,
+                            onTap: () => _copy(
+                              unit,
+                              _format(
+                                convertDistance(amount, from: _from, to: unit),
+                              ),
+                            ),
+                          ),
+                        const SizedBox(height: 4),
+                        const Text(
+                          '点任意一行即可复制',
+                          style: TextStyle(
+                            color: AppColors.textSecondary,
+                            fontSize: 10.5,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 const SizedBox(height: 12),
@@ -208,6 +251,13 @@ class _DistancePageState extends State<DistancePage> {
       ),
     );
   }
+
+  /// 下拉项文案：中文名后带符号，符号与名称相同时（市制单位）只显示名称。
+  static String _unitLabel(DistanceUnit unit) =>
+      unit.symbol == unit.label ? unit.label : '${unit.label}（${unit.symbol}）';
+
+  static String _format(double? value) =>
+      value == null ? '—' : formatNumber(value, significantDigits: 10);
 }
 
 /// 去掉整数末尾的 `.0`，用于把参照物数值回填到输入框。
@@ -218,70 +268,34 @@ String _trim(double value) {
   return value.toString();
 }
 
-/// 换算结果：按体系分组列出全部单位，点击任意一行复制。
-class _ResultList extends StatelessWidget {
-  const _ResultList({
-    required this.amount,
-    required this.from,
-    required this.onCopy,
-  });
+/// 结果区的三个 tab：公制 / 英制 / 市制。
+class _SystemTabs extends StatelessWidget {
+  const _SystemTabs({required this.controller});
 
-  final double amount;
-  final DistanceUnit from;
-  final void Function(DistanceUnit unit, String text) onCopy;
+  final TabController controller;
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        Text(
-          '${formatNumber(amount, significantDigits: 10)} ${from.label}',
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-          style: const TextStyle(
-            fontSize: 24,
-            height: 1.15,
-            fontWeight: FontWeight.w700,
-            color: AppColors.primary,
-            fontFeatures: [FontFeature.tabularFigures()],
-          ),
-        ),
-        const SizedBox(height: 12),
-        for (final system in DistanceSystem.values) ...[
-          Padding(
-            padding: const EdgeInsets.only(top: 6, bottom: 2),
-            child: Text(
-              system.label,
-              style: const TextStyle(
-                color: AppColors.textSecondary,
-                fontSize: 10.5,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ),
-          for (final unit in distanceUnitsOf(system))
-            _ResultRow(
-              unit: unit,
-              text: _format(convertDistance(amount, from: from, to: unit)),
-              highlighted: unit == from,
-              onTap: () => onCopy(
-                unit,
-                _format(convertDistance(amount, from: from, to: unit)),
-              ),
-            ),
-        ],
-        const SizedBox(height: 4),
-        const Text(
-          '点任意一行即可复制',
-          style: TextStyle(color: AppColors.textSecondary, fontSize: 10.5),
-        ),
+    return TabBar(
+      controller: controller,
+      labelColor: AppColors.primary,
+      unselectedLabelColor: AppColors.textSecondary,
+      indicatorColor: AppColors.primary,
+      indicatorSize: TabBarIndicatorSize.tab,
+      indicatorWeight: 2,
+      dividerColor: Colors.transparent,
+      labelStyle: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
+      unselectedLabelStyle: const TextStyle(
+        fontSize: 12,
+        fontWeight: FontWeight.w400,
+      ),
+      labelPadding: EdgeInsets.zero,
+      tabs: [
+        for (final system in DistanceSystem.values)
+          Tab(height: 34, text: system.label),
       ],
     );
   }
-
-  static String _format(double? value) =>
-      value == null ? '—' : formatNumber(value, significantDigits: 10);
 }
 
 class _ResultRow extends StatelessWidget {

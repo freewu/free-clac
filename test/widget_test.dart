@@ -399,7 +399,7 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('工具页：长度换算在三个体系间互转', (tester) async {
+  testWidgets('工具页：长度换算用下拉框选体系单位，结果分三个 tab', (tester) async {
     // 结果行点击会写剪贴板，测试环境下不 mock 的话 Future 不会完成
     String? clipboard;
     TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
@@ -414,7 +414,6 @@ void main() {
           .setMockMethodCallHandler(SystemChannels.platform, null),
     );
 
-    // 25 个单位的结果列表较长，用更高的窗口避免滚动干扰点击
     await pumpApp(tester, const Size(1440, 1600));
 
     await tester.tap(find.text('工具'));
@@ -424,48 +423,83 @@ void main() {
     expect(find.byType(DistancePage), findsOneWidget);
     expect(find.byType(NavigationRail), findsOneWidget);
 
-    // 默认 1 米：厘米 100、毫米 1000
+    // 计量体系 / 单位都是下拉框，放在数值上方
+    expect(find.byKey(const Key('distance-system')), findsOneWidget);
+    expect(find.byKey(const Key('distance-unit')), findsOneWidget);
+    final systemY = tester
+        .getTopLeft(find.byKey(const Key('distance-system')))
+        .dy;
+    final fieldY = tester.getTopLeft(find.byType(TextField).first).dy;
+    expect(systemY, lessThan(fieldY));
+
+    // 默认 1 米：公制 tab 只列公制单位
     expect(find.text('1 米'), findsOneWidget);
-    expect(find.text('1000'), findsOneWidget);
+    expect(find.text('1000'), findsOneWidget); // 毫米
+    expect(find.widgetWithText(Tab, '公制'), findsOneWidget);
+    expect(find.widgetWithText(Tab, '英制'), findsOneWidget);
+    expect(find.widgetWithText(Tab, '市制'), findsOneWidget);
+    expect(find.text('英尺'), findsNothing);
 
-    // 切到英制 → 单位落到英寸，改成英尺后 5280 英尺 = 1 英里
-    await tester.tap(find.text('英制').first);
+    // 体系下拉切到英制：单位落到英寸，tab 跟着切到英制
+    await tester.tap(find.byKey(const Key('distance-system')));
     await tester.pumpAndSettle();
-    expect(find.text('英制单位'), findsOneWidget);
-    expect(find.text('英寸'), findsWidgets);
+    await tester.tap(find.text('英制').last);
+    await tester.pumpAndSettle();
+    expect(find.text('英寸（in）'), findsOneWidget);
+    expect(find.text('英尺'), findsOneWidget);
+    expect(find.text('毫米'), findsNothing);
 
-    await tester.tap(find.text('英尺').first);
+    // 单位下拉选英尺：1 英尺 = 12 英寸
+    await tester.tap(find.byKey(const Key('distance-unit')));
     await tester.pumpAndSettle();
-    expect(find.text('12'), findsOneWidget); // 英寸
+    await tester.tap(find.text('英尺（ft）').last);
+    await tester.pumpAndSettle();
+    expect(find.text('1 英尺'), findsOneWidget);
+    expect(find.text('12'), findsOneWidget);
+
+    // 5280 英尺 = 1 英里
     await tester.enterText(find.byType(TextField).first, '5280');
     await tester.pumpAndSettle();
     expect(find.text('5280 英尺'), findsOneWidget);
-    expect(find.text('1'), findsOneWidget); // 英里
+    expect(find.text('1'), findsOneWidget);
 
-    // 点参照物「马拉松」直接代入 42.195 千米
+    // 点参照物「马拉松」代入 42.195 千米，tab 回到公制
     await tester.ensureVisible(find.text('马拉松'));
     await tester.pumpAndSettle();
     await tester.tap(find.text('马拉松'));
     await tester.pumpAndSettle();
     expect(find.text('42.195 千米'), findsOneWidget);
-    expect(find.text('42195'), findsOneWidget);
+    expect(find.text('42195'), findsOneWidget); // 米
 
-    // 市制：里 / 尺
-    await tester.ensureVisible(find.text('市制').first);
+    // 先只看市制 tab：输入仍是 42.195 千米，tab 一换就能看到市制结果
+    await tester.tap(find.widgetWithText(Tab, '市制'));
     await tester.pumpAndSettle();
-    await tester.tap(find.text('市制').first);
+    expect(find.text('42.195 千米'), findsOneWidget);
+    expect(find.text('126585'), findsOneWidget); // 42.195 千米 = 126585 尺
+    expect(find.text('1 里 = 150 丈 = 500 米'), findsNothing);
+
+    // 体系下拉切到市制：单位落到里，说明文案跟着变
+    await tester.tap(find.byKey(const Key('distance-system')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('市制').last);
     await tester.pumpAndSettle();
     expect(find.text('42.195 里'), findsOneWidget);
     expect(find.text('63292.5'), findsOneWidget); // 尺
     expect(find.text('1 里 = 150 丈 = 500 米'), findsOneWidget);
 
-    // 点结果行复制到剪贴板
-    await tester.ensureVisible(find.text('63292.5'));
+    // 单位下拉里选「尺」
+    await tester.tap(find.byKey(const Key('distance-unit')));
     await tester.pumpAndSettle();
-    await tester.tap(find.text('63292.5'));
+    await tester.tap(find.text('尺').last);
     await tester.pumpAndSettle();
-    expect(clipboard, '63292.5 尺');
-    expect(find.text('已复制 63292.5 尺'), findsOneWidget);
+    expect(find.text('42.195 尺'), findsOneWidget);
+    expect(find.text('1 尺 = 1/3 米 ≈ 33.33 厘米'), findsOneWidget);
+
+    // 点结果行复制到剪贴板：42.195 尺 = 421.95 寸
+    await tester.tap(find.text('421.95'));
+    await tester.pumpAndSettle();
+    expect(clipboard, '421.95 寸');
+    expect(find.text('已复制 421.95 寸'), findsOneWidget);
 
     // 清空数值显示空状态
     await tester.enterText(find.byType(TextField).first, '');
@@ -484,8 +518,14 @@ void main() {
     expect(find.byType(DistancePage), findsOneWidget);
     expect(find.byType(NavigationBar), findsOneWidget);
 
-    // 25 个单位横排会换行，窄屏下不能溢出
-    await tester.tap(find.text('市制').first);
+    // 两个下拉框并排、三个 tab 平分宽度，窄屏下都不能溢出
+    await tester.tap(find.widgetWithText(Tab, '市制'));
+    await tester.pumpAndSettle();
+    expect(tester.takeException(), isNull);
+
+    await tester.tap(find.byKey(const Key('distance-system')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('英制').last);
     await tester.pumpAndSettle();
     expect(tester.takeException(), isNull);
   });
