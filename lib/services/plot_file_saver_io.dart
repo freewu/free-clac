@@ -1,27 +1,79 @@
 import 'dart:io';
-import 'dart:typed_data';
+
+import 'package:flutter/services.dart';
 
 import '../plot/plot_export.dart';
 import 'saved_plot_file.dart';
 
 export 'saved_plot_file.dart';
 
-/// 桌面 / 移动端：直接写入磁盘。
+/// 相册 / 下载目录的平台通道（实现在 `android/.../MainActivity.kt`）。
+const MethodChannel _mediaStoreChannel = MethodChannel('free_clac/media_store');
+
+/// 界面「保存位置」一行的文案。
 ///
-/// 默认目录优先取「图片」再取「下载」，都没有时退回用户主目录；
-/// 移动端受沙盒限制，写入应用临时目录（系统不允许直接写共享存储）。
+/// 必须和实际落盘位置一致：Android 走 MediaStore（相册 / 下载），
+/// 桌面端写 [defaultPlotDirectory] 解析出来的真实目录。
+String plotSaveLocationNote() {
+  if (Platform.isAndroid) {
+    return '系统相册「Pictures/free-clac」（SVG 存到「Download/free-clac」）';
+  }
+  if (Platform.isIOS) return '应用沙盒临时目录';
+  return defaultPlotDirectory();
+}
+
+/// 桌面 / 移动端：写入系统目录。
+///
+/// * Android 交给 MediaStore，位图进相册、SVG 进下载目录，用户在系统里能找到；
+///   平台通道不可用时退回应用缓存目录（老版本行为）。
+/// * 其它平台优先取「图片」再取「下载」，都没有时退回用户主目录。
 Future<SavedPlotFile> savePlotExportFile(
   PlotExportFile file, {
   String? directory,
 }) async {
+  if (directory == null && Platform.isAndroid) {
+    final gallery = await _saveToSystemGallery(file);
+    if (gallery != null) return gallery;
+  }
   final dir = Directory(directory ?? defaultPlotDirectory());
   await dir.create(recursive: true);
   final target = _uniqueFile(dir, file.fileName);
   await target.writeAsBytes(file.bytes, flush: true);
-  return SavedPlotFile(location: target.path, fileName: fileNameFor(target));
+  return SavedPlotFile(
+    location: target.path,
+    fileName: fileNameFor(target),
+    canReveal: !Platform.isAndroid && !Platform.isIOS,
+  );
 }
 
-/// 默认保存目录。
+/// 通过平台通道把文件写进相册 / 下载目录；失败返回 null 交给调用方兜底。
+Future<SavedPlotFile?> _saveToSystemGallery(PlotExportFile file) async {
+  final Map<String, String>? result;
+  try {
+    result = await _mediaStoreChannel.invokeMapMethod<String, String>(
+      'saveImage',
+      <String, Object>{
+        'bytes': file.bytes,
+        'fileName': file.fileName,
+        'mimeType': file.mimeType,
+      },
+    );
+  } on MissingPluginException {
+    return null;
+  } on PlatformException {
+    // 没有写相册的权限或被系统拒绝：退回应用目录，至少文件还在。
+    return null;
+  }
+  final location = result?['location'];
+  if (location == null || location.isEmpty) return null;
+  return SavedPlotFile(
+    location: location,
+    fileName: file.fileName,
+    displayPath: result!['displayPath'],
+  );
+}
+
+/// 默认保存目录（Android / iOS 仅在平台通道不可用时作兜底）。
 String defaultPlotDirectory() {
   if (Platform.isAndroid || Platform.isIOS) {
     return Directory.systemTemp.path;
@@ -43,7 +95,7 @@ String defaultPlotDirectory() {
 
 /// 在文件管理器中定位刚保存的文件。
 Future<void> revealSavedPlotFile(SavedPlotFile file) async {
-  if (file.inBrowser || file.location.isEmpty) return;
+  if (!file.canReveal || file.location.isEmpty) return;
   try {
     if (Platform.isWindows) {
       await Process.run('explorer.exe', ['/select,${file.location}']);

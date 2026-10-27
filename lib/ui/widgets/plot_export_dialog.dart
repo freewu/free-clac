@@ -27,12 +27,12 @@ Future<void> showPlotExportDialog(
       SnackBar(
         content: Text('已保存：${saved.fullPath}'),
         duration: const Duration(seconds: 4),
-        action: saved.inBrowser
-            ? null
-            : SnackBarAction(
+        action: saved.canReveal
+            ? SnackBarAction(
                 label: '打开文件夹',
                 onPressed: () => revealSavedPlotFile(saved),
-              ),
+              )
+            : null,
       ),
     );
 }
@@ -171,7 +171,7 @@ class _PlotExportDialogState extends State<PlotExportDialog> {
             _InfoRow(
               icon: Icons.folder_open_rounded,
               label: '保存位置',
-              value: kIsWeb ? '浏览器下载目录' : '系统「图片」/「下载」文件夹',
+              value: plotSaveLocationNote(),
             ),
             if (_error != null) ...[
               const SizedBox(height: 10),

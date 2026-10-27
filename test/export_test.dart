@@ -168,5 +168,42 @@ void main() {
         expect(directory.existsSync(), isTrue, reason: directory.path);
       }
     });
+
+    test('展示位置与实际落盘位置一致', () async {
+      final dir = await Directory.systemTemp.createTemp('free_clac_export');
+      addTearDown(() => dir.delete(recursive: true));
+      final saved = await savePlotExportFile(
+        PlotExportFile(
+          fileName: 'plot.png',
+          bytes: Uint8List.fromList(<int>[1, 2, 3]),
+          mimeType: 'image/png',
+        ),
+        directory: dir.path,
+      );
+
+      // 直接写盘：展示的就是真实路径，桌面端可以打开所在文件夹
+      expect(saved.displayPath, isNull);
+      expect(saved.fullPath, saved.location);
+      expect(saved.displayLocation, saved.location);
+      expect(saved.canReveal, !Platform.isAndroid && !Platform.isIOS);
+      // 对话框里的「保存位置」要指向真实目录，不能是笼统的「图片 / 下载」
+      final note = plotSaveLocationNote();
+      expect(note, isNotEmpty);
+      if (!Platform.isAndroid && !Platform.isIOS) {
+        expect(note, defaultPlotDirectory());
+      }
+    });
+
+    test('相册保存：展示相对路径，且不能打开文件夹', () {
+      const saved = SavedPlotFile(
+        location: 'content://media/external/images/media/42',
+        displayPath: 'Pictures/free-clac/plot.png',
+        fileName: 'plot.png',
+      );
+
+      expect(saved.fullPath, 'Pictures/free-clac/plot.png');
+      expect(saved.displayLocation, 'Pictures/free-clac/plot.png');
+      expect(saved.canReveal, isFalse);
+    });
   });
 }

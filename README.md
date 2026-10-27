@@ -51,7 +51,7 @@
 - 与计算器共享角度模式：极坐标与三角函数曲线随 DEG/RAD 切换重新采样
 - 内置示例曲线：点面板右上角的 ✨ 图标一键载入心形函数、玫瑰线、李萨如曲线等，示例追加到当前画布（不清空已有曲线），详见下文
 - 导出图片：点标题栏的图片按钮，可保存为 **PNG**（2 倍高清位图）、**WebP**（体积约为 PNG 的 1/10）或 **SVG**（矢量，可无限放大）
-  - 桌面 / 移动端写入系统「图片」或「下载」文件夹，Web 端交给浏览器下载
+  - 保存位置与对话框里写的一致：Android 位图进相册 `Pictures/free-clac`、SVG 进 `Download/free-clac`（走 MediaStore，无需权限）；桌面端写入实际解析到的「图片」再退「下载」目录；Web 端交给浏览器下载
   - 导出按当前视口与画布尺寸重新渲染，含网格、坐标轴、刻度与曲线光晕
 
 ### 示例曲线
@@ -239,6 +239,7 @@ just devices      # 列出设备
 | 质量 | `just test-core` / `test-plot` / `test-widget` | 分模块测试 |
 | 质量 | `just cover` | 生成覆盖率 `coverage/lcov.info` |
 | 质量 | `just check` | 格式检查 + 分析 + 测试 |
+| 质量 | `just test-android` | 在已连接的 Android 设备 / 模拟器上验证导出落盘（相册 / 下载） |
 | 构建 | `just build-web` / `build-apk` / `build-windows` | 分平台构建 |
 | 构建 | `just build-web-cdn` | Web 构建（CanvasKit / 字体走 Google CDN，体积小） |
 | 构建 | `just web-fonts` | 下载 Web 离线字体到 `web/fonts/`（约 3 MB） |
@@ -325,7 +326,9 @@ avdmanager create avd -n free_clac_api36 -k "system-images;android-36;google_api
 just test
 ```
 
-包含计算引擎单元测试（优先级、隐式乘法、函数、微积分、错误处理、格式化、金额千分位）、LaTeX 序列化（运算优先级、函数、求和 / 积分 / 求导、异常输入、曲线方程）单元测试、BMI 分级与单位换算、复利公式、长度单位换算、利率双向换算、贷款月供拆分、个税累计预扣与税率表（含专项附加扣除、比例校验、非法参数）单元测试、绘图视口 / 采样器（含隐式等值线）/ 控制器 / 示例曲线 / 导出（PNG、WebP、SVG）单元测试，以及多尺寸布局、示例面板、导出对话框、复制 LaTeX、工具页跳转、工具页内导航菜单保留、长度换算跨体系互转与复制、利率双向换算、贷款双色条、个税逐月明细与窄屏布局等 Widget 测试（共 146 项）。
+包含计算引擎单元测试（优先级、隐式乘法、函数、微积分、错误处理、格式化、金额千分位）、LaTeX 序列化（运算优先级、函数、求和 / 积分 / 求导、异常输入、曲线方程）单元测试、BMI 分级与单位换算、复利公式、长度单位换算、利率双向换算、贷款月供拆分、个税累计预扣与税率表（含专项附加扣除、比例校验、非法参数）单元测试、绘图视口 / 采样器（含隐式等值线）/ 控制器 / 示例曲线 / 导出（PNG、WebP、SVG）单元测试，以及多尺寸布局、示例面板、导出对话框（含「保存位置」与实际落盘一致）、复制 LaTeX、工具页跳转、工具页内导航菜单保留、长度换算跨体系互转与复制、利率双向换算、贷款双色条、个税逐月明细与窄屏布局等 Widget 测试（共 148 项）。
+
+Android 的相册写入走 `MediaStore`，无法在 Widget 测试里覆盖，另有真机 / 模拟器测试 `integration_test/android_save_test.dart`（`just test-android`，需先 `just emulator` 或插上真机）。
 
 ## 目录结构
 
@@ -342,6 +345,7 @@ lib/
 │                共用输入框 / 比例条在 widgets/）
 └── theme/      深色主题与配色
 test/           引擎、LaTeX、工具算法、绘图、Widget 测试
+integration_test/ 需真机 / 模拟器的测试（Android 导出落盘）
 tool/           辅助脚本（截图、图标生成、Android 环境探测）
 justfile        常用开发任务
 ```

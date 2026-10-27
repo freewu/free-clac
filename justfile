@@ -121,12 +121,24 @@ analyze:
 # 格式化源码（dart format）
 [group('质量')]
 fmt:
-    @{{dart}} format lib test
+    @{{dart}} format lib test integration_test
 
 # 检查格式（CI 用，不修改文件）
 [group('质量')]
 fmt-check:
-    @{{dart}} format --output=none --set-exit-if-changed lib test
+    @{{dart}} format --output=none --set-exit-if-changed lib test integration_test
+
+# 在 Android 设备 / 模拟器上验证导出写进相册（需先连上设备）
+[group('质量')]
+test-android:
+    @. tool/android-env.sh; \
+      id=$({{flutter}} devices --machine | {{python}} tool/android_target.py device); \
+      [ -n "$id" ] || { \
+        echo "✗ 没有检测到 Android 设备或模拟器。"; \
+        echo "  · 真机：插上后允许本机调试，或先用 just emulator 启动模拟器"; \
+        exit 1; }; \
+      echo "  目标设备：$id"; \
+      {{flutter}} test integration_test/android_save_test.dart -d "$id"
 
 # 全部测试，可按名称过滤：just test 历史
 [group('质量')]

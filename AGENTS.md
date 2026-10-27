@@ -58,5 +58,8 @@ cmd.exe /c "cd /d $(wslpath -w "$PWD") && flutter test"
 - 需要 Android 工具链的配方（`build-apk`、`android`）先 `. tool/android-env.sh`：它会补 `JAVA_HOME` / `ANDROID_HOME`，WSL 下再用 `WSLENV` 传给 Windows 侧进程。
 - Android 自适应图标 XML（`mipmap-anydpi-v26/*.xml`）必须声明 `xmlns:android`，否则 AAPT2 编译失败；`just icons-check` 会校验这一项。
 - Web 产物必须自包含：`just build-web` 走 `--no-web-resources-cdn`（CanvasKit 取 SDK 自带副本），并把 `web/fonts/`（`tool/web_fonts.py` 下载的 Roboto / Noto 回退字体）拷进 `build/web/fonts/`，配合 `web/flutter_bootstrap.js` 的 `fontFallbackBaseUrl: "fonts/"`。改 Web 构建相关配置后，用「阻断外网 + headless Chrome 截图」验证断网可正常渲染（做法见 README《Web 部署》）。
+- Android 导出图片走 `MediaStore`（`android/app/src/main/kotlin/.../MainActivity.kt` 的
+  `free_clac/media_store` 通道），落盘位置必须和对话框「保存位置」一致；改动后用
+  `just emulator` + `just test-android` 在模拟器上验证，别退回写应用缓存目录。
 - 截图 / 离线演示一律用 `just shots`（内部就是 `just build-web`），不要用 `build-web-cdn`，否则内网或断网环境会白屏、文字变方块。
 - **不要给 justfile 写 shebang 配方**（`#!/usr/bin/env sh`）：Windows 上 just 会用 `cygpath` 翻译解释器路径，而 Git for Windows 默认没把 `usr/bin` 放进 PATH，会直接报 `could not find cygpath`。用普通配方 + 行尾 `\` 连接（见 `build-apk`）。

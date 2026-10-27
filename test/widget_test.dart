@@ -4,7 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:free_clac/app.dart';
 import 'package:free_clac/core/math_engine.dart';
 import 'package:free_clac/plot/plot_export.dart';
-import 'package:free_clac/services/saved_plot_file.dart';
+import 'package:free_clac/services/plot_file_saver.dart';
 import 'package:free_clac/state/plot_controller.dart';
 import 'package:free_clac/ui/widgets/plot_export_dialog.dart';
 import 'package:free_clac/ui/tools/bmi/bmi_page.dart';
@@ -764,6 +764,8 @@ void main() {
     }
     // 默认 PNG：位图尺寸按 2 倍图显示
     expect(find.textContaining('2 倍图'), findsOneWidget);
+    // 「保存位置」要写真实落盘目录，不能只写笼统的「图片 / 下载」
+    expect(find.text(plotSaveLocationNote()), findsOneWidget);
 
     await tester.tap(find.text('SVG'));
     await tester.pumpAndSettle();
