@@ -41,6 +41,8 @@ analysis_benchmark.json
 .pub-preload-cache/
 .pub/
 build/
+# Web 离线字体（tool/web_fonts.py 生成）
+web/fonts/
 flutter_*.png
 linked_*.ds
 unlinked.ds

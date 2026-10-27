@@ -64,10 +64,10 @@ upgrade:
 run *args:
     @{{flutter}} run {{args}}
 
-# 在 Chrome 中调试 Web 版
+# 在 Chrome 中调试 Web 版（CanvasKit 用本地副本，断网也能调试）
 [group('开发')]
-web:
-    @{{flutter}} run -d chrome
+web: web-fonts
+    @{{flutter}} run -d chrome --no-web-resources-cdn
 
 # 在 Windows 桌面上调试
 [group('开发')]
@@ -161,15 +161,36 @@ check: fmt-check analyze test tool-check
 
 # ---------------------------------------------------------------- 构建
 # 构建 Web 产物到 build/web
+#
+# 完全自包含：CanvasKit 与 Flutter 运行时用 SDK 自带副本
+# （--no-web-resources-cdn），Roboto / Noto 回退字体放在 web/fonts/，
+# 内网或断网环境也不会白屏、中文不会变成方块。
+# 想要体积更小、可直连 gstatic 的部署，用 build-web-cdn。
 [group('构建')]
-build-web:
+build-web: web-fonts
+    @{{flutter}} build web --release --no-web-resources-cdn
+    @grep -q '"useLocalCanvasKit":true' build/web/flutter_bootstrap.js \
+      || { echo "✗ CanvasKit 仍在用 CDN，请检查 --no-web-resources-cdn"; exit 1; }
+    @rm -rf build/web/fonts && mkdir -p build/web/fonts && cp -R web/fonts/. build/web/fonts/
+    @{{python}} tool/web_fonts.py --check
+    @test -f build/web/fonts/roboto/v32/KFOmCnqEu92Fr1Me4GZLCzYlKw.woff2 \
+      || { echo "✗ 离线字体没有拷进 build/web/fonts"; exit 1; }
+    @echo "✓ Web 产物自包含：CanvasKit 与字体都在本地"
+
+# 构建使用 Google CDN 的 Web 产物（体积小，需要能访问 gstatic）
+[group('构建')]
+build-web-cdn:
     @{{flutter}} build web --release
 
-# 构建离线可用的 Web 产物（CanvasKit 与字体从本地加载，不依赖 CDN）
-# 用途：内网演示、离线截图；体积略大，对外部署用 build-web 即可
+# 旧名字，等价于 build-web（保留以兼容脚本）
 [group('构建')]
-build-web-offline:
-    @{{flutter}} build web --release --no-web-resources-cdn
+build-web-offline: build-web
+
+# 下载 Web 离线字体到 web/fonts/（Roboto + Noto Sans SC 等，约 3 MB）
+# 由 tool/web_fonts.py 从本地 Flutter SDK 里读出引擎字体清单后下载
+[group('构建')]
+web-fonts:
+    @{{python}} tool/web_fonts.py
 
 # 构建 Android APK（缺少 Android SDK / JDK 时给出安装提示）
 #
@@ -247,6 +268,7 @@ icons-check:
 [group('工具')]
 tool-check:
     @{{python}} tool/android_target.py --selftest
+    @{{python}} tool/web_fonts.py --selftest
 
 # 重新生成 README 截图（docs/screenshots，离线构建以免 CDN 不可达时白屏）
 [group('工具')]

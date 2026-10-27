@@ -140,6 +140,21 @@ flutter run                 # Android 设备 / 模拟器
 
 Web 端可用 `?page=plot` 直接打开绘图页，`?page=plot&preset=0` 还会同时载入第一个示例。
 
+## Web 部署
+
+`just build-web` 产出的 `build/web` **完全自包含**，可直接拷到内网服务器或离线环境运行：
+
+- **CanvasKit 与 Flutter 运行时**用 SDK 自带副本（`flutter build web --no-web-resources-cdn`），不再从 `www.gstatic.com` 动态 import
+- **字体**放在 `build/web/fonts/`：`web/flutter_bootstrap.js` 把引擎的 `fontFallbackBaseUrl` 指向 `fonts/`，
+  CanvasKit 渲染文字时会从本地取 Roboto（拉丁）与 Noto Sans SC 等分片，不再请求 `fonts.gstatic.com`
+
+字体文件由 `tool/web_fonts.py` 从本地 Flutter SDK 的 `font_fallback_data.dart` 读出清单后下载（共 111 个分片、约 3 MB），
+已加入 `.gitignore`，首次构建前会自动执行（也可手动 `just web-fonts`）。
+
+若部署环境能直连 Google，可用 `just build-web-cdn` 得到更小的产物；此时若用户断网，会出现
+`Failed to load font Roboto at https://fonts.gstatic.com/...` 与
+`Failed to fetch dynamically imported module: https://www.gstatic.com/flutter-canvaskit/...`。
+
 ## 开发命令（just）
 
 项目用 [just](https://github.com/casey/just) 管理常用任务，`just` 不带参数即可列出全部命令。
@@ -151,7 +166,7 @@ Web 端可用 `?page=plot` 直接打开绘图页，`?page=plot&preset=0` 还会�
 just              # 列出全部命令
 just deps         # flutter pub get
 just run          # 运行（可附加参数：just run -d chrome）
-just web          # Chrome 中调试 Web
+just web          # Chrome 中调试 Web（本地 CanvasKit，断网可用）
 just windows      # Windows 桌面调试
 just android      # Android 调试
 just devices      # 列出设备
@@ -166,7 +181,9 @@ just devices      # 列出设备
 | 质量 | `just cover` | 生成覆盖率 `coverage/lcov.info` |
 | 质量 | `just check` | 格式检查 + 分析 + 测试 |
 | 构建 | `just build-web` / `build-apk` / `build-windows` | 分平台构建 |
-| 构建 | `just build-web-offline` | 离线 Web 构建（CanvasKit 本地加载，不依赖 CDN） |
+| 构建 | `just build-web-cdn` | Web 构建（CanvasKit / 字体走 Google CDN，体积小） |
+| 构建 | `just web-fonts` | 下载 Web 离线字体到 `web/fonts/`（约 3 MB） |
+| 构建 | `just build-web-offline` | `just build-web` 的旧名字 |
 | 构建 | `just build` | Web + APK |
 | 构建 | `just ci` | 依赖 → 检查 → 构建 |
 | 工具 | `just preview` | 构建并本地预览（<http://localhost:8765>） |
@@ -273,6 +290,9 @@ justfile        常用开发任务
 
 - **Windows 首次构建报 `Unsupported file type "notFound" ... flutter_windows.dll.pdb`**：Flutter SDK 的引擎产物下载不完整，执行 `just precache`（即 `flutter precache --windows --force`）重新下载即可。
 - **PowerShell 下 `just` 报 `$'\r': command not found`**：recipes 需要 Git Bash，确认 `sh.exe` 在 PATH 中（安装 Git for Windows）。
+- **Web 版白屏，控制台报 `Failed to fetch dynamically imported module: https://www.gstatic.com/flutter-canvaskit/...`**：产物用了 CDN 版 CanvasKit，网络被墙或离线时加载失败。用 `just build-web` 重新构建（本地 CanvasKit），不要用 `build-web-cdn`。
+- **Web 版文字变成方块 / 报 `Failed to load font Roboto ... fonts.gstatic.com`**：`web/fonts/` 缺失或没拷进产物，执行 `just web-fonts` 后重新 `just build-web`。
+- **`just build-web` 报 `✗ 找不到 Flutter SDK`**：`tool/web_fonts.py` 需要定位 SDK，设置 `export FLUTTER_ROOT=C:/flutter` 即可。
 - **`just android` 报 `No supported devices found with name or id matching 'android'`**：没有任何 Android 设备在线。真机需打开「开发者选项 → USB 调试」并允许本机调试；用模拟器则先 `just emulator`（首次需按上文创建 AVD）。
 - **`just build-apk` 报 `No Android SDK found`**：参见上文「Android 构建」，装好 SDK / JDK 并设置 `ANDROID_HOME`、`JAVA_HOME` 后重开终端。
 - **`just build-apk` 报 `Please set the JAVA_HOME variable`**：旧终端读不到新写入的用户变量。`tool/android-env.sh` 会自动探测常见 JDK 路径，探测不到时新开终端即可；也可在当前会话临时设置 `$env:JAVA_HOME='C:\Users\<你>\jdks\jdk-21'`。
