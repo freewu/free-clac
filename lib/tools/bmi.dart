@@ -28,15 +28,41 @@ enum BmiUnitSystem {
   final String label;
 }
 
+/// 英制身高的输入单位。
+enum BmiImperialHeightUnit {
+  feet('ft', '英尺'),
+  inches('in', '英寸');
+
+  const BmiImperialHeightUnit(this.symbol, this.label);
+
+  final String symbol;
+  final String label;
+
+  /// 另一个单位（用于一键切换）。
+  BmiImperialHeightUnit get other => this == feet ? inches : feet;
+}
+
 /// 1 英寸 = 2.54 cm。
 const double cmPerInch = 2.54;
 
 /// 1 磅 = 0.45359237 kg。
 const double kgPerPound = 0.45359237;
 
+/// 英尺 → 厘米。
+double cmFromFeet(double feet) => feet * 12 * cmPerInch;
+
+/// 英寸 → 厘米。
+double cmFromInches(double inches) => inches * cmPerInch;
+
 /// 英尺 + 英寸 → 厘米。
 double cmFromFeetInches({double feet = 0, double inches = 0}) =>
-    (feet * 12 + inches) * cmPerInch;
+    cmFromFeet(feet) + cmFromInches(inches);
+
+/// 厘米 → 英尺。
+double feetFromCm(double cm) => cm / cmPerInch / 12;
+
+/// 厘米 → 英寸。
+double inchesFromCm(double cm) => cm / cmPerInch;
 
 /// 磅 → 千克。
 double kgFromPounds(double pounds) => pounds * kgPerPound;

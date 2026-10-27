@@ -88,6 +88,24 @@ void main() {
       );
     });
 
+    test('英尺 / 英寸单值换算与双向转换', () {
+      expect(cmFromFeet(5.5), closeTo(167.64, 1e-9));
+      expect(cmFromInches(67), closeTo(170.18, 1e-9));
+      expect(feetFromCm(170.18), closeTo(5.5833, 0.0001));
+      expect(inchesFromCm(170.18), closeTo(67.0, 1e-9));
+      // 往返回原值（输入框保留两位小数）
+      expect(inchesFromCm(cmFromFeet(5.58)), closeTo(66.96, 1e-9));
+      expect(feetFromCm(cmFromInches(66.96)), closeTo(5.58, 1e-9));
+    });
+
+    test('英制身高单位可切换', () {
+      expect(BmiImperialHeightUnit.feet.symbol, 'ft');
+      expect(BmiImperialHeightUnit.inches.symbol, 'in');
+      expect(BmiImperialHeightUnit.feet.other, BmiImperialHeightUnit.inches);
+      expect(BmiImperialHeightUnit.inches.other, BmiImperialHeightUnit.feet);
+      expect(BmiImperialHeightUnit.feet.label, '英尺');
+    });
+
     test('单位枚举带中文标签', () {
       expect(BmiUnitSystem.metric.label, '公制');
       expect(BmiUnitSystem.imperial.label, '英制');

@@ -20,11 +20,11 @@ class BmiPage extends StatefulWidget {
 class _BmiPageState extends State<BmiPage> {
   BmiUnitSystem _unit = BmiUnitSystem.metric;
 
-  /// 公制为身高（cm），英制为整英尺（ft）。
-  final TextEditingController _height = TextEditingController(text: '170');
+  /// 英制身高输入框的单位（ft / in），点输入框右侧的按钮切换。
+  BmiImperialHeightUnit _heightUnit = BmiImperialHeightUnit.feet;
 
-  /// 英制身高的小数部分（in）。
-  final TextEditingController _heightInch = TextEditingController(text: '7');
+  /// 公制为身高（cm），英制为 ft 或 in（见 [_heightUnit]）。
+  final TextEditingController _height = TextEditingController(text: '170');
 
   /// 公制为体重（kg），英制为磅（lb）。
   final TextEditingController _weight = TextEditingController(text: '65');
@@ -32,17 +32,20 @@ class _BmiPageState extends State<BmiPage> {
   @override
   void dispose() {
     _height.dispose();
-    _heightInch.dispose();
     _weight.dispose();
     super.dispose();
   }
 
-  double get _heightCm => _unit == BmiUnitSystem.metric
-      ? double.tryParse(_height.text) ?? 0
-      : cmFromFeetInches(
-          feet: double.tryParse(_height.text) ?? 0,
-          inches: double.tryParse(_heightInch.text) ?? 0,
-        );
+  double get _heightCm {
+    final value = double.tryParse(_height.text) ?? 0;
+    return switch (_unit) {
+      BmiUnitSystem.metric => value,
+      BmiUnitSystem.imperial =>
+        _heightUnit == BmiImperialHeightUnit.feet
+            ? cmFromFeet(value)
+            : cmFromInches(value),
+    };
+  }
 
   double get _weightKg => _unit == BmiUnitSystem.metric
       ? double.tryParse(_weight.text) ?? 0
@@ -58,9 +61,7 @@ class _BmiPageState extends State<BmiPage> {
       _unit = unit;
       if (current == null) return;
       if (unit == BmiUnitSystem.imperial) {
-        final inches = current.heightInches;
-        _height.text = '${(inches / 12).floor()}';
-        _heightInch.text = (inches % 12).toStringAsFixed(1);
+        _height.text = _formatImperialHeight(current.heightCm);
         _weight.text = current.weightPounds.toStringAsFixed(1);
       } else {
         _height.text = current.heightCm.toStringAsFixed(1);
@@ -68,6 +69,23 @@ class _BmiPageState extends State<BmiPage> {
       }
     });
   }
+
+  /// ft / in 之间切换：按当前单位换算数值，BMI 保持不变。
+  void _switchHeightUnit(BmiImperialHeightUnit unit) {
+    if (unit == _heightUnit) return;
+    final cm = _heightCm;
+    setState(() {
+      _heightUnit = unit;
+      if (cm > 0) _height.text = _formatImperialHeight(cm);
+    });
+  }
+
+  /// 厘米按当前英制单位格式化（两位小数）。
+  String _formatImperialHeight(double cm) =>
+      (_heightUnit == BmiImperialHeightUnit.feet
+              ? feetFromCm(cm)
+              : inchesFromCm(cm))
+          .toStringAsFixed(2);
 
   @override
   Widget build(BuildContext context) {
@@ -121,45 +139,19 @@ class _BmiPageState extends State<BmiPage> {
                       : Row(
                           crossAxisAlignment: CrossAxisAlignment.end,
                           children: [
-                            // 英制身高是一个整体：上方标题「身高」，下面并排 ft 与 in
                             Expanded(
-                              flex: 3,
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  const Text(
-                                    '身高',
-                                    style: TextStyle(
-                                      color: AppColors.textSecondary,
-                                      fontSize: 11.5,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 5),
-                                  Row(
-                                    children: [
-                                      Expanded(
-                                        child: ToolNumberField(
-                                          suffix: 'ft',
-                                          controller: _height,
-                                          onChanged: (_) => setState(() {}),
-                                        ),
-                                      ),
-                                      const SizedBox(width: 8),
-                                      Expanded(
-                                        child: ToolNumberField(
-                                          suffix: 'in',
-                                          controller: _heightInch,
-                                          onChanged: (_) => setState(() {}),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ],
+                              child: ToolNumberField(
+                                label: '身高',
+                                controller: _height,
+                                trailing: _HeightUnitPicker(
+                                  unit: _heightUnit,
+                                  onChanged: _switchHeightUnit,
+                                ),
+                                onChanged: (_) => setState(() {}),
                               ),
                             ),
-                            const SizedBox(width: 10),
+                            const SizedBox(width: 12),
                             Expanded(
-                              flex: 2,
                               child: ToolNumberField(
                                 label: '体重',
                                 suffix: 'lb',
@@ -174,7 +166,11 @@ class _BmiPageState extends State<BmiPage> {
                 ToolSection(
                   child: result == null
                       ? const _EmptyHint()
-                      : _ResultBody(result: result, unit: _unit),
+                      : _ResultBody(
+                          result: result,
+                          unit: _unit,
+                          heightUnit: _heightUnit,
+                        ),
                 ),
               ],
             ),
@@ -213,6 +209,46 @@ class _UnitSwitch extends StatelessWidget {
   }
 }
 
+/// 英制身高的输入单位：ft / in 下拉切换。
+class _HeightUnitPicker extends StatelessWidget {
+  const _HeightUnitPicker({required this.unit, required this.onChanged});
+
+  final BmiImperialHeightUnit unit;
+  final ValueChanged<BmiImperialHeightUnit> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      height: 26,
+      child: DropdownButton<BmiImperialHeightUnit>(
+        value: unit,
+        isDense: true,
+        focusColor: Colors.transparent,
+        underline: const SizedBox.shrink(),
+        iconSize: 16,
+        icon: const Icon(
+          Icons.arrow_drop_down_rounded,
+          size: 16,
+          color: AppColors.textSecondary,
+        ),
+        borderRadius: BorderRadius.circular(10),
+        style: const TextStyle(
+          color: AppColors.textSecondary,
+          fontSize: 12,
+          fontWeight: FontWeight.w600,
+        ),
+        items: [
+          for (final value in BmiImperialHeightUnit.values)
+            DropdownMenuItem(value: value, child: Text(value.symbol)),
+        ],
+        onChanged: (value) {
+          if (value != null) onChanged(value);
+        },
+      ),
+    );
+  }
+}
+
 class _EmptyHint extends StatelessWidget {
   const _EmptyHint();
 
@@ -239,17 +275,22 @@ class _EmptyHint extends StatelessWidget {
 }
 
 class _ResultBody extends StatelessWidget {
-  const _ResultBody({required this.result, required this.unit});
+  const _ResultBody({
+    required this.result,
+    required this.unit,
+    required this.heightUnit,
+  });
 
   final BmiResult result;
   final BmiUnitSystem unit;
+  final BmiImperialHeightUnit heightUnit;
 
   bool get _metric => unit == BmiUnitSystem.metric;
 
   String get _heightText => _metric
       ? '${formatNumber(result.heightCm, significantDigits: 5)} cm'
-      : '${result.heightFeet} ft '
-            '${result.heightRemainderInches.toStringAsFixed(1)} in';
+      : '${(heightUnit == BmiImperialHeightUnit.feet ? feetFromCm(result.heightCm) : inchesFromCm(result.heightCm)).toStringAsFixed(2)} '
+            '${heightUnit.symbol}';
 
   String get _weightText => _metric
       ? '${formatNumber(result.weightKg, significantDigits: 5)} kg'

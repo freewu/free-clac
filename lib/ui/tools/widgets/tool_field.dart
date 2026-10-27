@@ -9,7 +9,8 @@ class ToolNumberField extends StatelessWidget {
     super.key,
     this.label,
     required this.controller,
-    required this.suffix,
+    this.suffix = '',
+    this.trailing,
     this.onChanged,
     this.hint,
     this.allowNegative = false,
@@ -19,6 +20,9 @@ class ToolNumberField extends StatelessWidget {
   final String? label;
   final TextEditingController controller;
   final String suffix;
+
+  /// 输入框右侧的附加控件（如 ft / in 单位选择），会比 suffix 更靠右。
+  final Widget? trailing;
   final ValueChanged<String>? onChanged;
   final String? hint;
   final bool allowNegative;
@@ -55,6 +59,12 @@ class ToolNumberField extends StatelessWidget {
           decoration: InputDecoration(
             hintText: hint,
             suffixText: suffix,
+            suffixIcon: trailing == null
+                ? null
+                : Padding(
+                    padding: const EdgeInsets.only(right: 8),
+                    child: trailing,
+                  ),
             suffixStyle: const TextStyle(
               color: AppColors.textSecondary,
               fontSize: 12,

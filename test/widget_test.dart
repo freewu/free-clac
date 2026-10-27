@@ -156,7 +156,7 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('BMI：公制 / 英制切换并换算', (tester) async {
+  testWidgets('BMI：公制 / 英制与 ft·in 切换', (tester) async {
     await pumpApp(tester, const Size(1440, 900));
 
     await tester.tap(find.text('工具'));
@@ -169,24 +169,31 @@ void main() {
     expect(find.text('kg'), findsOneWidget);
     expect(find.textContaining('身高 170 cm'), findsOneWidget);
 
-    // 切到英制：170 cm / 65 kg → 5 ft 6.9 in / 143.3 lb，BMI 不变
+    // 切到英制：170 cm / 65 kg → 5.58 ft / 143.3 lb，BMI 不变
     await tester.tap(find.text('英制'));
     await tester.pumpAndSettle();
-    expect(find.text('ft'), findsOneWidget);
-    expect(find.text('in'), findsOneWidget);
     expect(find.text('lb'), findsOneWidget);
     expect(find.text('cm'), findsNothing);
-    // 身高只出现一次标题，ft / in 是同一个「身高」下的两个输入
+    // 身高仍然只有一个输入框（右侧下拉切换 ft / in）
     expect(find.text('身高'), findsOneWidget);
-    expect(find.text('体重'), findsOneWidget);
-    expect(find.textContaining('5 ft 6.9 in'), findsOneWidget);
-    expect(find.textContaining('143.3 lb'), findsOneWidget);
+    expect(find.byType(TextField), findsNWidgets(2));
+    expect(find.text('5.58'), findsOneWidget);
+    expect(find.textContaining('身高 5.58 ft'), findsOneWidget);
+    expect(find.textContaining('143.3 lb'), findsWidgets);
     expect(find.text('22.5'), findsOneWidget);
-    expect(find.textContaining('lb'), findsWidgets);
 
-    // 修改英制输入：5 ft 7 in、165 lb → BMI 25.8，超重
-    await tester.enterText(find.byType(TextField).at(1), '7');
-    await tester.enterText(find.byType(TextField).at(2), '165');
+    // 身高单位 ft → in：仍是同一个输入框，数值换算
+    await tester.tap(find.text('ft'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('in').last);
+    await tester.pumpAndSettle();
+    expect(find.text('66.96'), findsOneWidget);
+    expect(find.textContaining('身高 66.96 in'), findsOneWidget);
+    expect(find.text('22.5'), findsOneWidget);
+
+    // 改成 5 ft 7 in（67 in）、165 lb → BMI 25.8，超重
+    await tester.enterText(find.byType(TextField).at(0), '67');
+    await tester.enterText(find.byType(TextField).at(1), '165');
     await tester.pumpAndSettle();
     expect(find.text('25.8'), findsOneWidget);
     expect(find.text('超重'), findsWidgets);
