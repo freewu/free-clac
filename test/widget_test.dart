@@ -449,6 +449,24 @@ void main() {
     expect(find.byType(DistancePage), findsOneWidget);
     expect(find.byType(NavigationRail), findsOneWidget);
 
+    // 「常见长度」在最上方，默认展开，点标题行可折叠隐藏
+    final samplesY = tester
+        .getTopLeft(find.byKey(const Key('distance-samples')))
+        .dy;
+    final inputY = tester.getTopLeft(find.text('输入')).dy;
+    expect(samplesY, lessThan(inputY));
+    expect(find.text('A4 纸厚'), findsOneWidget);
+    expect(find.text('收起'), findsOneWidget);
+    await tester.tap(find.text('收起'));
+    await tester.pumpAndSettle();
+    expect(find.text('A4 纸厚'), findsNothing);
+    expect(find.text('展开'), findsOneWidget);
+    // 折叠后输入区仍在原位（不因隐藏参照物而消失）
+    expect(find.byKey(const Key('distance-system')), findsOneWidget);
+    await tester.tap(find.text('展开'));
+    await tester.pumpAndSettle();
+    expect(find.text('A4 纸厚'), findsOneWidget);
+
     // 计量体系 / 单位都是下拉框，放在数值上方
     expect(find.byKey(const Key('distance-system')), findsOneWidget);
     expect(find.byKey(const Key('distance-unit')), findsOneWidget);

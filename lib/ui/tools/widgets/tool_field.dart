@@ -87,6 +87,7 @@ class ToolSection extends StatelessWidget {
     this.title,
     this.icon,
     this.trailing,
+    this.onHeaderTap,
     this.padding = const EdgeInsets.all(14),
   });
 
@@ -95,6 +96,9 @@ class ToolSection extends StatelessWidget {
   final IconData? icon;
   final Widget? trailing;
   final EdgeInsetsGeometry padding;
+
+  /// 点击标题行时的回调（传了就把标题行做成可点，用于折叠 / 展开）。
+  final VoidCallback? onHeaderTap;
 
   @override
   Widget build(BuildContext context) {
@@ -109,23 +113,27 @@ class ToolSection extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           if (title != null) ...[
-            Row(
-              children: [
-                if (icon != null) ...[
-                  Icon(icon, size: 15, color: AppColors.textSecondary),
-                  const SizedBox(width: 6),
-                ],
-                Text(
-                  title!,
-                  style: const TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w600,
-                    color: AppColors.textSecondary,
+            InkWell(
+              onTap: onHeaderTap,
+              borderRadius: BorderRadius.circular(8),
+              child: Row(
+                children: [
+                  if (icon != null) ...[
+                    Icon(icon, size: 15, color: AppColors.textSecondary),
+                    const SizedBox(width: 6),
+                  ],
+                  Text(
+                    title!,
+                    style: const TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.textSecondary,
+                    ),
                   ),
-                ),
-                const Spacer(),
-                ?trailing,
-              ],
+                  const Spacer(),
+                  ?trailing,
+                ],
+              ),
             ),
             const SizedBox(height: 10),
           ],

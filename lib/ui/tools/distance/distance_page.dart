@@ -9,7 +9,7 @@ import '../widgets/tool_select.dart';
 
 /// 长度换算页：公制 / 英制 / 市制共 25 个单位互转，输入即算。
 ///
-/// 上排两个下拉框选「计量体系」和「单位」，下面填数值；
+/// 顶部是可折叠的「常见长度」参照物，下面是「计量体系 / 单位 / 数值」输入；
 /// 结果按体系分成三个 tab，切 tab 不改变输入，只是换个角度看结果。
 class DistancePage extends StatefulWidget {
   const DistancePage({super.key});
@@ -24,6 +24,9 @@ class _DistancePageState extends State<DistancePage>
   DistanceUnit _from = distanceUnitById('m')!;
 
   final TextEditingController _value = TextEditingController(text: '1');
+
+  /// 「常见长度」默认展开，点标题行可折叠起来省空间。
+  bool _samplesExpanded = true;
 
   /// 结果 tab，跟输入单位所在体系联动。
   late final TabController _tabs = TabController(
@@ -116,6 +119,13 @@ class _DistancePageState extends State<DistancePage>
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
+                _SamplesCard(
+                  expanded: _samplesExpanded,
+                  onToggle: () =>
+                      setState(() => _samplesExpanded = !_samplesExpanded),
+                  onPick: _applySample,
+                ),
+                const SizedBox(height: 12),
                 ToolSection(
                   title: '输入',
                   icon: Icons.tune_rounded,
@@ -221,29 +231,6 @@ class _DistancePageState extends State<DistancePage>
                       ],
                     ),
                   ),
-                const SizedBox(height: 12),
-                ToolSection(
-                  title: '常见长度',
-                  icon: Icons.lightbulb_outline_rounded,
-                  child: Wrap(
-                    spacing: 6,
-                    runSpacing: 6,
-                    children: [
-                      for (final sample in kDistanceSamples)
-                        ActionChip(
-                          label: Text(
-                            sample.label,
-                            style: const TextStyle(fontSize: 11.5),
-                          ),
-                          visualDensity: VisualDensity.compact,
-                          labelPadding: const EdgeInsets.symmetric(
-                            horizontal: 4,
-                          ),
-                          onPressed: () => _applySample(sample),
-                        ),
-                    ],
-                  ),
-                ),
               ],
             ),
           ),
@@ -266,6 +253,65 @@ String _trim(double value) {
     return value.toStringAsFixed(0);
   }
   return value.toString();
+}
+
+/// 常见长度参照物：默认展开，点标题行折叠 / 展开。
+class _SamplesCard extends StatelessWidget {
+  const _SamplesCard({
+    required this.expanded,
+    required this.onToggle,
+    required this.onPick,
+  });
+
+  final bool expanded;
+  final VoidCallback onToggle;
+  final ValueChanged<DistanceSample> onPick;
+
+  @override
+  Widget build(BuildContext context) {
+    return ToolSection(
+      key: const Key('distance-samples'),
+      title: '常见长度',
+      icon: Icons.lightbulb_outline_rounded,
+      onHeaderTap: onToggle,
+      padding: EdgeInsets.fromLTRB(14, 12, 14, expanded ? 14 : 12),
+      trailing: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            expanded ? '收起' : '展开',
+            style: const TextStyle(
+              color: AppColors.textSecondary,
+              fontSize: 10.5,
+            ),
+          ),
+          Icon(
+            expanded ? Icons.expand_less_rounded : Icons.expand_more_rounded,
+            size: 18,
+            color: AppColors.textSecondary,
+          ),
+        ],
+      ),
+      child: expanded
+          ? Wrap(
+              spacing: 6,
+              runSpacing: 6,
+              children: [
+                for (final sample in kDistanceSamples)
+                  ActionChip(
+                    label: Text(
+                      sample.label,
+                      style: const TextStyle(fontSize: 11.5),
+                    ),
+                    visualDensity: VisualDensity.compact,
+                    labelPadding: const EdgeInsets.symmetric(horizontal: 4),
+                    onPressed: () => onPick(sample),
+                  ),
+              ],
+            )
+          : const SizedBox.shrink(),
+    );
+  }
 }
 
 /// 结果区的三个 tab：公制 / 英制 / 市制。
