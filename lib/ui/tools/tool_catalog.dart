@@ -1,5 +1,6 @@
 import 'bmi/defined.dart';
 import 'compound/defined.dart';
+import 'distance/defined.dart';
 import 'interest/defined.dart';
 import 'loan/defined.dart';
 import 'tax/defined.dart';
@@ -13,6 +14,7 @@ export 'tool_info.dart';
 final List<ToolInfo> kTools = List.unmodifiable(<ToolInfo>[
   bmiTool,
   compoundTool,
+  distanceTool,
   interestTool,
   loanTool,
   taxTool,

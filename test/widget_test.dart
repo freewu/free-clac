@@ -9,6 +9,7 @@ import 'package:free_clac/state/plot_controller.dart';
 import 'package:free_clac/ui/widgets/plot_export_dialog.dart';
 import 'package:free_clac/ui/tools/bmi/bmi_page.dart';
 import 'package:free_clac/ui/tools/compound/compound_page.dart';
+import 'package:free_clac/ui/tools/distance/distance_page.dart';
 import 'package:free_clac/ui/tools/interest/interest_page.dart';
 import 'package:free_clac/ui/tools/loan/loan_page.dart';
 import 'package:free_clac/ui/tools/tax/tax_page.dart';
@@ -395,6 +396,97 @@ void main() {
     await tester.tap(find.text('月').last);
     await tester.pumpAndSettle();
     expect(find.text('360'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('工具页：长度换算在三个体系间互转', (tester) async {
+    // 结果行点击会写剪贴板，测试环境下不 mock 的话 Future 不会完成
+    String? clipboard;
+    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+        .setMockMethodCallHandler(SystemChannels.platform, (call) async {
+          if (call.method == 'Clipboard.setData') {
+            clipboard = (call.arguments as Map)['text'] as String?;
+          }
+          return null;
+        });
+    addTearDown(
+      () => TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+          .setMockMethodCallHandler(SystemChannels.platform, null),
+    );
+
+    // 25 个单位的结果列表较长，用更高的窗口避免滚动干扰点击
+    await pumpApp(tester, const Size(1440, 1600));
+
+    await tester.tap(find.text('工具'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('长度换算'));
+    await tester.pumpAndSettle();
+    expect(find.byType(DistancePage), findsOneWidget);
+    expect(find.byType(NavigationRail), findsOneWidget);
+
+    // 默认 1 米：厘米 100、毫米 1000
+    expect(find.text('1 米'), findsOneWidget);
+    expect(find.text('1000'), findsOneWidget);
+
+    // 切到英制 → 单位落到英寸，改成英尺后 5280 英尺 = 1 英里
+    await tester.tap(find.text('英制').first);
+    await tester.pumpAndSettle();
+    expect(find.text('英制单位'), findsOneWidget);
+    expect(find.text('英寸'), findsWidgets);
+
+    await tester.tap(find.text('英尺').first);
+    await tester.pumpAndSettle();
+    expect(find.text('12'), findsOneWidget); // 英寸
+    await tester.enterText(find.byType(TextField).first, '5280');
+    await tester.pumpAndSettle();
+    expect(find.text('5280 英尺'), findsOneWidget);
+    expect(find.text('1'), findsOneWidget); // 英里
+
+    // 点参照物「马拉松」直接代入 42.195 千米
+    await tester.ensureVisible(find.text('马拉松'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('马拉松'));
+    await tester.pumpAndSettle();
+    expect(find.text('42.195 千米'), findsOneWidget);
+    expect(find.text('42195'), findsOneWidget);
+
+    // 市制：里 / 尺
+    await tester.ensureVisible(find.text('市制').first);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('市制').first);
+    await tester.pumpAndSettle();
+    expect(find.text('42.195 里'), findsOneWidget);
+    expect(find.text('63292.5'), findsOneWidget); // 尺
+    expect(find.text('1 里 = 150 丈 = 500 米'), findsOneWidget);
+
+    // 点结果行复制到剪贴板
+    await tester.ensureVisible(find.text('63292.5'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('63292.5'));
+    await tester.pumpAndSettle();
+    expect(clipboard, '63292.5 尺');
+    expect(find.text('已复制 63292.5 尺'), findsOneWidget);
+
+    // 清空数值显示空状态
+    await tester.enterText(find.byType(TextField).first, '');
+    await tester.pumpAndSettle();
+    expect(find.text('填入数值并选好单位后自动换算'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('工具页：手机尺寸下长度换算不溢出', (tester) async {
+    await pumpApp(tester, const Size(390, 844));
+
+    await tester.tap(find.text('工具'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('长度换算'));
+    await tester.pumpAndSettle();
+    expect(find.byType(DistancePage), findsOneWidget);
+    expect(find.byType(NavigationBar), findsOneWidget);
+
+    // 25 个单位横排会换行，窄屏下不能溢出
+    await tester.tap(find.text('市制').first);
+    await tester.pumpAndSettle();
     expect(tester.takeException(), isNull);
   });
 
@@ -942,6 +1034,13 @@ void main() {
     await tester.pumpWidget(const FreeCalcApp());
     await tester.pumpAndSettle();
     await tester.tap(find.text('工具'));
+    await tester.pumpAndSettle();
+    // 手机上卡片一列排布，第 6 张（个税）要滚动才看得到
+    await tester.dragUntilVisible(
+      find.text('个人所得税'),
+      find.byType(GridView),
+      const Offset(0, -120),
+    );
     await tester.pumpAndSettle();
     await tester.tap(find.text('个人所得税'));
     await tester.pumpAndSettle();

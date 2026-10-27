@@ -1,6 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:free_clac/tools/bmi.dart';
 import 'package:free_clac/tools/compound.dart';
+import 'package:free_clac/tools/distance.dart';
 import 'package:free_clac/tools/interest.dart';
 import 'package:free_clac/tools/loan.dart';
 import 'package:free_clac/tools/tax.dart';
@@ -694,6 +695,99 @@ void main() {
       expect(run(rates: overTotal), isNull);
       // 五险一金比月薪还多
       expect(run(gross: 1000, base: 10000), isNull);
+    });
+  });
+
+  group('长度：公制 / 英制 / 市制换算', () {
+    DistanceUnit unit(String id) => distanceUnitById(id)!;
+
+    double? convert(double value, String from, String to) =>
+        convertDistance(value, from: unit(from), to: unit(to));
+
+    test('单位表：三个体系共 25 个单位，id 唯一', () {
+      expect(kDistanceUnits.length, 25);
+      expect(distanceUnitsOf(DistanceSystem.metric).length, 9);
+      expect(distanceUnitsOf(DistanceSystem.imperial).length, 7);
+      expect(distanceUnitsOf(DistanceSystem.chinese).length, 9);
+      expect(
+        kDistanceUnits.map((item) => item.id).toSet().length,
+        kDistanceUnits.length,
+      );
+      expect(distanceUnitById('nope'), isNull);
+      for (final item in kDistanceUnits) {
+        expect(item.meters.isFinite && item.meters > 0, isTrue);
+      }
+    });
+
+    test('公制内部换算', () {
+      expect(convert(1, 'km', 'm'), closeTo(1000, 1e-12));
+      expect(convert(1, 'm', 'cm'), closeTo(100, 1e-12));
+      expect(convert(1, 'm', 'mm'), closeTo(1000, 1e-12));
+      expect(convert(1, 'mm', 'um'), closeTo(1000, 1e-12));
+      expect(convert(1, 'um', 'nm'), closeTo(1000, 1e-12));
+      expect(convert(1, 'nm', 'pm'), closeTo(1000, 1e-12));
+      expect(convert(1, 'm', 'dm'), closeTo(10, 1e-12));
+      // 海里归在公制里（1852 米）
+      expect(convert(1, 'nmile', 'm'), closeTo(1852, 1e-12));
+    });
+
+    test('英制内部与跨体系换算', () {
+      expect(convert(1, 'foot', 'inch'), closeTo(12, 1e-12));
+      expect(convert(1, 'yard', 'foot'), closeTo(3, 1e-12));
+      expect(convert(1, 'mile', 'yard'), closeTo(1760, 1e-12));
+      expect(convert(1, 'chain', 'foot'), closeTo(66, 1e-12));
+      expect(convert(1, 'furlong', 'chain'), closeTo(10, 1e-12));
+      expect(convert(1, 'mile', 'm'), closeTo(1609.344, 1e-9));
+      expect(convert(1, 'inch', 'cm'), closeTo(2.54, 1e-12));
+      expect(convert(1, 'foot', 'm'), closeTo(0.3048, 1e-12));
+    });
+
+    test('市制：1 尺 = 1/3 米', () {
+      expect(convert(1, 'li', 'm'), closeTo(500, 1e-12));
+      expect(convert(1, 'li', 'chi'), closeTo(1500, 1e-9));
+      expect(convert(1, 'yin', 'm'), closeTo(500 / 15, 1e-12));
+      expect(convert(1, 'zhang', 'chi'), closeTo(10, 1e-12));
+      expect(convert(1, 'chi', 'm'), closeTo(1 / 3, 1e-12));
+      expect(convert(1, 'cun', 'chi'), closeTo(0.1, 1e-12));
+      expect(convert(1, 'fen', 'cun'), closeTo(0.1, 1e-12));
+      expect(convert(1, 'li2', 'fen'), closeTo(0.1, 1e-12));
+      expect(convert(1, 'hao', 'li2'), closeTo(0.1, 1e-12));
+      expect(convert(1, 'si', 'hao'), closeTo(0.1, 1e-12));
+      // 市制 ↔ 公制：3 尺 = 1 米
+      expect(convert(3, 'chi', 'm'), closeTo(1, 1e-12));
+      expect(convert(1, 'm', 'cun'), closeTo(30, 1e-9));
+    });
+
+    test('任意两个单位互为反函数', () {
+      for (final from in kDistanceUnits) {
+        for (final to in kDistanceUnits) {
+          final forward = convertDistance(2.5, from: from, to: to)!;
+          final back = convertDistance(forward, from: to, to: from)!;
+          expect(back, closeTo(2.5, 1e-9), reason: '$from -> $to');
+        }
+      }
+    });
+
+    test('非法输入', () {
+      expect(convert(double.nan, 'm', 'cm'), isNull);
+      expect(convert(double.infinity, 'm', 'cm'), isNull);
+      expect(convert(double.negativeInfinity, 'm', 'cm'), isNull);
+    });
+
+    test('参照物都指向真实单位', () {
+      expect(kDistanceSamples, isNotEmpty);
+      for (final sample in kDistanceSamples) {
+        expect(sample.unit, isNotNull, reason: sample.label);
+        expect(sample.value > 0, isTrue);
+      }
+      // 1 光年按 9.46 万亿千米
+      final lightYear = kDistanceSamples.firstWhere(
+        (sample) => sample.label == '1 光年',
+      );
+      expect(
+        convertDistance(lightYear.value, from: lightYear.unit!, to: unit('m')),
+        closeTo(9.4607304725808e15, 1e9),
+      );
     });
   });
 }
