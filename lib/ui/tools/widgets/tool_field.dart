@@ -7,7 +7,7 @@ import '../../../theme/app_theme.dart';
 class ToolNumberField extends StatelessWidget {
   const ToolNumberField({
     super.key,
-    required this.label,
+    this.label,
     required this.controller,
     required this.suffix,
     this.onChanged,
@@ -15,7 +15,8 @@ class ToolNumberField extends StatelessWidget {
     this.allowNegative = false,
   });
 
-  final String label;
+  /// 输入框上方的标题；组合输入（如 ft + in）时由外层统一提供，可传 null。
+  final String? label;
   final TextEditingController controller;
   final String suffix;
   final ValueChanged<String>? onChanged;
@@ -27,14 +28,16 @@ class ToolNumberField extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          label,
-          style: const TextStyle(
-            color: AppColors.textSecondary,
-            fontSize: 11.5,
+        if (label != null) ...[
+          Text(
+            label!,
+            style: const TextStyle(
+              color: AppColors.textSecondary,
+              fontSize: 11.5,
+            ),
           ),
-        ),
-        const SizedBox(height: 5),
+          const SizedBox(height: 5),
+        ],
         TextField(
           controller: controller,
           onChanged: onChanged,

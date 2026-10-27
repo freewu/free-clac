@@ -176,6 +176,9 @@ void main() {
     expect(find.text('in'), findsOneWidget);
     expect(find.text('lb'), findsOneWidget);
     expect(find.text('cm'), findsNothing);
+    // 身高只出现一次标题，ft / in 是同一个「身高」下的两个输入
+    expect(find.text('身高'), findsOneWidget);
+    expect(find.text('体重'), findsOneWidget);
     expect(find.textContaining('5 ft 6.9 in'), findsOneWidget);
     expect(find.textContaining('143.3 lb'), findsOneWidget);
     expect(find.text('22.5'), findsOneWidget);
@@ -248,6 +251,12 @@ void main() {
 
     await tester.tap(find.text('BMI 计算'));
     await tester.pumpAndSettle();
+    expect(tester.takeException(), isNull);
+
+    // 手机上英制三列输入也不溢出
+    await tester.tap(find.text('英制'));
+    await tester.pumpAndSettle();
+    expect(find.text('ft'), findsOneWidget);
     expect(tester.takeException(), isNull);
 
     await tester.pageBack();

@@ -121,25 +121,45 @@ class _BmiPageState extends State<BmiPage> {
                       : Row(
                           crossAxisAlignment: CrossAxisAlignment.end,
                           children: [
+                            // 英制身高是一个整体：上方标题「身高」，下面并排 ft 与 in
                             Expanded(
-                              child: ToolNumberField(
-                                label: '身高',
-                                suffix: 'ft',
-                                controller: _height,
-                                onChanged: (_) => setState(() {}),
+                              flex: 3,
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  const Text(
+                                    '身高',
+                                    style: TextStyle(
+                                      color: AppColors.textSecondary,
+                                      fontSize: 11.5,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 5),
+                                  Row(
+                                    children: [
+                                      Expanded(
+                                        child: ToolNumberField(
+                                          suffix: 'ft',
+                                          controller: _height,
+                                          onChanged: (_) => setState(() {}),
+                                        ),
+                                      ),
+                                      const SizedBox(width: 8),
+                                      Expanded(
+                                        child: ToolNumberField(
+                                          suffix: 'in',
+                                          controller: _heightInch,
+                                          onChanged: (_) => setState(() {}),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ],
                               ),
                             ),
                             const SizedBox(width: 10),
                             Expanded(
-                              child: ToolNumberField(
-                                label: '身高',
-                                suffix: 'in',
-                                controller: _heightInch,
-                                onChanged: (_) => setState(() {}),
-                              ),
-                            ),
-                            const SizedBox(width: 10),
-                            Expanded(
+                              flex: 2,
                               child: ToolNumberField(
                                 label: '体重',
                                 suffix: 'lb',
