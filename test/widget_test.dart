@@ -422,6 +422,89 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
+  group('复制为 LaTeX', () {
+    String? clipboard;
+
+    setUp(() {
+      clipboard = null;
+      TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+          .setMockMethodCallHandler(SystemChannels.platform, (call) async {
+            if (call.method == 'Clipboard.setData') {
+              clipboard = (call.arguments as Map)['text'] as String?;
+            }
+            return null;
+          });
+    });
+
+    tearDown(() {
+      TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+          .setMockMethodCallHandler(SystemChannels.platform, null);
+    });
+
+    testWidgets('显示屏：复制公式为 LaTeX', (tester) async {
+      await pumpApp(tester, const Size(1440, 900));
+
+      await tapKey(tester, 'sin');
+      await tapKey(tester, '3');
+      await tapKey(tester, '0');
+      await tapKey(tester, ')');
+
+      await tester.tap(find.byTooltip('复制'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('复制公式（LaTeX）'));
+      await tester.pumpAndSettle();
+
+      expect(clipboard, r'\sin\left(30\right)');
+      expect(find.text('LaTeX 已复制'), findsOneWidget);
+    });
+
+    testWidgets('显示屏：复制公式与结果', (tester) async {
+      await pumpApp(tester, const Size(1440, 900));
+
+      await tapKey(tester, 'sin');
+      await tapKey(tester, '3');
+      await tapKey(tester, '0');
+      await tapKey(tester, ')');
+
+      await tester.tap(find.byTooltip('复制'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('复制公式与结果（LaTeX）'));
+      await tester.pumpAndSettle();
+
+      expect(clipboard, r'\sin\left(30\right) = 0.5');
+    });
+
+    testWidgets('绘图页：复制曲线 LaTeX', (tester) async {
+      await pumpApp(tester, const Size(1440, 900));
+
+      await tester.tap(find.text('绘图'));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.byTooltip('复制 LaTeX').first);
+      await tester.pumpAndSettle();
+
+      expect(clipboard, r'y = \sin\left(x\right)');
+      expect(find.text('LaTeX 已复制'), findsOneWidget);
+    });
+
+    testWidgets('历史记录：复制 LaTeX', (tester) async {
+      await pumpApp(tester, const Size(1440, 900));
+
+      await tapKey(tester, '1');
+      await tapKey(tester, '+');
+      await tapKey(tester, '2');
+      await tapKey(tester, '=');
+
+      await tester.tap(find.byTooltip('复制这条记录').first);
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('复制公式（LaTeX）'));
+      await tester.pumpAndSettle();
+
+      expect(clipboard, '1 + 2');
+      expect(find.text('LaTeX 已复制'), findsOneWidget);
+    });
+  });
+
   testWidgets('方向键翻阅历史记录', (tester) async {
     await pumpApp(tester, const Size(1440, 900));
     await tapKey(tester, '1');

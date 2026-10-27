@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
+import '../../core/latex.dart';
+import '../../core/number_format.dart';
 import '../../models/history_entry.dart';
 import '../../state/calculator_controller.dart';
 import '../../theme/app_theme.dart';
@@ -103,37 +106,98 @@ class _HistoryTile extends StatelessWidget {
     return InkWell(
       onTap: onTap,
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 9),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.end,
+        padding: const EdgeInsets.fromLTRB(16, 9, 4, 9),
+        child: Row(
           children: [
-            Text(
-              entry.expression,
-              textAlign: TextAlign.right,
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-              style: const TextStyle(
-                color: AppColors.textSecondary,
-                fontSize: 12.5,
-                fontFeatures: [FontFeature.tabularFigures()],
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  Text(
+                    entry.expression,
+                    textAlign: TextAlign.right,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      color: AppColors.textSecondary,
+                      fontSize: 12.5,
+                      fontFeatures: [FontFeature.tabularFigures()],
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    entry.display,
+                    textAlign: TextAlign.right,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      color: entry.isError
+                          ? AppColors.error
+                          : AppColors.textPrimary,
+                      fontSize: entry.isError ? 12 : 16,
+                      fontWeight: entry.isError
+                          ? FontWeight.w400
+                          : FontWeight.w600,
+                      fontFeatures: const [FontFeature.tabularFigures()],
+                    ),
+                  ),
+                ],
               ),
             ),
-            const SizedBox(height: 2),
-            Text(
-              entry.display,
-              textAlign: TextAlign.right,
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-              style: TextStyle(
-                color: entry.isError ? AppColors.error : AppColors.textPrimary,
-                fontSize: entry.isError ? 12 : 16,
-                fontWeight: entry.isError ? FontWeight.w400 : FontWeight.w600,
-                fontFeatures: const [FontFeature.tabularFigures()],
-              ),
+            PopupMenuButton<_EntryAction>(
+              tooltip: '复制这条记录',
+              icon: const Icon(Icons.copy_rounded, size: 16),
+              color: AppColors.surface,
+              iconColor: AppColors.textSecondary,
+              iconSize: 16,
+              padding: EdgeInsets.zero,
+              onSelected: (action) => _copy(context, action),
+              itemBuilder: (context) => [
+                PopupMenuItem(
+                  value: _EntryAction.latex,
+                  enabled: tryExpressionToLatex(entry.expression) != null,
+                  child: const Text('复制公式（LaTeX）'),
+                ),
+                PopupMenuItem(
+                  value: _EntryAction.value,
+                  enabled: !entry.isError,
+                  child: const Text('复制结果'),
+                ),
+              ],
             ),
           ],
         ),
       ),
     );
   }
+
+  void _copy(BuildContext context, _EntryAction action) {
+    final String? text;
+    final String message;
+    switch (action) {
+      case _EntryAction.latex:
+        text = tryExpressionToLatex(entry.expression);
+        message = 'LaTeX 已复制';
+      case _EntryAction.value:
+        final value = entry.value;
+        text = value == null
+            ? null
+            : formatNumber(value, significantDigits: 15);
+        message = '结果已复制';
+    }
+    if (text == null) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('这条记录无法转换为 LaTeX')));
+      return;
+    }
+
+    Clipboard.setData(ClipboardData(text: text));
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(message)));
+  }
 }
+
+/// 历史记录「复制」菜单里的动作。
+enum _EntryAction { latex, value }

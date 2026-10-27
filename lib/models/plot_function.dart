@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../core/latex.dart';
+
 /// 曲线类型。
 enum PlotMode {
   cartesian('直角坐标', 'y = ', 'x', 'y = f(x)'),
@@ -61,6 +63,24 @@ class PlotFunction {
         return '($expression, $secondExpression)';
       case PlotMode.implicit:
         return '0 = $expression';
+    }
+  }
+
+  /// 曲线方程的 LaTeX 形式，表达式不合法时返回 null。
+  String? toLatex() {
+    final first = tryExpressionToLatex(expression);
+    if (first == null) return null;
+    switch (mode) {
+      case PlotMode.cartesian:
+        return 'y = $first';
+      case PlotMode.polar:
+        return 'r = $first';
+      case PlotMode.implicit:
+        return '0 = $first';
+      case PlotMode.parametric:
+        final second = tryExpressionToLatex(secondExpression);
+        if (second == null) return null;
+        return '\\begin{cases} x = $first \\\\ y = $second \\end{cases}';
     }
   }
 

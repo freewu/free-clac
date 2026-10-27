@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import '../../models/plot_function.dart';
 import '../../state/plot_controller.dart';
@@ -193,6 +194,19 @@ class _FunctionTileState extends State<_FunctionTile> {
     super.dispose();
   }
 
+  void _copyLatex(BuildContext context, PlotFunction function) {
+    final latex = function.toLatex();
+    final messenger = ScaffoldMessenger.of(context);
+    if (latex == null) {
+      messenger.showSnackBar(
+        const SnackBar(content: Text('表达式不完整，无法转换为 LaTeX')),
+      );
+      return;
+    }
+    Clipboard.setData(ClipboardData(text: latex));
+    messenger.showSnackBar(const SnackBar(content: Text('LaTeX 已复制')));
+  }
+
   @override
   Widget build(BuildContext context) {
     final function = widget.function;
@@ -274,6 +288,14 @@ class _FunctionTileState extends State<_FunctionTile> {
                       ? Icons.visibility_outlined
                       : Icons.visibility_off_outlined,
                 ),
+              ),
+              IconButton(
+                tooltip: '复制 LaTeX',
+                visualDensity: VisualDensity.compact,
+                iconSize: 17,
+                color: AppColors.textSecondary,
+                onPressed: () => _copyLatex(context, function),
+                icon: const Icon(Icons.copy_rounded),
               ),
               IconButton(
                 tooltip: '删除',

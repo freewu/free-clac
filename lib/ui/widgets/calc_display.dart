@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../../core/builtins.dart';
+import '../../core/latex.dart';
 import '../../core/number_format.dart';
 import '../../state/calculator_controller.dart';
 import '../../theme/app_theme.dart';
@@ -41,6 +42,8 @@ class CalcDisplay extends StatelessWidget {
 
   Widget _buildToolbar(BuildContext context) {
     final mode = controller.angleMode;
+    final latex = tryExpressionToLatex(controller.expression);
+    final value = controller.previewValue;
     return Row(
       children: [
         _Chip(
@@ -74,21 +77,39 @@ class CalcDisplay extends StatelessWidget {
           visualDensity: VisualDensity.compact,
           color: AppColors.textSecondary,
         ),
-        IconButton(
-          onPressed: () {
-            final value = controller.previewValue;
-            if (value == null) return;
-            Clipboard.setData(
-              ClipboardData(text: formatNumber(value, significantDigits: 15)),
-            );
-            ScaffoldMessenger.of(
-              context,
-            ).showSnackBar(const SnackBar(content: Text('结果已复制')));
-          },
+        PopupMenuButton<_CopyAction>(
+          tooltip: '复制',
           icon: const Icon(Icons.copy_rounded, size: 19),
-          tooltip: '复制结果',
-          visualDensity: VisualDensity.compact,
-          color: AppColors.textSecondary,
+          color: AppColors.surface,
+          position: PopupMenuPosition.under,
+          iconColor: AppColors.textSecondary,
+          onSelected: (action) => _copy(context, action),
+          itemBuilder: (context) => [
+            PopupMenuItem(
+              value: _CopyAction.value,
+              enabled: value != null,
+              child: const _CopyMenuItem(
+                icon: Icons.numbers_rounded,
+                label: '复制结果',
+              ),
+            ),
+            PopupMenuItem(
+              value: _CopyAction.latex,
+              enabled: latex != null,
+              child: const _CopyMenuItem(
+                icon: Icons.functions,
+                label: '复制公式（LaTeX）',
+              ),
+            ),
+            PopupMenuItem(
+              value: _CopyAction.latexWithResult,
+              enabled: latex != null && value != null,
+              child: const _CopyMenuItem(
+                icon: Icons.drag_handle_rounded,
+                label: '复制公式与结果（LaTeX）',
+              ),
+            ),
+          ],
         ),
         if (onOpenHistory != null)
           IconButton(
@@ -100,6 +121,34 @@ class CalcDisplay extends StatelessWidget {
           ),
       ],
     );
+  }
+
+  void _copy(BuildContext context, _CopyAction action) {
+    final value = controller.previewValue;
+    final latex = tryExpressionToLatex(controller.expression);
+    final result = value == null
+        ? null
+        : formatNumber(value, significantDigits: 15);
+
+    final String? text;
+    final String message;
+    switch (action) {
+      case _CopyAction.value:
+        text = result;
+        message = '结果已复制';
+      case _CopyAction.latex:
+        text = latex;
+        message = 'LaTeX 已复制';
+      case _CopyAction.latexWithResult:
+        text = latex == null || result == null ? null : '$latex = $result';
+        message = 'LaTeX 与结果已复制';
+    }
+    if (text == null) return;
+
+    Clipboard.setData(ClipboardData(text: text));
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(message)));
   }
 
   void _showFunctionSheet(BuildContext context) {
@@ -217,6 +266,27 @@ class CalcDisplay extends StatelessWidget {
           ],
         ),
       ),
+    );
+  }
+}
+
+/// 显示屏「复制」菜单里的动作。
+enum _CopyAction { value, latex, latexWithResult }
+
+class _CopyMenuItem extends StatelessWidget {
+  const _CopyMenuItem({required this.icon, required this.label});
+
+  final IconData icon;
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Icon(icon, size: 17, color: AppColors.textSecondary),
+        const SizedBox(width: 10),
+        Text(label, style: const TextStyle(fontSize: 13.5)),
+      ],
     );
   }
 }
