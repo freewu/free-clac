@@ -14,6 +14,7 @@ import 'package:free_clac/ui/tools/compound/compound_page.dart';
 import 'package:free_clac/ui/tools/distance/distance_page.dart';
 import 'package:free_clac/ui/tools/interest/interest_page.dart';
 import 'package:free_clac/ui/tools/loan/loan_page.dart';
+import 'package:free_clac/ui/tools/pension/pension_page.dart';
 import 'package:free_clac/ui/tools/speed/speed_page.dart';
 import 'package:free_clac/ui/tools/tax/tax_page.dart';
 import 'package:free_clac/ui/tools/temperature/temperature_page.dart';
@@ -293,6 +294,66 @@ void main() {
       tester.getTopLeft(find.byType(TextField).at(0)).dy,
       closeTo(tester.getTopLeft(find.byType(TextField).at(2)).dy, 0.5),
     );
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('工具页：养老金计算器测算基础与个人账户养老金', (tester) async {
+    tester.view.physicalSize = const Size(1440, 1600);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+    await tester.pumpWidget(
+      const FreeCalcApp(initialTab: 2, initialTool: 'pension'),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.byType(PensionPage), findsOneWidget);
+    expect(find.text('预计每月养老金'), findsOneWidget);
+    expect(find.textContaining('计发 139 个月'), findsWidgets);
+    // 增长假设默认收起
+    expect(find.text('展开'), findsOneWidget);
+
+    // 把增长率与记账利率归零，用「本金 + 8% 缴费」的简单口径核对
+    await tester.tap(find.text('展开'));
+    await tester.pumpAndSettle();
+    await tester.enterText(find.byType(TextField).at(5), '0');
+    await tester.pumpAndSettle();
+    await tester.enterText(find.byType(TextField).at(6), '0');
+    await tester.pumpAndSettle();
+
+    // 30 岁缴到 60 岁：账户 5 万 + 360 个月 × 800 = 33.8 万 ÷ 139
+    expect(find.text('¥ 5,581.65'), findsOneWidget);
+    expect(find.text('¥ 3,150.00'), findsOneWidget);
+    expect(find.text('¥ 2,431.65'), findsOneWidget);
+    expect(find.textContaining('替代率 55.8%'), findsOneWidget);
+    expect(find.textContaining('已缴 5 年 + 续缴 30 年 = 35 年'), findsOneWidget);
+
+    // 改成 50 岁退休：计发月数变 195，个人账户养老金变少
+    await tester.tap(find.byKey(const Key('pension-retire-age')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('50 岁 · 计发 195 个月').last);
+    await tester.pumpAndSettle();
+    expect(find.textContaining('计发 195 个月'), findsWidgets);
+    expect(find.text('¥ 5,581.65'), findsNothing);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('手机尺寸：养老金计算器输入框改多行且不溢出', (tester) async {
+    tester.view.physicalSize = const Size(390, 844);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+    await tester.pumpWidget(
+      const FreeCalcApp(initialTab: 2, initialTool: 'pension'),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.byType(PensionPage), findsOneWidget);
+    expect(find.byType(NavigationBar), findsOneWidget);
+    for (var i = 0; i < 5; i++) {
+      expect(
+        tester.getSize(find.byType(EditableText).at(i)).width,
+        greaterThanOrEqualTo(90),
+      );
+    }
     expect(tester.takeException(), isNull);
   });
 

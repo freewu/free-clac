@@ -4,6 +4,7 @@ import 'compound/defined.dart';
 import 'distance/defined.dart';
 import 'interest/defined.dart';
 import 'loan/defined.dart';
+import 'pension/defined.dart';
 import 'speed/defined.dart';
 import 'tax/defined.dart';
 import 'temperature/defined.dart';
@@ -27,6 +28,7 @@ final List<ToolInfo> kTools = List.unmodifiable(<ToolInfo>[
   speedTool,
   interestTool,
   loanTool,
+  pensionTool,
   taxTool,
 ]);
 

@@ -5,6 +5,7 @@ import 'package:free_clac/tools/compound.dart';
 import 'package:free_clac/tools/distance.dart';
 import 'package:free_clac/tools/interest.dart';
 import 'package:free_clac/tools/loan.dart';
+import 'package:free_clac/tools/pension.dart';
 import 'package:free_clac/tools/speed.dart';
 import 'package:free_clac/tools/tax.dart';
 import 'package:free_clac/tools/temperature.dart';
@@ -987,6 +988,143 @@ void main() {
           }
         }
       }
+    });
+  });
+  group('养老金：基础养老金 + 个人账户养老金', () {
+    test('计发月数表：60 岁 139 个月，越低越少、越高越多', () {
+      expect(pensionPayoutMonthsOf(60), 139);
+      expect(pensionPayoutMonthsOf(50), 195);
+      expect(pensionPayoutMonthsOf(55), 170);
+      expect(pensionPayoutMonthsOf(70), 56);
+      expect(pensionPayoutMonthsOf(39), isNull);
+      expect(pensionPayoutMonthsOf(71), isNull);
+      // 退休越晚，计发月数越少（每月领得越多）
+      final ages = kPensionPayoutMonths.keys.toList()..sort();
+      for (var i = 1; i < ages.length; i++) {
+        expect(
+          kPensionPayoutMonths[ages[i]]!,
+          lessThan(kPensionPayoutMonths[ages[i - 1]]!),
+        );
+      }
+      // 下拉里提供的档位都在表内
+      for (final age in kPensionRetireAges) {
+        expect(pensionPayoutMonthsOf(age), isNotNull, reason: '$age');
+      }
+    });
+
+    test('当年退休：不用续缴，账户直接除计发月数', () {
+      final result = calculatePension(
+        const PensionInput(
+          age: 60,
+          retireAge: 60,
+          paidYears: 20,
+          balance: 50000,
+          monthlyWage: 10000,
+          socialAverageWage: 8000,
+          socialGrowthPercent: 0,
+          accountRatePercent: 0,
+        ),
+      )!;
+      expect(result.remainingYears, 0);
+      expect(result.totalYears, 20);
+      expect(result.contributionIndex, closeTo(1.25, 1e-12));
+      expect(result.accountAtRetire, closeTo(50000, 1e-9));
+      // 基础养老金 = 8000 × (1 + 1.25) / 2 × 20 × 1% = 1800
+      expect(result.basePension, closeTo(1800, 1e-9));
+      expect(result.accountPension, closeTo(50000 / 139, 1e-9));
+      expect(result.totalMonthly, closeTo(2159.71, 0.01));
+      expect(result.replacementRate, closeTo(0.215971, 1e-6));
+    });
+
+    test('续缴 30 年：缴费本金按月计入，账户不复利时就是本金和', () {
+      final result = calculatePension(
+        const PensionInput(
+          age: 30,
+          retireAge: 60,
+          paidYears: 0,
+          balance: 0,
+          monthlyWage: 10000,
+          socialAverageWage: 8000,
+          socialGrowthPercent: 0,
+          accountRatePercent: 0,
+        ),
+      )!;
+      expect(result.remainingYears, 30);
+      expect(result.totalYears, 30);
+      // 10000 × 8% × 360 个月
+      expect(result.futureContributions, closeTo(288000, 1e-6));
+      expect(result.accountAtRetire, closeTo(288000, 1e-6));
+      expect(result.accountInterest, closeTo(0, 1e-6));
+      // 基础养老金 = 8000 × 1.125 × 30 × 1% = 2700
+      expect(result.basePension, closeTo(2700, 1e-9));
+      expect(result.accountPension, closeTo(288000 / 139, 1e-9));
+    });
+
+    test('社平工资按增长率滚到退休那年', () {
+      final result = calculatePension(
+        const PensionInput(
+          age: 30,
+          retireAge: 60,
+          paidYears: 5,
+          balance: 50000,
+          monthlyWage: 10000,
+          socialAverageWage: 8000,
+          socialGrowthPercent: 5,
+          accountRatePercent: 3,
+        ),
+      )!;
+      // 8000 × 1.05^30
+      expect(result.socialWageAtRetire, closeTo(34575.53900120534, 1e-6));
+      // 缴费基数同步增长：第 30 年时 10000 × 1.05^29
+      expect(result.wageAtRetire, closeTo(41161.35595381588, 1e-6));
+      // 记账利率 > 0 时账户里的钱多于本金
+      expect(result.accountAtRetire, greaterThan(result.futureContributions));
+      expect(result.accountInterest, greaterThan(0));
+      expect(result.totalYears, 35);
+    });
+
+    test('倾斜项：缴费指数越高、退休越晚，养老金越高', () {
+      PensionResult of(double wage, int retireAge) => calculatePension(
+        PensionInput(
+          age: 40,
+          retireAge: retireAge,
+          paidYears: 15,
+          balance: 80000,
+          monthlyWage: wage,
+          socialAverageWage: 8000,
+          socialGrowthPercent: 0,
+          accountRatePercent: 0,
+        ),
+      )!;
+      expect(of(16000, 60).basePension, greaterThan(of(8000, 60).basePension));
+      expect(
+        of(8000, 60).accountPension,
+        greaterThan(of(8000, 50).accountPension),
+      );
+    });
+
+    test('非法输入返回 null', () {
+      PensionInput input({
+        int age = 30,
+        int retireAge = 60,
+        double wage = 10000,
+        double social = 8000,
+        double balance = 1000,
+      }) => PensionInput(
+        age: age,
+        retireAge: retireAge,
+        paidYears: 5,
+        balance: balance,
+        monthlyWage: wage,
+        socialAverageWage: social,
+      );
+
+      expect(calculatePension(input(retireAge: 39)), isNull);
+      expect(calculatePension(input(wage: 0)), isNull);
+      expect(calculatePension(input(social: 0)), isNull);
+      expect(calculatePension(input(balance: -1)), isNull);
+      expect(calculatePension(input(age: -1)), isNull);
+      expect(calculatePension(input()), isNotNull);
     });
   });
 }
