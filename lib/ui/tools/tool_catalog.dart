@@ -1,87 +1,19 @@
-import 'package:flutter/material.dart';
+import 'bmi/defined.dart';
+import 'compound/defined.dart';
+import 'interest/defined.dart';
+import 'loan/defined.dart';
+import 'tool_info.dart';
 
-import '../../theme/app_theme.dart';
-import 'bmi/bmi_page.dart';
-import 'compound/compound_page.dart';
-import 'interest/interest_page.dart';
-import 'loan/loan_page.dart';
-
-/// 工具页里一张「应用卡片」的元数据。
-class ToolInfo {
-  const ToolInfo({
-    required this.id,
-    required this.name,
-    required this.tagline,
-    required this.description,
-    required this.icon,
-    required this.color,
-    required this.builder,
-  });
-
-  /// 深链参数（`?tool=bmi`）。
-  final String id;
-
-  final String name;
-
-  /// 一句话卖点，显示在卡片标题下方。
-  final String tagline;
-
-  /// 更长的说明，卡片里最多两行。
-  final String description;
-
-  final IconData icon;
-  final Color color;
-
-  /// 打开工具页面的构造器。
-  final WidgetBuilder builder;
-}
-
-Widget _bmiBuilder(BuildContext context) => const BmiPage();
-
-Widget _compoundBuilder(BuildContext context) => const CompoundPage();
-
-Widget _interestBuilder(BuildContext context) => const InterestPage();
-
-Widget _loanBuilder(BuildContext context) => const LoanPage();
+export 'tool_info.dart';
 
 /// 全部内置工具，顺序即工具页展示顺序。
+///
+/// 每项元数据都在各自目录的 `defined.dart` 里声明，这里只负责汇总。
 final List<ToolInfo> kTools = List.unmodifiable(<ToolInfo>[
-  ToolInfo(
-    id: 'bmi',
-    name: 'BMI 计算',
-    tagline: '身高体重，一眼看体型',
-    description: '按中国成人标准给出分级、标准体重区间与建议，支持米制与厘米输入。',
-    icon: Icons.monitor_weight_outlined,
-    color: AppColors.tertiary,
-    builder: _bmiBuilder,
-  ),
-  ToolInfo(
-    id: 'compound',
-    name: '复利计算',
-    tagline: '让时间替你赚钱',
-    description: '支持任意复利频率与定期追加投入，输出本息、有效年利率与逐年增长表。',
-    icon: Icons.savings_outlined,
-    color: AppColors.warning,
-    builder: _compoundBuilder,
-  ),
-  ToolInfo(
-    id: 'interest',
-    name: '利率计算',
-    tagline: '日付月付，一眼换年化',
-    description: '本金配日付 / 月付 / 年付反推年化率，也能由年化率算出三种周期收益。',
-    icon: Icons.percent_rounded,
-    color: AppColors.secondary,
-    builder: _interestBuilder,
-  ),
-  ToolInfo(
-    id: 'loan',
-    name: '贷款计算器',
-    tagline: '月供本金利息一眼拆开',
-    description: '等额本息 / 等额本金，逐期列出本金与利息并用双色条对比，还给出总利息与总还款。',
-    icon: Icons.request_quote_outlined,
-    color: AppColors.primary,
-    builder: _loanBuilder,
-  ),
+  bmiTool,
+  compoundTool,
+  interestTool,
+  loanTool,
 ]);
 
 /// 按 id 查找工具，找不到返回 null。

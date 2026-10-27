@@ -308,7 +308,7 @@ lib/
 ├── services/   导出文件保存（Web 下载 / 磁盘写入，条件导入隔离平台差异）
 ├── state/      计算器与绘图控制器（ChangeNotifier）
 ├── ui/         页面与组件（键盘、显示屏、历史面板、绘图画布、函数面板）
-│   └── tools/  工具页与各工具界面（bmi / compound / interest / loan）
+│   └── tools/  工具页与各工具界面（bmi / compound / interest / loan，每个目录含 defined.dart）
 └── theme/      深色主题与配色
 test/           引擎、LaTeX、工具算法、绘图、Widget 测试
 tool/           辅助脚本（截图、图标生成、Android 环境探测）
