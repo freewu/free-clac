@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../core/number_format.dart';
 import '../../../theme/app_theme.dart';
 import '../../../tools/loan.dart';
+import '../widgets/tool_bars.dart';
 import '../widgets/tool_field.dart';
 import '../widgets/tool_unit_picker.dart';
 
@@ -313,7 +314,7 @@ class _Summary extends StatelessWidget {
           label: '贷款总额',
           value: '¥ ${formatMoney(result.amount, decimals: 0)}',
           ratio: result.amount / result.totalPayment,
-          color: loanPrincipalColor,
+          segments: const [RatioSegment(value: 1, color: loanPrincipalColor)],
         ),
         const SizedBox(height: 8),
         AmountBar(
@@ -321,7 +322,7 @@ class _Summary extends StatelessWidget {
           label: '总利息',
           value: '¥ ${formatMoney(result.totalInterest, decimals: 0)}',
           ratio: result.interestRatio,
-          color: loanInterestColor,
+          segments: const [RatioSegment(value: 1, color: loanInterestColor)],
         ),
         const SizedBox(height: 8),
         AmountBar(
@@ -329,8 +330,13 @@ class _Summary extends StatelessWidget {
           label: '总还款',
           value: '¥ ${formatMoney(result.totalPayment, decimals: 0)}',
           ratio: 1,
-          color: loanPrincipalColor,
-          interestRatio: result.interestRatio,
+          segments: [
+            RatioSegment(
+              value: 1 - result.interestRatio,
+              color: loanPrincipalColor,
+            ),
+            RatioSegment(value: result.interestRatio, color: loanInterestColor),
+          ],
         ),
         const SizedBox(height: 8),
         Row(
@@ -347,131 +353,6 @@ class _Summary extends StatelessWidget {
           ],
         ),
       ],
-    );
-  }
-}
-
-/// 金额对比条：条的长度按 [ratio]（相对最长那一条）缩放，
-/// 传 [interestRatio] 时画成「本金 + 利息」双色条。
-class AmountBar extends StatelessWidget {
-  const AmountBar({
-    super.key,
-    required this.label,
-    required this.value,
-    required this.ratio,
-    required this.color,
-    this.interestRatio,
-  });
-
-  /// 左侧标签（贷款总额 / 总利息 / 总还款）。
-  final String label;
-
-  /// 右侧金额文本。
-  final String value;
-
-  /// 条长占比（0~1），一般以总还款为 1。
-  final double ratio;
-
-  /// 单色条的颜色；双色条时代表本金部分。
-  final Color color;
-
-  /// 非空时画成双色条，本金占 `1 - interestRatio`。
-  final double? interestRatio;
-
-  @override
-  Widget build(BuildContext context) {
-    final interest = interestRatio;
-    return Row(
-      children: [
-        SizedBox(
-          width: 56,
-          child: Text(
-            label,
-            style: const TextStyle(
-              color: AppColors.textSecondary,
-              fontSize: 10.5,
-            ),
-          ),
-        ),
-        Expanded(
-          child: Align(
-            alignment: Alignment.centerLeft,
-            child: FractionallySizedBox(
-              widthFactor: ratio.clamp(0.0, 1.0),
-              child: SizedBox(
-                height: 8,
-                child: interest == null
-                    ? DecoratedBox(
-                        decoration: BoxDecoration(
-                          color: color,
-                          borderRadius: BorderRadius.circular(4),
-                        ),
-                      )
-                    : StackedRatioBar(
-                        principalRatio: 1 - interest,
-                        height: 8,
-                        radius: 4,
-                      ),
-              ),
-            ),
-          ),
-        ),
-        const SizedBox(width: 8),
-        SizedBox(
-          width: 92,
-          child: Text(
-            value,
-            maxLines: 1,
-            textAlign: TextAlign.right,
-            overflow: TextOverflow.ellipsis,
-            style: const TextStyle(
-              color: AppColors.textPrimary,
-              fontSize: 11.5,
-              fontWeight: FontWeight.w600,
-              fontFeatures: [FontFeature.tabularFigures()],
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-/// 双色比例条：蓝色是本金，黄色是利息。
-class StackedRatioBar extends StatelessWidget {
-  const StackedRatioBar({
-    super.key,
-    required this.principalRatio,
-    this.height = 6,
-    this.radius = 3,
-  });
-
-  /// 本金占比（0~1），其余部分显示为利息。
-  final double principalRatio;
-
-  final double height;
-  final double radius;
-
-  @override
-  Widget build(BuildContext context) {
-    final ratio = principalRatio.clamp(0.0, 1.0);
-    return SizedBox(
-      height: height,
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(radius),
-        child: LayoutBuilder(
-          builder: (context, constraints) => Stack(
-            children: [
-              Positioned.fill(child: ColoredBox(color: loanInterestColor)),
-              SizedBox(
-                width: constraints.maxWidth * ratio,
-                height: height,
-                child: const ColoredBox(color: loanPrincipalColor),
-              ),
-            ],
-          ),
-        ),
-      ),
     );
   }
 }
@@ -555,7 +436,15 @@ class _PeriodRow extends StatelessWidget {
           ],
         ),
         const SizedBox(height: 4),
-        StackedRatioBar(principalRatio: period.principalRatio),
+        SegmentedBar(
+          segments: [
+            RatioSegment(
+              value: period.principalRatio,
+              color: loanPrincipalColor,
+            ),
+            RatioSegment(value: period.interestRatio, color: loanInterestColor),
+          ],
+        ),
         const SizedBox(height: 4),
         Row(
           children: [

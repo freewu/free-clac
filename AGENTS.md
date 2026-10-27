@@ -52,7 +52,7 @@ cmd.exe /c "cd /d $(wslpath -w "$PWD") && flutter test"
 - 严格通过 `dart format`（80 列）与 `analysis_options.yaml` 的 lint，不要用 `// ignore:` 绕过。
 - 改动计算逻辑或采样算法时，在 `test/` 补单元测试；改动交互时补 Widget 测试。
 - 新增曲线类型 / 视图行为时同步更新 README 的功能列表、示例表格与测试数量。
-- 小工具分两层：纯逻辑放 `lib/tools/`（不依赖 Flutter），界面放 `lib/ui/tools/<tool>/`。每个工具的 `ToolInfo`（名称、卖点、图标、配色、页面构造器）写在**自己目录的 `defined.dart`** 里，`lib/ui/tools/tool_catalog.dart` 只汇总 `kTools`；新增工具 = 新建 `<tool>/defined.dart` + 在 `kTools` 追加一行 + `tool/screenshot.sh` 加一条 `shoot`。
+- 小工具分两层：纯逻辑放 `lib/tools/`（不依赖 Flutter），界面放 `lib/ui/tools/<tool>/`。共用的输入框与比例条放在 `lib/ui/tools/widgets/`（`tool_field.dart`、`tool_unit_picker.dart`、`tool_bars.dart`），不要在每个工具里各写一份。每个工具的 `ToolInfo`（名称、卖点、图标、配色、页面构造器）写在**自己目录的 `defined.dart`** 里，`lib/ui/tools/tool_catalog.dart` 只汇总 `kTools`；新增工具 = 新建 `<tool>/defined.dart` + 在 `kTools` 追加一行 + `tool/screenshot.sh` 加一条 `shoot`。
 - 界面有明显变化时用 `just shots` 重新生成截图，并在 README 引用。
 - `justfile` 用到的 Python 辅助脚本（如 `tool/android_target.py`）要带 `--selftest`，并挂到 `just check` 的 `tool-check` 上。
 - 需要 Android 工具链的配方（`build-apk`、`android`）先 `. tool/android-env.sh`：它会补 `JAVA_HOME` / `ANDROID_HOME`，WSL 下再用 `WSLENV` 传给 Windows 侧进程。

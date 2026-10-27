@@ -11,6 +11,8 @@ import 'package:free_clac/ui/tools/bmi/bmi_page.dart';
 import 'package:free_clac/ui/tools/compound/compound_page.dart';
 import 'package:free_clac/ui/tools/interest/interest_page.dart';
 import 'package:free_clac/ui/tools/loan/loan_page.dart';
+import 'package:free_clac/ui/tools/tax/tax_page.dart';
+import 'package:free_clac/ui/tools/widgets/tool_bars.dart';
 import 'package:free_clac/ui/widgets/calc_display.dart';
 import 'package:free_clac/ui/widgets/keypad.dart';
 import 'package:free_clac/plot/plot_painter.dart';
@@ -351,7 +353,7 @@ void main() {
     expect(find.textContaining('总利息'), findsOneWidget);
     expect(find.text('¥ 910,616'), findsOneWidget);
     // 汇总条 + 每期明细条都画出来
-    expect(find.byType(StackedRatioBar), findsWidgets);
+    expect(find.byType(SegmentedBar), findsWidgets);
 
     // 三行金额条按金额区分长度：总还款 > 贷款总额 > 总利息
     expect(find.byType(AmountBar), findsNWidgets(3));
@@ -864,6 +866,103 @@ void main() {
     await tester.sendKeyEvent(LogicalKeyboardKey.arrowUp);
     await tester.pumpAndSettle();
     expect(tester.widget<TextField>(field).controller!.text, '1+2');
+  });
+  testWidgets('个人所得税：五险一金比例与累计预扣', (tester) async {
+    await pumpApp(tester, const Size(1440, 900));
+
+    await tester.tap(find.text('工具'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('个人所得税'));
+    await tester.pumpAndSettle();
+    expect(find.byType(TaxPage), findsOneWidget);
+
+    // 默认：2 万月薪、基数同月薪、比例 8 / 2 / 0.5 / 12 → 合计 22.5%
+    expect(find.text('合计 22.5%'), findsOneWidget);
+    expect(find.text('¥ 15,185.00'), findsWidgets);
+    expect(
+      find.text('税前 ¥ 20,000 − 五险一金 ¥ 4,500 − 个税 ¥ 315.00'),
+      findsOneWidget,
+    );
+    // 全年个税 10,080、全年到手 175,920、边际税率 10%
+    expect(find.text('¥ 10,080'), findsOneWidget);
+    expect(find.text('¥ 175,920'), findsOneWidget);
+    expect(find.text('10%'), findsOneWidget);
+    // 五险一金构成：养老 1600 / 医疗 400 / 失业 100 / 公积金 2400
+    expect(find.text('养老 ¥ 1,600.00'), findsOneWidget);
+    expect(find.text('医疗 ¥ 400.00'), findsOneWidget);
+    expect(find.text('失业 ¥ 100.00'), findsOneWidget);
+    expect(find.text('公积金 ¥ 2,400.00'), findsOneWidget);
+    expect(find.byType(SegmentedBar), findsWidgets);
+
+    // 逐月明细 12 行：前 3 个月 315，第 4 月补档 735，之后 1050
+    expect(
+      find.byWidgetPredicate(
+        (widget) =>
+            widget.key is ValueKey<String> &&
+            (widget.key! as ValueKey<String>).value.startsWith('tax-month-'),
+      ),
+      findsNWidgets(12),
+    );
+    expect(find.text('第 1 月'), findsOneWidget);
+    expect(find.text('第 12 月'), findsOneWidget);
+    expect(find.text('315.00'), findsNWidgets(3));
+    expect(find.text('735.00'), findsOneWidget);
+    expect(find.text('1,050.00'), findsNWidgets(8));
+
+    // 月薪改 5 万 → 首月到手 37,737.50、全年个税 69,330、边际税率 25%
+    await tester.enterText(find.byType(TextField).at(0), '50000');
+    await tester.pumpAndSettle();
+    expect(find.text('¥ 37,737.50'), findsWidgets);
+    expect(find.text('¥ 69,330'), findsOneWidget);
+    expect(find.text('25%'), findsOneWidget);
+
+    // 缴费基数单独填 10000 → 五险一金 2250、个税变多
+    await tester.enterText(find.byType(TextField).at(1), '10000');
+    await tester.pumpAndSettle();
+    expect(find.text('按基数 ¥ 10,000 计算，每月个人缴纳 ¥ 2,250.00'), findsOneWidget);
+
+    // 公积金比例改成 5% → 合计 15.5%、每月 5500（基数 1 万）
+    await tester.enterText(find.byType(TextField).at(6), '5');
+    await tester.pumpAndSettle();
+    expect(find.text('合计 15.5%'), findsOneWidget);
+
+    // 月薪清空 → 提示占位，不出结果
+    await tester.enterText(find.byType(TextField).at(0), '');
+    await tester.pumpAndSettle();
+    expect(find.text('填写税前月薪与缴纳比例后自动计算'), findsOneWidget);
+    expect(find.text('月度明细'), findsNothing);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('手机尺寸：个人所得税输入框改多行且不溢出', (tester) async {
+    tester.view.physicalSize = const Size(390, 844);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+
+    await tester.pumpWidget(const FreeCalcApp());
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('工具'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('个人所得税'));
+    await tester.pumpAndSettle();
+
+    expect(find.byType(TaxPage), findsOneWidget);
+    expect(find.byType(NavigationBar), findsOneWidget);
+    // 3 个金额输入 + 4 个比例输入
+    expect(find.byType(TextField), findsNWidgets(7));
+    for (var i = 0; i < 7; i++) {
+      expect(
+        tester.getSize(find.byType(EditableText).at(i)).width,
+        greaterThanOrEqualTo(60),
+      );
+    }
+    // 窄屏时三栏金额拆成「月薪 + 两栏」两行
+    final salaryTop = tester.getTopLeft(find.byType(TextField).at(0)).dy;
+    final baseTop = tester.getTopLeft(find.byType(TextField).at(1)).dy;
+    final specialTop = tester.getTopLeft(find.byType(TextField).at(2)).dy;
+    expect(baseTop, greaterThan(salaryTop));
+    expect(specialTop, baseTop);
+    expect(tester.takeException(), isNull);
   });
 }
 

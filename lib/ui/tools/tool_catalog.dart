@@ -2,6 +2,7 @@ import 'bmi/defined.dart';
 import 'compound/defined.dart';
 import 'interest/defined.dart';
 import 'loan/defined.dart';
+import 'tax/defined.dart';
 import 'tool_info.dart';
 
 export 'tool_info.dart';
@@ -14,6 +15,7 @@ final List<ToolInfo> kTools = List.unmodifiable(<ToolInfo>[
   compoundTool,
   interestTool,
   loanTool,
+  taxTool,
 ]);
 
 /// 按 id 查找工具，找不到返回 null。

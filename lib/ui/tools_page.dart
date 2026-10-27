@@ -15,8 +15,9 @@ class ToolsPage extends StatelessWidget {
         Expanded(
           child: GridView.builder(
             padding: const EdgeInsets.fromLTRB(16, 4, 16, 20),
+            // 1440 宽时排 3 列（3 + 2），比 4 列留一张卡片在新一行更整齐
             gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
-              maxCrossAxisExtent: 420,
+              maxCrossAxisExtent: 480,
               mainAxisExtent: 132,
               crossAxisSpacing: 12,
               mainAxisSpacing: 12,

@@ -3,6 +3,7 @@ import 'package:free_clac/tools/bmi.dart';
 import 'package:free_clac/tools/compound.dart';
 import 'package:free_clac/tools/interest.dart';
 import 'package:free_clac/tools/loan.dart';
+import 'package:free_clac/tools/tax.dart';
 
 void main() {
   group('BMI：计算与分级', () {
@@ -529,4 +530,174 @@ void main() {
       expect(run(amount: double.infinity), isNull);
     });
   });
+
+  group('个税：五险一金与累计预扣', () {
+    PayrollResult calculate({
+      double gross = 20000,
+      double? base,
+      InsuranceRates? rates,
+      double special = 0,
+    }) {
+      final result = calculatePayroll(
+        PayrollPlan(
+          grossMonthly: gross,
+          contributionBase: base ?? gross,
+          rates: rates ?? InsuranceRates.defaults(),
+          specialDeductionMonthly: special,
+        ),
+      );
+      expect(result, isNotNull, reason: '参数应合法');
+      return result!;
+    }
+
+    test('默认比例：养老 8 / 医疗 2 / 失业 0.5 / 公积金 12', () {
+      final rates = InsuranceRates.defaults();
+      expect(rates.of(InsuranceItem.pension), 8);
+      expect(rates.of(InsuranceItem.medical), 2);
+      expect(rates.of(InsuranceItem.unemployment), 0.5);
+      expect(rates.of(InsuranceItem.housingFund), 12);
+      expect(rates.totalPercent, 22.5);
+      expect(rates.socialSecurityPercent, 10.5);
+      expect(InsuranceItem.housingFund.isSocialSecurity, isFalse);
+      expect(InsuranceItem.pension.label, '养老');
+      // 改一项不影响其它项
+      expect(rates.withRate(InsuranceItem.housingFund, 5).totalPercent, 15.5);
+    });
+
+    test('2 万月薪：五险一金、首月个税与全年到手', () {
+      final result = calculate();
+      expect(result.contributionMonthly, closeTo(4500, 1e-9));
+      expect(result.socialSecurityMonthly, closeTo(2100, 1e-9));
+      expect(result.housingFundMonthly, closeTo(2400, 1e-9));
+      expect(result.firstMonthTax, closeTo(315, 1e-9));
+      expect(result.firstMonthNet, closeTo(15185, 1e-9));
+      expect(result.yearlyTax, closeTo(10080, 1e-9));
+      expect(result.yearlyNet, closeTo(175920, 1e-9));
+      expect(result.yearlyGross, closeTo(240000, 1e-9));
+      expect(result.marginalRatePercent, 10);
+    });
+
+    test('累计预扣法：跨档月份个税跳升', () {
+      final months = calculate().months;
+      expect(months.length, 12);
+      // 1~3 月还在 3% 档，4 月补差额，5 月起稳定在 10%
+      expect(months[0].tax, closeTo(315, 1e-9));
+      expect(months[2].tax, closeTo(315, 1e-9));
+      expect(months[3].tax, closeTo(735, 1e-9));
+      expect(months[4].tax, closeTo(1050, 1e-9));
+      expect(months[11].tax, closeTo(1050, 1e-9));
+      // 每月个税之和等于全年个税，累计值单调不减
+      expect(
+        months.fold<double>(0, (sum, month) => sum + month.tax),
+        closeTo(10080, 1e-9),
+      );
+      for (var i = 1; i < months.length; i++) {
+        expect(
+          months[i].cumulativeTax,
+          greaterThanOrEqualTo(months[i - 1].cumulativeTax),
+        );
+        expect(
+          months[i].net,
+          closeTo(
+            months[i].gross - months[i].contribution - months[i].tax,
+            1e-9,
+          ),
+        );
+      }
+      expect(months.last.cumulativeTax, closeTo(10080, 1e-9));
+      expect(maxMonthlyTaxOf(months), closeTo(1050, 1e-9));
+    });
+
+    test('5 万月薪进入 20% 档', () {
+      final result = calculate(gross: 50000);
+      expect(result.contributionMonthly, closeTo(11250, 1e-9));
+      expect(result.firstMonthTax, closeTo(1012.5, 1e-9));
+      expect(result.yearlyTax, closeTo(69330, 1e-9));
+      // 年应纳税所得额 405000 落在 25% 档
+      expect(result.marginalRatePercent, 25);
+    });
+
+    test('低薪不缴个税', () {
+      final result = calculate(gross: 6000);
+      expect(result.yearlyTax, 0);
+      expect(result.firstMonthTax, 0);
+      expect(result.firstMonthNet, closeTo(4650, 1e-9));
+      expect(result.marginalRatePercent, 3);
+    });
+
+    test('专项附加扣除与缴费基数都会影响个税', () {
+      final plain = calculate();
+      final withSpecial = calculate(special: 3000);
+      expect(withSpecial.yearlyTax, lessThan(plain.yearlyTax));
+      expect(withSpecial.firstMonthTax, closeTo(225, 1e-9));
+
+      final lowBase = calculate(base: 10000);
+      expect(lowBase.contributionMonthly, closeTo(2250, 1e-9));
+      expect(lowBase.yearlyTax, greaterThan(plain.yearlyTax));
+
+      // 不缴公积金 → 五险一金少 2400，个税多，到手反而更多（公积金也是自己的钱）
+      final noFund = calculate(
+        rates: InsuranceRates.defaults().withRate(InsuranceItem.housingFund, 0),
+      );
+      expect(noFund.contributionMonthly, closeTo(2100, 1e-9));
+      expect(noFund.firstMonthTax, closeTo(387, 1e-9));
+      expect(noFund.firstMonthNet, greaterThan(plain.firstMonthNet));
+    });
+
+    test('税率表边界与档位', () {
+      expect(yearlyIncomeTax(0), 0);
+      expect(yearlyIncomeTax(-100), 0);
+      expect(yearlyIncomeTax(36000), closeTo(1080, 1e-9));
+      expect(yearlyIncomeTax(36001), closeTo(1080.1, 1e-9));
+      expect(yearlyIncomeTax(144000), closeTo(11880, 1e-9));
+      expect(yearlyIncomeTax(960000), closeTo(250080, 1e-9));
+      expect(yearlyIncomeTax(1000000), closeTo(268080, 1e-9));
+      expect(bracketOf(36000).ratePercent, 3);
+      expect(bracketOf(40000).ratePercent, 10);
+      expect(bracketOf(200000).ratePercent, 20);
+      expect(bracketOf(500000).ratePercent, 30);
+      expect(bracketOf(double.infinity).ratePercent, 45);
+      expect(kTaxBrackets.length, 7);
+    });
+
+    test('非法参数返回 null', () {
+      PayrollResult? run({
+        double gross = 20000,
+        double base = 20000,
+        InsuranceRates? rates,
+        double special = 0,
+      }) => calculatePayroll(
+        PayrollPlan(
+          grossMonthly: gross,
+          contributionBase: base,
+          rates: rates ?? InsuranceRates.defaults(),
+          specialDeductionMonthly: special,
+        ),
+      );
+
+      expect(run(gross: 0), isNull);
+      expect(run(gross: -1000), isNull);
+      expect(run(base: -1), isNull);
+      expect(run(special: -1), isNull);
+      expect(run(gross: double.nan), isNull);
+      expect(run(gross: double.infinity), isNull);
+      // 比例超过 100% 或合计超过 100%
+      expect(
+        run(
+          rates: InsuranceRates.defaults().withRate(InsuranceItem.pension, 120),
+        ),
+        isNull,
+      );
+      final overTotal = InsuranceRates({
+        for (final item in InsuranceItem.values) item: 40,
+      });
+      expect(run(rates: overTotal), isNull);
+      // 五险一金比月薪还多
+      expect(run(gross: 1000, base: 10000), isNull);
+    });
+  });
 }
+
+/// 测试辅助：明细里最大的一个月个税。
+double maxMonthlyTaxOf(List<PayrollMonth> months) =>
+    months.map((month) => month.tax).reduce((a, b) => a > b ? a : b);
