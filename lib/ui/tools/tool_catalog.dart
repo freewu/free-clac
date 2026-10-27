@@ -4,6 +4,7 @@ import '../../theme/app_theme.dart';
 import 'bmi/bmi_page.dart';
 import 'compound/compound_page.dart';
 import 'interest/interest_page.dart';
+import 'loan/loan_page.dart';
 
 /// 工具页里一张「应用卡片」的元数据。
 class ToolInfo {
@@ -41,6 +42,8 @@ Widget _compoundBuilder(BuildContext context) => const CompoundPage();
 
 Widget _interestBuilder(BuildContext context) => const InterestPage();
 
+Widget _loanBuilder(BuildContext context) => const LoanPage();
+
 /// 全部内置工具，顺序即工具页展示顺序。
 final List<ToolInfo> kTools = List.unmodifiable(<ToolInfo>[
   ToolInfo(
@@ -69,6 +72,15 @@ final List<ToolInfo> kTools = List.unmodifiable(<ToolInfo>[
     icon: Icons.percent_rounded,
     color: AppColors.secondary,
     builder: _interestBuilder,
+  ),
+  ToolInfo(
+    id: 'loan',
+    name: '贷款计算器',
+    tagline: '月供本金利息一眼拆开',
+    description: '等额本息 / 等额本金，逐期列出本金与利息并用双色条对比，还给出总利息与总还款。',
+    icon: Icons.request_quote_outlined,
+    color: AppColors.primary,
+    builder: _loanBuilder,
   ),
 ]);
 

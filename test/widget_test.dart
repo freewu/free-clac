@@ -10,6 +10,7 @@ import 'package:free_clac/ui/widgets/plot_export_dialog.dart';
 import 'package:free_clac/ui/tools/bmi/bmi_page.dart';
 import 'package:free_clac/ui/tools/compound/compound_page.dart';
 import 'package:free_clac/ui/tools/interest/interest_page.dart';
+import 'package:free_clac/ui/tools/loan/loan_page.dart';
 import 'package:free_clac/ui/widgets/calc_display.dart';
 import 'package:free_clac/ui/widgets/keypad.dart';
 import 'package:free_clac/plot/plot_painter.dart';
@@ -141,6 +142,7 @@ void main() {
     expect(find.text('BMI 计算'), findsOneWidget);
     expect(find.text('复利计算'), findsOneWidget);
     expect(find.text('利率计算'), findsOneWidget);
+    expect(find.text('贷款计算器'), findsOneWidget);
     // 卡片上不再出现「打开」角标
     expect(find.text('打开'), findsNothing);
 
@@ -324,6 +326,73 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('¥ 100.00'), findsWidgets);
     expect(find.text('¥ 3.29'), findsWidgets);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('贷款计算器：月供拆分与双色条', (tester) async {
+    await pumpApp(tester, const Size(1440, 900));
+
+    await tester.tap(find.text('工具'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('贷款计算器'));
+    await tester.pumpAndSettle();
+    expect(find.byType(LoanPage), findsOneWidget);
+
+    // 默认：100 万、4.9%、30 年、等额本息 → 月供 5307.27
+    // 等额本息每期金额相同，明细里也会出现同样的数字
+    expect(find.text('¥ 5,307.27'), findsWidgets);
+    expect(find.textContaining('总利息'), findsOneWidget);
+    expect(find.text('¥ 910,616'), findsOneWidget);
+    // 汇总条 + 每期明细条都画出来
+    expect(find.byType(StackedRatioBar), findsWidgets);
+
+    // 明细里第一期利息多于本金（等额本息前期特征）
+    expect(find.text('本金 ¥ 1,224'), findsWidgets);
+    expect(find.text('利息 ¥ 4,083'), findsWidgets);
+
+    // 切等额本金：首月 6861.11，月供逐月递减
+    await tester.tap(find.text('等额本金'));
+    await tester.pumpAndSettle();
+    expect(find.text('¥ 6,861.11'), findsWidgets);
+    expect(find.textContaining('月供逐月递减'), findsOneWidget);
+
+    // 按年汇总：30 行
+    await tester.tap(find.text('按年'));
+    await tester.pumpAndSettle();
+    expect(find.text('第 1 年'), findsOneWidget);
+    expect(find.text('当年还款'), findsOneWidget);
+
+    // 期限单位 年 → 月 自动换算
+    await tester.tap(find.text('年').first);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('月').last);
+    await tester.pumpAndSettle();
+    expect(find.text('360'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('手机尺寸：贷款计算器三栏改两行且不溢出', (tester) async {
+    tester.view.physicalSize = const Size(390, 844);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+
+    await tester.pumpWidget(const FreeCalcApp());
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('工具'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('贷款计算器'));
+    await tester.pumpAndSettle();
+
+    expect(find.byType(LoanPage), findsOneWidget);
+    expect(find.byType(NavigationBar), findsOneWidget);
+    expect(find.byType(TextField), findsNWidgets(3));
+    // 每个输入框都要留出足够的输入区，不能只剩单位
+    for (var i = 0; i < 3; i++) {
+      expect(
+        tester.getSize(find.byType(EditableText).at(i)).width,
+        greaterThanOrEqualTo(90),
+      );
+    }
     expect(tester.takeException(), isNull);
   });
 

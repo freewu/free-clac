@@ -4,6 +4,7 @@ import '../../../core/number_format.dart';
 import '../../../theme/app_theme.dart';
 import '../../../tools/bmi.dart';
 import '../widgets/tool_field.dart';
+import '../widgets/tool_unit_picker.dart';
 import 'bmi_gauge.dart';
 
 /// BMI 计算页：输入身高体重，实时给出分级、标准体重区间与建议。
@@ -143,9 +144,14 @@ class _BmiPageState extends State<BmiPage> {
                               child: ToolNumberField(
                                 label: '身高',
                                 controller: _height,
-                                trailing: _HeightUnitPicker(
-                                  unit: _heightUnit,
-                                  onChanged: _switchHeightUnit,
+                                trailing: ToolUnitPicker<BmiImperialHeightUnit>(
+                                  value: _heightUnit,
+                                  items: BmiImperialHeightUnit.values,
+                                  labelOf: (value) => value.symbol,
+                                  menuLabelOf: (value) =>
+                                      '${value.symbol}（${value.label}）',
+                                  tooltip: '身高单位',
+                                  onSelected: _switchHeightUnit,
                                 ),
                                 onChanged: (_) => setState(() {}),
                               ),
@@ -217,53 +223,6 @@ class _UnitSwitch extends StatelessWidget {
 }
 
 /// 英制身高的输入单位：点开菜单切换 ft / in。
-class _HeightUnitPicker extends StatelessWidget {
-  const _HeightUnitPicker({required this.unit, required this.onChanged});
-
-  final BmiImperialHeightUnit unit;
-  final ValueChanged<BmiImperialHeightUnit> onChanged;
-
-  @override
-  Widget build(BuildContext context) {
-    return PopupMenuButton<BmiImperialHeightUnit>(
-      tooltip: '身高单位',
-      padding: EdgeInsets.zero,
-      position: PopupMenuPosition.under,
-      initialValue: unit,
-      onSelected: onChanged,
-      itemBuilder: (context) => [
-        for (final value in BmiImperialHeightUnit.values)
-          PopupMenuItem(
-            value: value,
-            height: 38,
-            child: Text(
-              '${value.symbol}（${value.label}）',
-              style: const TextStyle(fontSize: 12.5),
-            ),
-          ),
-      ],
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Text(
-            unit.symbol,
-            style: const TextStyle(
-              color: AppColors.textSecondary,
-              fontSize: 12,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-          const Icon(
-            Icons.arrow_drop_down_rounded,
-            size: 16,
-            color: AppColors.textSecondary,
-          ),
-        ],
-      ),
-    );
-  }
-}
-
 class _EmptyHint extends StatelessWidget {
   const _EmptyHint();
 

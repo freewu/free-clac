@@ -2,6 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:free_clac/tools/bmi.dart';
 import 'package:free_clac/tools/compound.dart';
 import 'package:free_clac/tools/interest.dart';
+import 'package:free_clac/tools/loan.dart';
 
 void main() {
   group('BMI：计算与分级', () {
@@ -376,6 +377,156 @@ void main() {
         ),
         isNull,
       );
+    });
+  });
+
+  group('贷款：等额本息 / 等额本金', () {
+    LoanResult calculate({
+      double amount = 1000000,
+      double rate = 4.9,
+      int months = 360,
+      LoanMethod method = LoanMethod.equalInstallment,
+    }) {
+      final result = calculateLoan(
+        amount: amount,
+        annualRatePercent: rate,
+        months: months,
+        method: method,
+      );
+      expect(result, isNotNull, reason: '参数应合法');
+      return result!;
+    }
+
+    test('等额本息：月供、总利息与总还款', () {
+      final result = calculate();
+      expect(result.months, 360);
+      expect(result.isFixedPayment, isTrue);
+      expect(result.firstPayment, closeTo(5307.27, 0.01));
+      expect(result.lastPayment, closeTo(5307.27, 0.05));
+      expect(result.totalInterest, closeTo(910616.19, 0.5));
+      expect(result.totalPayment, closeTo(1910616.19, 0.5));
+      expect(result.interestRatio, closeTo(0.4766, 0.001));
+    });
+
+    test('等额本息：每期本金递增、利息递减', () {
+      final periods = calculate().periods;
+      expect(periods.first.interest, greaterThan(periods.first.principal));
+      expect(periods.last.principal, greaterThan(periods.last.interest));
+      for (var i = 1; i < periods.length; i++) {
+        expect(
+          periods[i].principal,
+          greaterThan(periods[i - 1].principal),
+          reason: '等额本息前期本金少、逐期递增',
+        );
+        expect(periods[i].interest, lessThan(periods[i - 1].interest));
+        expect(
+          periods[i].payment,
+          closeTo(periods.first.payment, 1e-6),
+          reason: '每期还款额固定',
+        );
+      }
+    });
+
+    test('每期本金之和等于贷款总额，余额归零', () {
+      for (final method in LoanMethod.values) {
+        final result = calculate(method: method);
+        final principal = result.periods.fold<double>(
+          0,
+          (sum, item) => sum + item.principal,
+        );
+        expect(principal, closeTo(1000000, 0.01));
+        expect(result.periods.last.balance, 0);
+        final payment = result.periods.fold<double>(
+          0,
+          (sum, item) => sum + item.payment,
+        );
+        expect(payment, closeTo(result.totalPayment, 1e-6));
+      }
+    });
+
+    test('等额本金：首末期还款与总利息', () {
+      final result = calculate(method: LoanMethod.equalPrincipal);
+      expect(result.isFixedPayment, isFalse);
+      expect(result.firstPayment, closeTo(6861.11, 0.01));
+      expect(result.lastPayment, closeTo(2789.12, 0.01));
+      expect(result.totalInterest, closeTo(737041.67, 0.5));
+      // 等额本金总利息一定比等额本息少
+      expect(result.totalInterest, lessThan(calculate().totalInterest));
+      // 本金平均摊销，每期固定
+      expect(result.periods.first.principal, closeTo(2777.78, 0.01));
+      expect(result.periods.last.principal, closeTo(2777.78, 0.01));
+    });
+
+    test('期数随期限变化', () {
+      expect(calculate(months: 120).firstPayment, closeTo(10557.74, 0.01));
+      expect(calculate(months: 240).firstPayment, closeTo(6544.44, 0.01));
+      expect(calculate(months: 12).months, 12);
+    });
+
+    test('零利率时只有本金', () {
+      final result = calculate(rate: 0, months: 12);
+      expect(result.totalInterest, 0);
+      expect(result.firstPayment, closeTo(1000000 / 12, 1e-9));
+      expect(result.periods.first.interest, 0);
+      expect(result.interestRatio, 0);
+    });
+
+    test('按年汇总', () {
+      final result = calculate(months: 360);
+      final yearly = result.yearly;
+      expect(yearly.length, 30);
+      expect(yearly.first.index, 1);
+      expect(
+        yearly.first.payment,
+        closeTo(
+          result.periods.take(12).fold(0.0, (s, p) => s + p.payment),
+          1e-6,
+        ),
+      );
+      expect(
+        yearly.fold<double>(0, (sum, item) => sum + item.principal),
+        closeTo(1000000, 0.01),
+      );
+      expect(yearly.last.balance, 0);
+      // 最后不足 12 期的按一行算
+      expect(calculate(months: 25).yearly.length, 3);
+    });
+
+    test('期限单位换算', () {
+      expect(LoanTermUnit.years.toMonths(30), 360);
+      expect(LoanTermUnit.months.toMonths(360), 360);
+      expect(LoanTermUnit.years.toMonths(1.5), 18);
+      expect(LoanTermUnit.years.label, '年');
+      expect(LoanMethod.equalInstallment.label, '等额本息');
+      expect(LoanMethod.equalPrincipal.label, '等额本金');
+    });
+
+    test('双色条比例之和为 1', () {
+      final period = calculate(method: LoanMethod.equalPrincipal).periods.first;
+      expect(period.principalRatio, closeTo(1 - period.interestRatio, 1e-12));
+      expect(period.principalRatio, inInclusiveRange(0, 1));
+      expect(period.interestRatio, inInclusiveRange(0, 1));
+    });
+
+    test('非法参数返回 null', () {
+      LoanResult? run({
+        double amount = 1000000,
+        double rate = 4.9,
+        int months = 360,
+      }) => calculateLoan(
+        amount: amount,
+        annualRatePercent: rate,
+        months: months,
+      );
+
+      expect(run(amount: 0), isNull);
+      expect(run(amount: -100), isNull);
+      expect(run(months: 0), isNull);
+      expect(run(months: -12), isNull);
+      expect(run(months: maxLoanMonths + 1), isNull);
+      expect(run(rate: maxLoanRatePercent + 1), isNull);
+      expect(run(rate: double.nan), isNull);
+      expect(run(amount: double.infinity), isNull);
     });
   });
 }
