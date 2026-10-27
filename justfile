@@ -267,6 +267,7 @@ icons-check:
 # 自检 justfile 用到的 Python 辅助脚本（CI 可用）
 [group('工具')]
 tool-check:
+    @{{python}} tool/generate_icons.py --selftest
     @{{python}} tool/android_target.py --selftest
     @{{python}} tool/web_fonts.py --selftest
 

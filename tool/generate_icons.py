@@ -11,7 +11,9 @@
     android/  mipmap-*/ic_launcher.png（旧版）+ 自适应图标前景 + anydpi-v26 XML
 
 设计约定：
-    * 保留 logo 本身的透明背景（橙色描边图形，深浅底色都能看清）；
+    * 保留 logo 本身的透明背景（蓝色描边图形，深浅底色都能看清）；
+    * logo 自带的留白先裁掉、再按统一比例补回（[LOGO_FILL]），这样换一版留白
+      不同的 logo，各平台图标看起来还是一样大；
     * maskable / 自适应图标需要满幅，因此垫一层深色底并留出安全区（图形约占 72%）；
     * 生成脚本只依赖 Pillow，无需联网、不引入额外依赖。
 """
@@ -53,11 +55,29 @@ WINDOWS_ICO_SIZES = (16, 24, 32, 48, 64, 128, 256)
 # maskable / 自适应图标：图形占画布的比例（四周留白，避免被裁切）
 SAFE_ZONE = 0.72
 
+# 普通图标里图形占画布的比例：logo 自带多少留白都统一成这个值
+LOGO_FILL = 0.92
+
 # 自适应图标 XML：AAPT2 要求根节点声明 android 命名空间，否则打包直接失败
 ANDROID_ADAPTIVE = (
     "android/app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml",
     "android/app/src/main/res/mipmap-anydpi-v26/ic_launcher_round.xml",
 )
+
+
+def trim_transparent(logo: Image.Image) -> Image.Image:
+    """裁掉四周的全透明留白，让图形贴住边界。"""
+    bbox = logo.getbbox()
+    return logo.crop(bbox) if bbox else logo
+
+
+def pad_to_fill(image: Image.Image, fill: float = LOGO_FILL) -> Image.Image:
+    """居中补透明留白，使图形占正方形画布的 fill 比例。"""
+    side = max(1, round(max(image.width, image.height) / fill))
+    canvas = Image.new("RGBA", (side, side), (0, 0, 0, 0))
+    offset = ((side - image.width) // 2, (side - image.height) // 2)
+    canvas.alpha_composite(image, offset)
+    return canvas
 
 
 def load_logo() -> Image.Image:
@@ -69,7 +89,8 @@ def load_logo() -> Image.Image:
         left = (logo.width - side) // 2
         top = (logo.height - side) // 2
         logo = logo.crop((left, top, left + side, top + side))
-    return logo
+    # 不同版本的 logo 留白多少不一样，先裁边再统一补白，图标大小才一致
+    return pad_to_fill(trim_transparent(logo))
 
 
 def resize(logo: Image.Image, size: int) -> Image.Image:
@@ -163,6 +184,47 @@ def _force_utf8_stdout() -> None:
             reconfigure(encoding="utf-8", errors="replace")
 
 
+def selftest() -> None:
+    """自检裁边 / 补白 / 缩放 / 满幅底图，不读写磁盘上的真实图标。"""
+    # 100x100 画布上放一个 50x50 的不透明方块（模拟带留白的 logo）
+    source = Image.new("RGBA", (100, 100), (0, 0, 0, 0))
+    source.paste((18, 150, 219, 255), (25, 25, 75, 75))
+
+    trimmed = trim_transparent(source)
+    assert trimmed.size == (50, 50), trimmed.size
+
+    padded = pad_to_fill(trimmed)
+    assert padded.width == padded.height, padded.size
+    box = padded.getbbox()
+    assert box is not None, box
+    fill = (box[2] - box[0]) / padded.width
+    assert 0.91 <= fill <= 0.93, fill
+    assert box[0] == padded.width - box[2], (box, padded.size)  # 左右留白一致
+
+    # 全透明图不能崩
+    assert trim_transparent(Image.new("RGBA", (10, 10), (0, 0, 0, 0))).size == (10, 10)
+
+    assert resize(trimmed, 32).size == (32, 32)
+
+    backdrop = with_backdrop(trimmed, 108)
+    assert backdrop.size == (108, 108)
+    assert backdrop.getpixel((0, 0)) == BACKDROP
+    # 满幅底图整张都不透明，所以按底色扫中间一行来判断图形的实际宽度
+    middle = [x for x in range(108) if backdrop.getpixel((x, 54)) != BACKDROP]
+    assert middle, "图形没有画到画布上"
+    width = middle[-1] - middle[0] + 1
+    assert 0.70 <= width / 108 <= 0.74, width  # 落在安全区内
+
+    assert set(WEB_ICONS) == {
+        "Icon-192.png",
+        "Icon-512.png",
+        "Icon-maskable-192.png",
+        "Icon-maskable-512.png",
+    }
+    assert ANDROID_FOREGROUND_SCALE == 72 / 108
+    print("✓ generate_icons 自检通过")
+
+
 def main() -> None:
     _force_utf8_stdout()
     parser = argparse.ArgumentParser(description="从 logo.png 生成各平台应用图标")
@@ -171,7 +233,16 @@ def main() -> None:
         action="store_true",
         help="只检查目标文件是否齐全，不写入磁盘",
     )
+    parser.add_argument(
+        "--selftest",
+        action="store_true",
+        help="用内存里的合成图自检裁边 / 补白 / 缩放逻辑",
+    )
     args = parser.parse_args()
+
+    if args.selftest:
+        selftest()
+        return
 
     logo = load_logo()
 
