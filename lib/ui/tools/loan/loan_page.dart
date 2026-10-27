@@ -305,34 +305,33 @@ class _Summary extends StatelessWidget {
                     '月供逐月递减 ¥ ${formatMoney(decrease)}',
           style: const TextStyle(color: AppColors.textSecondary, fontSize: 11),
         ),
-        const SizedBox(height: 16),
-        Row(
-          children: [
-            Expanded(
-              child: _Stat(
-                label: '贷款总额',
-                value: '¥ ${formatMoney(result.amount, decimals: 0)}',
-                color: AppColors.textPrimary,
-              ),
-            ),
-            Expanded(
-              child: _Stat(
-                label: '总利息',
-                value: '¥ ${formatMoney(result.totalInterest, decimals: 0)}',
-                color: loanInterestColor,
-              ),
-            ),
-            Expanded(
-              child: _Stat(
-                label: '总还款',
-                value: '¥ ${formatMoney(result.totalPayment, decimals: 0)}',
-                color: AppColors.textPrimary,
-              ),
-            ),
-          ],
+        const SizedBox(height: 18),
+        // 三行金额条：长度按金额占「总还款」的比例缩放，本金 / 利息 / 总额
+        // 一眼比出差距，而不是永远等长的百分比条
+        AmountBar(
+          key: const ValueKey('loan-bar-贷款总额'),
+          label: '贷款总额',
+          value: '¥ ${formatMoney(result.amount, decimals: 0)}',
+          ratio: result.amount / result.totalPayment,
+          color: loanPrincipalColor,
         ),
-        const SizedBox(height: 14),
-        StackedRatioBar(principalRatio: 1 - result.interestRatio, height: 10),
+        const SizedBox(height: 8),
+        AmountBar(
+          key: const ValueKey('loan-bar-总利息'),
+          label: '总利息',
+          value: '¥ ${formatMoney(result.totalInterest, decimals: 0)}',
+          ratio: result.interestRatio,
+          color: loanInterestColor,
+        ),
+        const SizedBox(height: 8),
+        AmountBar(
+          key: const ValueKey('loan-bar-总还款'),
+          label: '总还款',
+          value: '¥ ${formatMoney(result.totalPayment, decimals: 0)}',
+          ratio: 1,
+          color: loanPrincipalColor,
+          interestRatio: result.interestRatio,
+        ),
         const SizedBox(height: 8),
         Row(
           children: [
@@ -346,6 +345,92 @@ class _Summary extends StatelessWidget {
               style: const TextStyle(color: loanInterestColor, fontSize: 10.5),
             ),
           ],
+        ),
+      ],
+    );
+  }
+}
+
+/// 金额对比条：条的长度按 [ratio]（相对最长那一条）缩放，
+/// 传 [interestRatio] 时画成「本金 + 利息」双色条。
+class AmountBar extends StatelessWidget {
+  const AmountBar({
+    super.key,
+    required this.label,
+    required this.value,
+    required this.ratio,
+    required this.color,
+    this.interestRatio,
+  });
+
+  /// 左侧标签（贷款总额 / 总利息 / 总还款）。
+  final String label;
+
+  /// 右侧金额文本。
+  final String value;
+
+  /// 条长占比（0~1），一般以总还款为 1。
+  final double ratio;
+
+  /// 单色条的颜色；双色条时代表本金部分。
+  final Color color;
+
+  /// 非空时画成双色条，本金占 `1 - interestRatio`。
+  final double? interestRatio;
+
+  @override
+  Widget build(BuildContext context) {
+    final interest = interestRatio;
+    return Row(
+      children: [
+        SizedBox(
+          width: 56,
+          child: Text(
+            label,
+            style: const TextStyle(
+              color: AppColors.textSecondary,
+              fontSize: 10.5,
+            ),
+          ),
+        ),
+        Expanded(
+          child: Align(
+            alignment: Alignment.centerLeft,
+            child: FractionallySizedBox(
+              widthFactor: ratio.clamp(0.0, 1.0),
+              child: SizedBox(
+                height: 8,
+                child: interest == null
+                    ? DecoratedBox(
+                        decoration: BoxDecoration(
+                          color: color,
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                      )
+                    : StackedRatioBar(
+                        principalRatio: 1 - interest,
+                        height: 8,
+                        radius: 4,
+                      ),
+              ),
+            ),
+          ),
+        ),
+        const SizedBox(width: 8),
+        SizedBox(
+          width: 92,
+          child: Text(
+            value,
+            maxLines: 1,
+            textAlign: TextAlign.right,
+            overflow: TextOverflow.ellipsis,
+            style: const TextStyle(
+              color: AppColors.textPrimary,
+              fontSize: 11.5,
+              fontWeight: FontWeight.w600,
+              fontFeatures: [FontFeature.tabularFigures()],
+            ),
+          ),
         ),
       ],
     );
@@ -387,42 +472,6 @@ class StackedRatioBar extends StatelessWidget {
           ),
         ),
       ),
-    );
-  }
-}
-
-class _Stat extends StatelessWidget {
-  const _Stat({required this.label, required this.value, required this.color});
-
-  final String label;
-  final String value;
-  final Color color;
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          label,
-          style: const TextStyle(
-            color: AppColors.textSecondary,
-            fontSize: 10.5,
-          ),
-        ),
-        const SizedBox(height: 3),
-        Text(
-          value,
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-          style: TextStyle(
-            color: color,
-            fontSize: 13.5,
-            fontWeight: FontWeight.w600,
-            fontFeatures: const [FontFeature.tabularFigures()],
-          ),
-        ),
-      ],
     );
   }
 }

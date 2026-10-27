@@ -298,6 +298,11 @@ void main() {
     expect(find.byType(InterestPage), findsOneWidget);
     expect(find.byType(NavigationRail), findsOneWidget);
 
+    // 输入框文案不能重复「每」：每天收益 / 每月收益 / 每年收益
+    expect(find.text('每天收益'), findsOneWidget);
+    expect(find.text('每每天收益'), findsNothing);
+    expect(find.text('元 / 每天'), findsOneWidget);
+
     // 默认：本金 10000 元、日付 1 元 → 年化 3.65%
     expect(find.text('3.65%'), findsWidgets);
     expect(find.text('¥ 30.42'), findsWidgets);
@@ -308,6 +313,8 @@ void main() {
     await tester.tap(find.text('月付').first);
     await tester.pumpAndSettle();
     expect(find.text('30.42'), findsOneWidget);
+    expect(find.text('每月收益'), findsOneWidget);
+    expect(find.text('每每月收益'), findsNothing);
     expect(find.text('3.65%'), findsWidgets);
 
     // 月付改成 50 元 → 年化 6%
@@ -345,6 +352,24 @@ void main() {
     expect(find.text('¥ 910,616'), findsOneWidget);
     // 汇总条 + 每期明细条都画出来
     expect(find.byType(StackedRatioBar), findsWidgets);
+
+    // 三行金额条按金额区分长度：总还款 > 贷款总额 > 总利息
+    expect(find.byType(AmountBar), findsNWidgets(3));
+    double barWidth(String label) => tester
+        .getSize(
+          find.descendant(
+            of: find.byKey(ValueKey('loan-bar-$label')),
+            matching: find.byType(FractionallySizedBox),
+          ),
+        )
+        .width;
+    expect(barWidth('总还款'), greaterThan(barWidth('贷款总额')));
+    expect(barWidth('贷款总额'), greaterThan(barWidth('总利息')));
+    // 长度比 ≈ 金额比（1910616 / 910616 ≈ 2.1）
+    expect(
+      barWidth('总还款') / barWidth('总利息'),
+      closeTo(1910616.19 / 910616.19, 0.05),
+    );
 
     // 明细里第一期利息多于本金（等额本息前期特征）
     expect(find.text('本金 ¥ 1,224'), findsWidgets);

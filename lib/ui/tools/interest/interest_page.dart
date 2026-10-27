@@ -188,7 +188,8 @@ class _InterestPageState extends State<InterestPage> {
                       const SizedBox(height: 12),
                       if (_mode == _Mode.fromPayment)
                         ToolNumberField(
-                          label: '每${_period.everyLabel}收益',
+                          // everyLabel 本身已带「每」（每天 / 每月 / 每年）
+                          label: '${_period.everyLabel}收益',
                           suffix: '元 / ${_period.everyLabel}',
                           controller: _payment,
                           allowNegative: true,

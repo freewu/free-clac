@@ -130,8 +130,9 @@ Web 端可直接深链到示例：`?page=plot&preset=0`（`preset` 为示例下�
 
 - 支持等额本息与等额本金两种还款方式，输入金额、年利率、期限（年 / 月可切换）即算
 - 首屏给出月供（等额本金为首月，并标出逐月递减额）、贷款总额、总利息与总还款
-- 顶部双色比例条 + 每期明细里的双色条：**蓝色为本金、黄色为利息**，
-  一眼看出「这一期的钱有多少在还利息、多少在还本金」
+- 汇总区用「贷款总额 / 总利息 / 总还款」三条对比条，条长按金额占「总还款」的比例缩放
+  （不是三条等长的百分比条），总还款那条再拆成**蓝色本金 + 黄色利息**，
+  一眼看出「总还款里有多少是本息、有多少是利息」；每期明细里同样有这条双色条
 - 明细可按月 / 按年汇总，长期贷款不必翻 360 行
 - 公式：等额本息 `M = P·i·(1+i)^n / ((1+i)^n − 1)`，等额本金每期本金 `P/n` + 当期利息 `i·余额`，
   其中 `i` 为月利率、`n` 为月数；最后一期会把浮点误差抹平，保证本金正好还清
@@ -156,6 +157,8 @@ just icons-check   # 只校验文件是否齐全（CI 可用）
 | Android | `mipmap-*/ic_launcher.png`、`ic_launcher_round.png`，以及自适应图标 `ic_launcher_foreground.png` + `mipmap-anydpi-v26/ic_launcher.xml` |
 
 Maskable / 自适应图标需要满幅，脚本会垫一层深色底（`#0B0F14`，与深色主题一致）并让图形占 72% 安全区；普通图标保留 logo 的透明背景。
+
+logo 自带多少留白都不影响图标大小：脚本先按不透明像素裁掉四周留白（`trim_transparent`），再按统一比例补回（`LOGO_FILL = 0.92`，图形占画布 92%），最后缩放到各平台尺寸。`just check` 里的 `tool-check` 会跑 `tool/generate_icons.py --selftest`，用内存里的合成图验证裁边、补白、安全区与平台尺寸表。
 项目暂无 iOS / macOS 目录，如需新增平台，脚本里加一段尺寸表即可。
 
 ## 运行
@@ -217,7 +220,7 @@ just devices      # 列出设备
 | 构建 | `just ci` | 依赖 → 检查 → 构建 |
 | 工具 | `just preview` | 构建并本地预览（<http://localhost:8765>） |
 | 工具 | `just shots` | 重新生成 `docs/screenshots` 截图 |
-| 工具 | `just icons` / `just icons-check` | 由 `logo.png` 生成 / 校验各平台图标 |
+| 工具 | `just icons` / `just icons-check` | 由 `logo.png` 生成 / 校验各平台图标（`--selftest` 已在 `tool-check` 里跑） |
 | 工具 | `just clean` / `just outdated` | 清理产物 / 查看可升级依赖 |
 
 ## Android 构建
