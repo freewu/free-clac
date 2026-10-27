@@ -138,6 +138,8 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('BMI 计算'), findsOneWidget);
     expect(find.text('复利计算'), findsOneWidget);
+    // 卡片上不再出现「打开」角标
+    expect(find.text('打开'), findsNothing);
 
     await tester.tap(find.text('BMI 计算'));
     await tester.pumpAndSettle();
@@ -151,6 +153,47 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('27.7'), findsOneWidget);
     expect(find.text('超重'), findsWidgets);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('BMI：公制 / 英制切换并换算', (tester) async {
+    await pumpApp(tester, const Size(1440, 900));
+
+    await tester.tap(find.text('工具'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('BMI 计算'));
+    await tester.pumpAndSettle();
+
+    // 默认公制：cm / kg
+    expect(find.text('cm'), findsOneWidget);
+    expect(find.text('kg'), findsOneWidget);
+    expect(find.textContaining('身高 170 cm'), findsOneWidget);
+
+    // 切到英制：170 cm / 65 kg → 5 ft 6.9 in / 143.3 lb，BMI 不变
+    await tester.tap(find.text('英制'));
+    await tester.pumpAndSettle();
+    expect(find.text('ft'), findsOneWidget);
+    expect(find.text('in'), findsOneWidget);
+    expect(find.text('lb'), findsOneWidget);
+    expect(find.text('cm'), findsNothing);
+    expect(find.textContaining('5 ft 6.9 in'), findsOneWidget);
+    expect(find.textContaining('143.3 lb'), findsOneWidget);
+    expect(find.text('22.5'), findsOneWidget);
+    expect(find.textContaining('lb'), findsWidgets);
+
+    // 修改英制输入：5 ft 7 in、165 lb → BMI 25.8，超重
+    await tester.enterText(find.byType(TextField).at(1), '7');
+    await tester.enterText(find.byType(TextField).at(2), '165');
+    await tester.pumpAndSettle();
+    expect(find.text('25.8'), findsOneWidget);
+    expect(find.text('超重'), findsWidgets);
+
+    // 切回公制：身高 170.2 cm、体重 74.8 kg
+    await tester.tap(find.text('公制'));
+    await tester.pumpAndSettle();
+    expect(find.text('cm'), findsOneWidget);
+    expect(find.textContaining('170.2 cm'), findsOneWidget);
+    expect(find.textContaining('74.8 kg'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
 

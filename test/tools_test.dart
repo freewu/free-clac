@@ -51,6 +51,49 @@ void main() {
     });
   });
 
+  group('BMI：单位换算', () {
+    test('英尺英寸与磅换算', () {
+      expect(cmFromFeetInches(feet: 5, inches: 7), closeTo(170.18, 1e-9));
+      expect(cmFromFeetInches(inches: 66.93), closeTo(170.0, 0.01));
+      expect(kgFromPounds(143.3), closeTo(65.0, 0.01));
+      expect(poundsFromKg(65), closeTo(143.3, 0.01));
+      expect(poundsFromKg(kgFromPounds(180)), closeTo(180, 1e-9));
+    });
+
+    test('英制输入与公制结果等价', () {
+      final imperial = calculateBmi(
+        heightCm: cmFromFeetInches(feet: 5, inches: 7),
+        weightKg: kgFromPounds(143.3),
+      )!;
+      // 5 ft 7 in ≈ 170.18 cm、143.3 lb ≈ 65 kg，BMI 应落在 22.44 附近
+      final metric = calculateBmi(heightCm: 170.18, weightKg: 65)!;
+      expect(imperial.bmi, closeTo(metric.bmi, 1e-3));
+      expect(imperial.bmi, closeTo(22.44, 0.01));
+      expect(imperial.category, BmiCategory.normal);
+    });
+
+    test('结果提供英制取值', () {
+      final result = calculateBmi(heightCm: 170, weightKg: 65)!;
+      expect(result.heightInches, closeTo(66.93, 0.01));
+      expect(result.heightFeet, 5);
+      expect(result.heightRemainderInches, closeTo(6.93, 0.01));
+      expect(result.weightPounds, closeTo(143.3, 0.05));
+      expect(
+        result.healthyMinPounds,
+        closeTo(result.healthyMinKg * 2.20462, 0.01),
+      );
+      expect(
+        result.weightToHealthyCenterPounds,
+        closeTo(result.weightToHealthyCenter * 2.20462, 0.01),
+      );
+    });
+
+    test('单位枚举带中文标签', () {
+      expect(BmiUnitSystem.metric.label, '公制');
+      expect(BmiUnitSystem.imperial.label, '英制');
+    });
+  });
+
   group('复利：按年计息', () {
     CompoundResult calculate({
       double principal = 100000,
