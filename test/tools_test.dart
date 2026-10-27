@@ -1,6 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:free_clac/tools/bmi.dart';
 import 'package:free_clac/tools/compound.dart';
+import 'package:free_clac/tools/interest.dart';
 
 void main() {
   group('BMI：计算与分级', () {
@@ -222,6 +223,156 @@ void main() {
             years: 5,
             contributionPerPeriod: -10,
           ),
+        ),
+        isNull,
+      );
+    });
+  });
+
+  group('利率：期付 ⇄ 年化', () {
+    test('周期定义', () {
+      expect(InterestPeriod.daily.periodsPerYear, 365);
+      expect(InterestPeriod.monthly.periodsPerYear, 12);
+      expect(InterestPeriod.yearly.periodsPerYear, 1);
+      expect(InterestPeriod.daily.label, '日付');
+      expect(InterestPeriod.monthly.everyLabel, '每月');
+      expect(InterestPeriod.yearly.everyLabel, '每年');
+    });
+
+    test('本金 + 期付反推年化率', () {
+      double? rate(double payment, InterestPeriod period) =>
+          annualRatePercentFromPayment(
+            principal: 10000,
+            payment: payment,
+            period: period,
+          );
+
+      expect(rate(1, InterestPeriod.daily), closeTo(3.65, 1e-9));
+      expect(rate(50, InterestPeriod.monthly), closeTo(6, 1e-9));
+      expect(rate(500, InterestPeriod.yearly), closeTo(5, 1e-9));
+      // 同一笔钱：1 元 / 天 = 30 元 / 月 ≈ 365 元 / 年
+      expect(rate(30.4166666, InterestPeriod.monthly), closeTo(3.65, 1e-6));
+      expect(rate(365, InterestPeriod.yearly), closeTo(3.65, 1e-9));
+    });
+
+    test('年化率算各周期收益', () {
+      double? pay(double rate, InterestPeriod period) => paymentFromAnnualRate(
+        principal: 10000,
+        annualRatePercent: rate,
+        period: period,
+      );
+
+      expect(pay(3.65, InterestPeriod.daily), closeTo(1, 1e-12));
+      expect(pay(3.65, InterestPeriod.monthly), closeTo(30.4166667, 1e-6));
+      expect(pay(3.65, InterestPeriod.yearly), closeTo(365, 1e-12));
+    });
+
+    test('双向换算互为反函数', () {
+      for (final period in InterestPeriod.values) {
+        for (final payment in [0.5, 1.0, 12.5, 100.0]) {
+          final rate = annualRatePercentFromPayment(
+            principal: 20000,
+            payment: payment,
+            period: period,
+          )!;
+          final back = paymentFromAnnualRate(
+            principal: 20000,
+            annualRatePercent: rate,
+            period: period,
+          )!;
+          expect(back, closeTo(payment, 1e-9));
+        }
+      }
+    });
+
+    test('报价：三档收益与万份收益', () {
+      final quote = interestQuote(principal: 10000, annualRatePercent: 3.65)!;
+      expect(quote.annualRate, closeTo(0.0365, 1e-12));
+      expect(quote.dailyPayment, closeTo(1, 1e-12));
+      expect(quote.monthlyPayment, closeTo(30.4166667, 1e-6));
+      expect(quote.yearlyPayment, closeTo(365, 1e-12));
+      expect(quote.rateFor(InterestPeriod.daily), closeTo(0.0001, 1e-12));
+      expect(
+        quote.paymentPerTenThousand(InterestPeriod.daily),
+        closeTo(1, 1e-12),
+      );
+      // 本金 5 万时万份收益与本金无关
+      final bigger = interestQuote(principal: 50000, annualRatePercent: 3.65)!;
+      expect(
+        bigger.paymentPerTenThousand(InterestPeriod.monthly),
+        closeTo(quote.paymentPerTenThousand(InterestPeriod.monthly), 1e-9),
+      );
+      expect(bigger.monthlyPayment, closeTo(quote.monthlyPayment * 5, 1e-9));
+    });
+
+    test('零利率与负利率', () {
+      final zero = interestQuote(principal: 1000, annualRatePercent: 0)!;
+      expect(zero.dailyPayment, 0);
+      expect(zero.yearlyPayment, 0);
+
+      final negative = interestQuote(principal: 1000, annualRatePercent: -5)!;
+      expect(negative.yearlyPayment, closeTo(-50, 1e-12));
+      expect(
+        annualRatePercentFromPayment(
+          principal: 1000,
+          payment: -0.1,
+          period: InterestPeriod.daily,
+        ),
+        closeTo(-3.65, 1e-9),
+      );
+    });
+
+    test('非法参数返回 null', () {
+      expect(
+        annualRatePercentFromPayment(
+          principal: 0,
+          payment: 1,
+          period: InterestPeriod.daily,
+        ),
+        isNull,
+      );
+      expect(
+        annualRatePercentFromPayment(
+          principal: 10000,
+          payment: 1,
+          period: InterestPeriod.daily,
+        ),
+        isNotNull,
+      );
+      expect(
+        paymentFromAnnualRate(
+          principal: -100,
+          annualRatePercent: 5,
+          period: InterestPeriod.daily,
+        ),
+        isNull,
+      );
+      // 年化率超过 1000% 视为输入错误
+      expect(
+        paymentFromAnnualRate(
+          principal: 100,
+          annualRatePercent: 1001,
+          period: InterestPeriod.daily,
+        ),
+        isNull,
+      );
+      expect(
+        annualRatePercentFromPayment(
+          principal: 1,
+          payment: 1000,
+          period: InterestPeriod.yearly,
+        ),
+        isNull,
+      );
+      expect(
+        interestQuote(principal: double.infinity, annualRatePercent: 5),
+        isNull,
+      );
+      expect(
+        annualRatePercentFromPayment(
+          principal: 100,
+          payment: double.nan,
+          period: InterestPeriod.daily,
         ),
         isNull,
       );

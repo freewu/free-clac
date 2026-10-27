@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../theme/app_theme.dart';
 import 'bmi/bmi_page.dart';
 import 'compound/compound_page.dart';
+import 'interest/interest_page.dart';
 
 /// 工具页里一张「应用卡片」的元数据。
 class ToolInfo {
@@ -38,6 +39,8 @@ Widget _bmiBuilder(BuildContext context) => const BmiPage();
 
 Widget _compoundBuilder(BuildContext context) => const CompoundPage();
 
+Widget _interestBuilder(BuildContext context) => const InterestPage();
+
 /// 全部内置工具，顺序即工具页展示顺序。
 final List<ToolInfo> kTools = List.unmodifiable(<ToolInfo>[
   ToolInfo(
@@ -57,6 +60,15 @@ final List<ToolInfo> kTools = List.unmodifiable(<ToolInfo>[
     icon: Icons.savings_outlined,
     color: AppColors.warning,
     builder: _compoundBuilder,
+  ),
+  ToolInfo(
+    id: 'interest',
+    name: '利率计算',
+    tagline: '日付月付，一眼换年化',
+    description: '本金配日付 / 月付 / 年付反推年化率，也能由年化率算出三种周期收益。',
+    icon: Icons.percent_rounded,
+    color: AppColors.secondary,
+    builder: _interestBuilder,
   ),
 ]);
 

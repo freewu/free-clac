@@ -9,6 +9,7 @@ import 'package:free_clac/state/plot_controller.dart';
 import 'package:free_clac/ui/widgets/plot_export_dialog.dart';
 import 'package:free_clac/ui/tools/bmi/bmi_page.dart';
 import 'package:free_clac/ui/tools/compound/compound_page.dart';
+import 'package:free_clac/ui/tools/interest/interest_page.dart';
 import 'package:free_clac/ui/widgets/calc_display.dart';
 import 'package:free_clac/ui/widgets/keypad.dart';
 import 'package:free_clac/plot/plot_painter.dart';
@@ -139,6 +140,7 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('BMI 计算'), findsOneWidget);
     expect(find.text('复利计算'), findsOneWidget);
+    expect(find.text('利率计算'), findsOneWidget);
     // 卡片上不再出现「打开」角标
     expect(find.text('打开'), findsNothing);
 
@@ -281,6 +283,47 @@ void main() {
     await tester.tap(find.text('工具'));
     await tester.pumpAndSettle();
     expect(find.byType(CompoundPage), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('利率计算：期付 ⇄ 年化双向换算', (tester) async {
+    await pumpApp(tester, const Size(1440, 900));
+
+    await tester.tap(find.text('工具'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('利率计算'));
+    await tester.pumpAndSettle();
+    expect(find.byType(InterestPage), findsOneWidget);
+    expect(find.byType(NavigationRail), findsOneWidget);
+
+    // 默认：本金 10000 元、日付 1 元 → 年化 3.65%
+    expect(find.text('3.65%'), findsWidgets);
+    expect(find.text('¥ 30.42'), findsWidgets);
+    expect(find.text('¥ 365.00'), findsWidgets);
+
+    // 换成月付，金额按当前年化率换算成 30.42 元，年化率不变
+    // 周期选项在结果区也有同名标签，这里点第一个（选项按钮）
+    await tester.tap(find.text('月付').first);
+    await tester.pumpAndSettle();
+    expect(find.text('30.42'), findsOneWidget);
+    expect(find.text('3.65%'), findsWidgets);
+
+    // 月付改成 50 元 → 年化 6%
+    await tester.enterText(find.byType(TextField).at(1), '50');
+    await tester.pumpAndSettle();
+    expect(find.text('6.00%'), findsWidgets);
+
+    // 切到「由年化算期付」，年化率沿用 6%，月付 50 元
+    await tester.tap(find.text('由年化算期付'));
+    await tester.pumpAndSettle();
+    expect(find.text('6'), findsOneWidget);
+    expect(find.text('¥ 50.00'), findsWidgets);
+
+    // 年化率改 12% → 月付 100 元、日付 3.29 元
+    await tester.enterText(find.byType(TextField).at(1), '12');
+    await tester.pumpAndSettle();
+    expect(find.text('¥ 100.00'), findsWidgets);
+    expect(find.text('¥ 3.29'), findsWidgets);
     expect(tester.takeException(), isNull);
   });
 
