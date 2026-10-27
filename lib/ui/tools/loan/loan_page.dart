@@ -13,6 +13,18 @@ const Color loanPrincipalColor = AppColors.primary;
 /// 利息条的颜色。
 const Color loanInterestColor = AppColors.warning;
 
+/// 解析深链里的还款方式（Web 端 `?method=equalPrincipal`），无效值回落到等额本息。
+///
+/// 主要给截图脚本用：`?page=tools&tool=loan&method=equalPrincipal`
+/// 打开就是等额本金，能直接看到明细的倒梯形。
+LoanMethod loanMethodFromQuery(Map<String, String> query) {
+  final name = query['method'];
+  return LoanMethod.values.firstWhere(
+    (method) => method.name == name,
+    orElse: () => LoanMethod.equalInstallment,
+  );
+}
+
 /// 贷款计算器：等额本息 / 等额本金，逐期拆分本金与利息并用双色条表示。
 class LoanPage extends StatefulWidget {
   const LoanPage({super.key});
@@ -22,7 +34,7 @@ class LoanPage extends StatefulWidget {
 }
 
 class _LoanPageState extends State<LoanPage> {
-  LoanMethod _method = LoanMethod.equalInstallment;
+  LoanMethod _method = loanMethodFromQuery(Uri.base.queryParameters);
   LoanTermUnit _termUnit = LoanTermUnit.years;
 
   final TextEditingController _amount = TextEditingController(text: '1000000');
@@ -366,6 +378,8 @@ class _Schedule extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final rows = groupByYear ? result.yearly : result.periods;
+    // 条长按还款额缩放：等额本金首期 100%、末期 60%，整体是个倒梯形
+    final ratios = scheduleBarRatios(rows);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
@@ -392,20 +406,37 @@ class _Schedule extends StatelessWidget {
             shrinkWrap: true,
             itemCount: rows.length,
             separatorBuilder: (_, _) => const SizedBox(height: 10),
-            itemBuilder: (context, index) =>
-                _PeriodRow(period: rows[index], byYear: groupByYear),
+            itemBuilder: (context, index) => _PeriodRow(
+              period: rows[index],
+              byYear: groupByYear,
+              barWidth: ratios[index],
+            ),
           ),
         ),
+        if (!result.isFixedPayment) ...[
+          const SizedBox(height: 10),
+          const Text(
+            '条长按当期还款额缩放：首期 100%，末期 60%',
+            style: TextStyle(color: AppColors.textSecondary, fontSize: 10),
+          ),
+        ],
       ],
     );
   }
 }
 
 class _PeriodRow extends StatelessWidget {
-  const _PeriodRow({required this.period, required this.byYear});
+  const _PeriodRow({
+    required this.period,
+    required this.byYear,
+    this.barWidth = 1,
+  });
 
   final LoanPeriod period;
   final bool byYear;
+
+  /// 金额条占满宽的比例（1 = 满宽），由 [scheduleBarRatios] 按还款额算出。
+  final double barWidth;
 
   @override
   Widget build(BuildContext context) {
@@ -436,14 +467,25 @@ class _PeriodRow extends StatelessWidget {
           ],
         ),
         const SizedBox(height: 4),
-        SegmentedBar(
-          segments: [
-            RatioSegment(
-              value: period.principalRatio,
-              color: loanPrincipalColor,
+        // 左对齐 + 按比例收窄，逐期变短就拼出倒梯形
+        Align(
+          alignment: Alignment.centerLeft,
+          child: FractionallySizedBox(
+            key: ValueKey('loan-period-bar-${period.index}'),
+            widthFactor: barWidth.clamp(0.0, 1.0),
+            child: SegmentedBar(
+              segments: [
+                RatioSegment(
+                  value: period.principalRatio,
+                  color: loanPrincipalColor,
+                ),
+                RatioSegment(
+                  value: period.interestRatio,
+                  color: loanInterestColor,
+                ),
+              ],
             ),
-            RatioSegment(value: period.interestRatio, color: loanInterestColor),
-          ],
+          ),
         ),
         const SizedBox(height: 4),
         Row(

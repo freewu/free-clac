@@ -459,6 +459,48 @@ void main() {
       expect(result.periods.last.principal, closeTo(2777.78, 0.01));
     });
 
+    test('明细条长：等额本金首期 100%、末期 60%，中间按金额缩放', () {
+      final result = calculate(method: LoanMethod.equalPrincipal);
+      final rows = result.periods;
+      final ratios = scheduleBarRatios(rows);
+
+      expect(ratios.length, rows.length);
+      expect(ratios.first, closeTo(1, 1e-9));
+      expect(ratios.last, closeTo(0.6, 1e-9));
+      // 逐期变短 → 倒梯形
+      for (var i = 1; i < ratios.length; i++) {
+        expect(ratios[i], lessThan(ratios[i - 1]));
+      }
+
+      // 中间各期按还款额线性插值，而不是等步长
+      const mid = 180;
+      final expected =
+          0.6 +
+          0.4 *
+              (rows[mid].payment - rows.last.payment) /
+              (rows.first.payment - rows.last.payment);
+      expect(ratios[mid], closeTo(expected, 1e-9));
+      expect(ratios[mid], inExclusiveRange(0.6, 1));
+
+      // 按年汇总同样是倒梯形
+      final yearly = scheduleBarRatios(result.yearly);
+      expect(yearly.first, closeTo(1, 1e-9));
+      expect(yearly.last, closeTo(0.6, 1e-9));
+    });
+
+    test('明细条长：等额本息每期满长，空列表安全', () {
+      final result = calculate();
+      expect(scheduleBarRatios(result.periods), everyElement(closeTo(1, 1e-9)));
+      expect(scheduleBarRatios(<LoanPeriod>[]), isEmpty);
+      // 自定义下限
+      final tapered = scheduleBarRatios(
+        calculate(method: LoanMethod.equalPrincipal).periods,
+        floor: 0.4,
+      );
+      expect(tapered.first, closeTo(1, 1e-9));
+      expect(tapered.last, closeTo(0.4, 1e-9));
+    });
+
     test('期数随期限变化', () {
       expect(calculate(months: 120).firstPayment, closeTo(10557.74, 0.01));
       expect(calculate(months: 240).firstPayment, closeTo(6544.44, 0.01));

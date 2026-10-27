@@ -6,6 +6,7 @@ import 'package:free_clac/core/math_engine.dart';
 import 'package:free_clac/plot/plot_export.dart';
 import 'package:free_clac/services/plot_file_saver.dart';
 import 'package:free_clac/state/plot_controller.dart';
+import 'package:free_clac/tools/loan.dart';
 import 'package:free_clac/ui/widgets/plot_export_dialog.dart';
 import 'package:free_clac/ui/tools/bmi/bmi_page.dart';
 import 'package:free_clac/ui/tools/compound/compound_page.dart';
@@ -339,6 +340,22 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
+  test('贷款计算器：深链解析还款方式，无效值回落等额本息', () {
+    expect(
+      loanMethodFromQuery(const {'method': 'equalPrincipal'}),
+      LoanMethod.equalPrincipal,
+    );
+    expect(
+      loanMethodFromQuery(const {'method': 'equalInstallment'}),
+      LoanMethod.equalInstallment,
+    );
+    expect(loanMethodFromQuery(const {}), LoanMethod.equalInstallment);
+    expect(
+      loanMethodFromQuery(const {'method': '乱写'}),
+      LoanMethod.equalInstallment,
+    );
+  });
+
   testWidgets('贷款计算器：月供拆分与双色条', (tester) async {
     await pumpApp(tester, const Size(1440, 900));
 
@@ -355,6 +372,8 @@ void main() {
     expect(find.text('¥ 910,616'), findsOneWidget);
     // 汇总条 + 每期明细条都画出来
     expect(find.byType(SegmentedBar), findsWidgets);
+    // 等额本息每期还款额相同，不做倒梯形缩放
+    expect(find.text('条长按当期还款额缩放：首期 100%，末期 60%'), findsNothing);
 
     // 三行金额条按金额区分长度：总还款 > 贷款总额 > 总利息
     expect(find.byType(AmountBar), findsNWidgets(3));
@@ -383,6 +402,13 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('¥ 6,861.11'), findsWidgets);
     expect(find.textContaining('月供逐月递减'), findsOneWidget);
+    expect(find.text('条长按当期还款额缩放：首期 100%，末期 60%'), findsOneWidget);
+
+    // 明细条长逐期收窄，整体拼成倒梯形
+    double periodBar(int index) =>
+        tester.getSize(find.byKey(ValueKey('loan-period-bar-$index'))).width;
+    expect(periodBar(1), greaterThan(periodBar(2)));
+    expect(periodBar(2), greaterThan(periodBar(3)));
 
     // 按年汇总：30 行
     await tester.tap(find.text('按年'));

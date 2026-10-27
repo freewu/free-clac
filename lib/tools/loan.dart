@@ -140,6 +140,32 @@ class LoanResult {
   }
 }
 
+/// 还款明细里每条金额条的相对长度（0~1），用于把明细画成倒梯形。
+///
+/// 规则：还款额最大的那一行（等额本金的首期）占满 100%，最小的一行
+/// （末期）为 [floor]（默认 60%），中间的额度按还款金额线性插值，
+/// 所以逐期递减的等额本金会自然拼成一个倒梯形；还款额恒定时（等额本息）
+/// 每行都是满长。
+List<double> scheduleBarRatios(List<LoanPeriod> rows, {double floor = 0.6}) {
+  if (rows.isEmpty) return const <double>[];
+  final safeFloor = floor.clamp(0.0, 1.0);
+  final first = rows.first.payment;
+  final last = rows.last.payment;
+  final span = first - last;
+  // 等额本息每期相等，只有末期抹平浮点误差带来的几分钱差异，
+  // 相对差小于万分之一就当「没有落差」，整列满长。
+  if (!span.isFinite || span.abs() <= first.abs() * 1e-4) {
+    return List<double>.filled(rows.length, 1);
+  }
+  return <double>[
+    for (final row in rows)
+      (safeFloor + (1 - safeFloor) * (row.payment - last) / span).clamp(
+        safeFloor,
+        1.0,
+      ),
+  ];
+}
+
 /// 校验贷款参数是否可用。
 bool _validLoanInput({
   required double amount,
