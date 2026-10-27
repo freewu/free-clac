@@ -64,8 +64,9 @@ class ToolNumberField extends StatelessWidget {
                 : Padding(
                     padding: const EdgeInsets.only(right: 8),
                     // suffixIcon 槽位是 48 高的紧约束，居中后才能和
-                    // 其它字段的 suffixText 保持同一水平线
-                    child: Center(child: trailing),
+                    // 其它字段的 suffixText 保持同一水平线；
+                    // widthFactor 必须为 1，否则 Center 会吃掉输入区宽度
+                    child: Center(widthFactor: 1, child: trailing),
                   ),
             suffixStyle: const TextStyle(
               color: AppColors.textSecondary,

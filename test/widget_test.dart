@@ -189,6 +189,28 @@ void main() {
       tester.getCenter(find.text('ft')).dy,
       closeTo(tester.getCenter(find.text('lb')).dy, 1),
     );
+    // 单位不能把输入区挤没（曾经 suffixIcon 里的 Center 撑满整行，
+    // 导致输入框里的数值完全看不见）
+    final fields = find.byType(TextField);
+    expect(
+      tester.getSize(find.byType(EditableText).at(0)).width,
+      greaterThan(120),
+    );
+    expect(
+      tester.getSize(find.byType(EditableText).at(1)).width,
+      greaterThan(120),
+    );
+    // 单位各自贴在自己输入框的右侧
+    final heightRight = tester.getRect(fields.at(0)).right;
+    final weightRight = tester.getRect(fields.at(1)).right;
+    expect(
+      tester.getRect(find.text('ft')).right,
+      greaterThan(heightRight - 60),
+    );
+    expect(
+      tester.getRect(find.text('lb')).right,
+      greaterThan(weightRight - 60),
+    );
     expect(find.textContaining('143.3 lb'), findsWidgets);
     expect(find.text('22.5'), findsOneWidget);
 
