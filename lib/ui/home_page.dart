@@ -7,17 +7,25 @@ import '../theme/app_theme.dart';
 import '../plot/plot_presets.dart';
 import 'calculator_page.dart';
 import 'plot_page.dart';
-import 'tools_page.dart';
+import 'tools/tools_tab.dart';
 
 /// 应用主框架：计算器 / 绘图 / 工具三个页面，共享同一个计算引擎。
 class HomePage extends StatefulWidget {
-  const HomePage({super.key, this.initialTab = 0, this.initialPreset});
+  const HomePage({
+    super.key,
+    this.initialTab = 0,
+    this.initialPreset,
+    this.initialTool,
+  });
 
   /// 初始页面：0 计算器，1 绘图，2 工具。
   final int initialTab;
 
   /// 启动时载入的示例曲线下标，越界时忽略。
   final int? initialPreset;
+
+  /// 启动时直接打开的工具 id（Web 端 `?tool=bmi`）。
+  final String? initialTool;
 
   @override
   State<HomePage> createState() => _HomePageState();
@@ -60,7 +68,7 @@ class _HomePageState extends State<HomePage> {
           children: [
             CalculatorPage(controller: _calculator),
             PlotPage(controller: _plot),
-            const ToolsPage(),
+            ToolsTab(initialTool: widget.initialTool, active: _index == 2),
           ],
         );
 

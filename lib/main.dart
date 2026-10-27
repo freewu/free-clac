@@ -12,6 +12,8 @@ void main() {
       initialTab: switch (page) {
         'plot' => 1,
         'tools' => 2,
+        // 只带 ?tool=xxx 时也直接停在工具页
+        _ when query['tool'] != null => 2,
         _ => 0,
       },
       initialPreset: int.tryParse(query['preset'] ?? ''),

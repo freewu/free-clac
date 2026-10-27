@@ -63,7 +63,9 @@ class ToolNumberField extends StatelessWidget {
                 ? null
                 : Padding(
                     padding: const EdgeInsets.only(right: 8),
-                    child: trailing,
+                    // suffixIcon 槽位是 48 高的紧约束，居中后才能和
+                    // 其它字段的 suffixText 保持同一水平线
+                    child: Center(child: trailing),
                   ),
             suffixStyle: const TextStyle(
               color: AppColors.textSecondary,

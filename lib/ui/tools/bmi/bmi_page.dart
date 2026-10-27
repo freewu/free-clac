@@ -154,7 +154,14 @@ class _BmiPageState extends State<BmiPage> {
                             Expanded(
                               child: ToolNumberField(
                                 label: '体重',
-                                suffix: 'lb',
+                                // 与身高单位同一套 suffixIcon 插槽，保证两个单位上下齐平
+                                trailing: const Text(
+                                  'lb',
+                                  style: TextStyle(
+                                    color: AppColors.textSecondary,
+                                    fontSize: 12,
+                                  ),
+                                ),
                                 controller: _weight,
                                 onChanged: (_) => setState(() {}),
                               ),
@@ -209,7 +216,7 @@ class _UnitSwitch extends StatelessWidget {
   }
 }
 
-/// 英制身高的输入单位：ft / in 下拉切换。
+/// 英制身高的输入单位：点开菜单切换 ft / in。
 class _HeightUnitPicker extends StatelessWidget {
   const _HeightUnitPicker({required this.unit, required this.onChanged});
 
@@ -218,32 +225,40 @@ class _HeightUnitPicker extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      height: 26,
-      child: DropdownButton<BmiImperialHeightUnit>(
-        value: unit,
-        isDense: true,
-        focusColor: Colors.transparent,
-        underline: const SizedBox.shrink(),
-        iconSize: 16,
-        icon: const Icon(
-          Icons.arrow_drop_down_rounded,
-          size: 16,
-          color: AppColors.textSecondary,
-        ),
-        borderRadius: BorderRadius.circular(10),
-        style: const TextStyle(
-          color: AppColors.textSecondary,
-          fontSize: 12,
-          fontWeight: FontWeight.w600,
-        ),
-        items: [
-          for (final value in BmiImperialHeightUnit.values)
-            DropdownMenuItem(value: value, child: Text(value.symbol)),
+    return PopupMenuButton<BmiImperialHeightUnit>(
+      tooltip: '身高单位',
+      padding: EdgeInsets.zero,
+      position: PopupMenuPosition.under,
+      initialValue: unit,
+      onSelected: onChanged,
+      itemBuilder: (context) => [
+        for (final value in BmiImperialHeightUnit.values)
+          PopupMenuItem(
+            value: value,
+            height: 38,
+            child: Text(
+              '${value.symbol}（${value.label}）',
+              style: const TextStyle(fontSize: 12.5),
+            ),
+          ),
+      ],
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            unit.symbol,
+            style: const TextStyle(
+              color: AppColors.textSecondary,
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          const Icon(
+            Icons.arrow_drop_down_rounded,
+            size: 16,
+            color: AppColors.textSecondary,
+          ),
         ],
-        onChanged: (value) {
-          if (value != null) onChanged(value);
-        },
       ),
     );
   }

@@ -8,6 +8,7 @@ import 'package:free_clac/services/saved_plot_file.dart';
 import 'package:free_clac/state/plot_controller.dart';
 import 'package:free_clac/ui/widgets/plot_export_dialog.dart';
 import 'package:free_clac/ui/tools/bmi/bmi_page.dart';
+import 'package:free_clac/ui/tools/compound/compound_page.dart';
 import 'package:free_clac/ui/widgets/calc_display.dart';
 import 'package:free_clac/ui/widgets/keypad.dart';
 import 'package:free_clac/plot/plot_painter.dart';
@@ -144,6 +145,10 @@ void main() {
     await tester.tap(find.text('BMI 计算'));
     await tester.pumpAndSettle();
 
+    // 工具在「工具」tab 内打开，外层导航菜单保留
+    expect(find.byType(NavigationRail), findsOneWidget);
+    expect(find.byType(BmiPage), findsOneWidget);
+
     // 默认 170 cm / 65 kg → BMI 22.5，属于正常
     expect(find.text('22.5'), findsOneWidget);
     expect(find.text('正常'), findsWidgets);
@@ -179,13 +184,18 @@ void main() {
     expect(find.byType(TextField), findsNWidgets(2));
     expect(find.text('5.58'), findsOneWidget);
     expect(find.textContaining('身高 5.58 ft'), findsOneWidget);
+    // 身高单位（ft ▾）与体重单位（lb）上下齐平
+    expect(
+      tester.getCenter(find.text('ft')).dy,
+      closeTo(tester.getCenter(find.text('lb')).dy, 1),
+    );
     expect(find.textContaining('143.3 lb'), findsWidgets);
     expect(find.text('22.5'), findsOneWidget);
 
     // 身高单位 ft → in：仍是同一个输入框，数值换算
     await tester.tap(find.text('ft'));
     await tester.pumpAndSettle();
-    await tester.tap(find.text('in').last);
+    await tester.tap(find.text('in（英寸）'));
     await tester.pumpAndSettle();
     expect(find.text('66.96'), findsOneWidget);
     expect(find.textContaining('身高 66.96 in'), findsOneWidget);
@@ -229,6 +239,29 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
+  testWidgets('工具页：打开工具后可与其它 tab 来回切换', (tester) async {
+    await pumpApp(tester, const Size(1440, 900));
+
+    await tester.tap(find.text('工具'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('复利计算'));
+    await tester.pumpAndSettle();
+
+    // 工具页内仍能看到导航菜单
+    expect(find.byType(NavigationRail), findsOneWidget);
+    expect(find.text('计算'), findsOneWidget);
+    expect(find.text('绘图'), findsOneWidget);
+
+    // 切到计算器再切回工具，工具页面不丢
+    await tester.tap(find.text('计算'));
+    await tester.pumpAndSettle();
+    expect(find.byType(NavigationRail), findsOneWidget);
+    await tester.tap(find.text('工具'));
+    await tester.pumpAndSettle();
+    expect(find.byType(CompoundPage), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
   testWidgets('工具页：深链 ?tool=bmi 直接打开工具并可返回', (tester) async {
     tester.view.physicalSize = const Size(1440, 900);
     tester.view.devicePixelRatio = 1;
@@ -241,6 +274,8 @@ void main() {
 
     expect(find.byType(BmiPage), findsOneWidget);
     expect(find.text('22.5'), findsOneWidget);
+    // 深链打开工具时导航菜单同样保留
+    expect(find.byType(NavigationRail), findsOneWidget);
 
     await tester.pageBack();
     await tester.pumpAndSettle();
@@ -260,7 +295,10 @@ void main() {
     await tester.pumpAndSettle();
     expect(tester.takeException(), isNull);
 
-    // 手机上英制三列输入也不溢出
+    // 手机上打开工具后底部菜单仍在
+    expect(find.byType(NavigationBar), findsOneWidget);
+
+    // 手机上英制输入也不溢出
     await tester.tap(find.text('英制'));
     await tester.pumpAndSettle();
     expect(find.text('ft'), findsOneWidget);
