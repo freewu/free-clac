@@ -14,6 +14,10 @@ abstract final class AppColors {
   static const Color warning = Color(0xFFFBBF24);
   static const Color error = Color(0xFFFF6B6B);
 
+  /// 工具卡片的补充配色（与 [curvePalette] 里的紫 / 橙同值）。
+  static const Color violet = Color(0xFFC084FC);
+  static const Color orange = Color(0xFFFF7A59);
+
   static const Color textPrimary = Color(0xFFE9F0FA);
   static const Color textSecondary = Color(0xFF93A4BB);
 

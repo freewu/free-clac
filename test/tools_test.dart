@@ -1,10 +1,16 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:free_clac/tools/area.dart';
 import 'package:free_clac/tools/bmi.dart';
 import 'package:free_clac/tools/compound.dart';
 import 'package:free_clac/tools/distance.dart';
 import 'package:free_clac/tools/interest.dart';
 import 'package:free_clac/tools/loan.dart';
+import 'package:free_clac/tools/speed.dart';
 import 'package:free_clac/tools/tax.dart';
+import 'package:free_clac/tools/temperature.dart';
+import 'package:free_clac/tools/unit_catalog.dart';
+import 'package:free_clac/tools/volume.dart';
+import 'package:free_clac/tools/weight.dart';
 
 void main() {
   group('BMI：计算与分级', () {
@@ -819,7 +825,11 @@ void main() {
     test('参照物都指向真实单位', () {
       expect(kDistanceSamples, isNotEmpty);
       for (final sample in kDistanceSamples) {
-        expect(sample.unit, isNotNull, reason: sample.label);
+        expect(
+          kLengthCatalog.unitOfSample(sample),
+          isNotNull,
+          reason: sample.label,
+        );
         expect(sample.value > 0, isTrue);
       }
       // 1 光年按 9.46 万亿千米
@@ -827,9 +837,156 @@ void main() {
         (sample) => sample.label == '1 光年',
       );
       expect(
-        convertDistance(lightYear.value, from: lightYear.unit!, to: unit('m')),
+        convertDistance(
+          lightYear.value,
+          from: kLengthCatalog.unitOfSample(lightYear)!,
+          to: unit('m'),
+        ),
         closeTo(9.4607304725808e15, 1e9),
       );
+    });
+  });
+  group('单位换算：面积 / 容量 / 重量 / 温度 / 速度', () {
+    /// 用单位 id 换算，测试里少写样板。
+    double? swap(
+      MeasureCatalog catalog,
+      double value,
+      String from,
+      String to,
+    ) => catalog.convert(
+      value,
+      from: catalog.unitById(from)!,
+      to: catalog.unitById(to)!,
+    );
+
+    test('面积：1 公顷 = 15 亩，1 英亩 ≈ 4046.86 平方米', () {
+      expect(swap(kAreaCatalog, 1, 'ha', 'sqm'), closeTo(10000, 1e-9));
+      expect(swap(kAreaCatalog, 1, 'ha', 'mu'), closeTo(15, 1e-9));
+      expect(swap(kAreaCatalog, 1, 'mu', 'sqm'), closeTo(2000 / 3, 1e-9));
+      expect(swap(kAreaCatalog, 1, 'qing', 'mu'), closeTo(100, 1e-9));
+      expect(swap(kAreaCatalog, 1, 'sqzhang', 'sqchi'), closeTo(100, 1e-9));
+      expect(swap(kAreaCatalog, 1, 'acre', 'sqm'), closeTo(4046.8564224, 1e-6));
+      expect(swap(kAreaCatalog, 1, 'sqmi', 'acre'), closeTo(640, 1e-9));
+      expect(swap(kAreaCatalog, 1, 'sqft', 'sqin'), closeTo(144, 1e-9));
+      expect(swap(kAreaCatalog, 1, 'sqm', 'sqcm'), closeTo(10000, 1e-9));
+      expect(swap(kAreaCatalog, 1, 'sqkm', 'ha'), closeTo(100, 1e-9));
+      // A4 纸 0.06237 平方米 = 623.7 平方厘米
+      expect(swap(kAreaCatalog, 0.06237, 'sqm', 'sqcm'), closeTo(623.7, 1e-9));
+    });
+
+    test('容量：1 英制加仑 = 4.54609 升，1 石 = 100 升', () {
+      expect(swap(kVolumeCatalog, 1, 'm3', 'l'), closeTo(1000, 1e-9));
+      expect(swap(kVolumeCatalog, 1, 'm3', 'ml'), closeTo(1e6, 1e-6));
+      expect(swap(kVolumeCatalog, 1, 'l', 'ml'), closeTo(1000, 1e-9));
+      expect(swap(kVolumeCatalog, 1, 'gal', 'l'), closeTo(4.54609, 1e-12));
+      expect(swap(kVolumeCatalog, 1, 'gal', 'pt'), closeTo(8, 1e-9));
+      expect(swap(kVolumeCatalog, 1, 'gal', 'floz'), closeTo(160, 1e-9));
+      expect(swap(kVolumeCatalog, 1, 'pt', 'floz'), closeTo(20, 1e-9));
+      expect(swap(kVolumeCatalog, 1, 'bu', 'gal'), closeTo(8, 1e-9));
+      expect(swap(kVolumeCatalog, 1, 'dan', 'dou'), closeTo(10, 1e-12));
+      expect(swap(kVolumeCatalog, 1, 'dou', 'sheng'), closeTo(10, 1e-12));
+      expect(swap(kVolumeCatalog, 1, 'ge', 'shao'), closeTo(10, 1e-12));
+      expect(swap(kVolumeCatalog, 1, 'shao', 'ml'), closeTo(10, 1e-12));
+      expect(swap(kVolumeCatalog, 550, 'ml', 'l'), closeTo(0.55, 1e-12));
+    });
+
+    test('重量：1 磅 = 0.45359237 千克，1 斤 = 500 克', () {
+      expect(swap(kWeightCatalog, 1, 't', 'kg'), closeTo(1000, 1e-9));
+      expect(swap(kWeightCatalog, 1, 'kg', 'mg'), closeTo(1e6, 1e-6));
+      expect(swap(kWeightCatalog, 1, 'lb', 'kg'), closeTo(0.45359237, 1e-12));
+      expect(swap(kWeightCatalog, 1, 'lb', 'oz'), closeTo(16, 1e-9));
+      expect(swap(kWeightCatalog, 1, 'st', 'lb'), closeTo(14, 1e-9));
+      expect(swap(kWeightCatalog, 1, 'longton', 'lb'), closeTo(2240, 1e-6));
+      expect(swap(kWeightCatalog, 1, 'shortton', 'lb'), closeTo(2000, 1e-6));
+      expect(swap(kWeightCatalog, 1, 'jin', 'g'), closeTo(500, 1e-9));
+      expect(swap(kWeightCatalog, 1, 'jin', 'lb'), closeTo(1.1023113109, 1e-9));
+      expect(swap(kWeightCatalog, 1, 'dan', 'jin'), closeTo(100, 1e-9));
+      expect(swap(kWeightCatalog, 1, 'liang', 'qian'), closeTo(10, 1e-9));
+      expect(swap(kWeightCatalog, 65, 'kg', 'jin'), closeTo(130, 1e-9));
+    });
+
+    test('温度：仿射换算（含零点偏移）', () {
+      expect(swap(kTemperatureCatalog, 0, 'c', 'f'), closeTo(32, 1e-9));
+      expect(swap(kTemperatureCatalog, 100, 'c', 'f'), closeTo(212, 1e-9));
+      expect(swap(kTemperatureCatalog, 32, 'f', 'c'), closeTo(0, 1e-9));
+      expect(swap(kTemperatureCatalog, -40, 'c', 'f'), closeTo(-40, 1e-9));
+      expect(swap(kTemperatureCatalog, 37, 'c', 'f'), closeTo(98.6, 1e-9));
+      expect(swap(kTemperatureCatalog, 0, 'c', 'k'), closeTo(273.15, 1e-9));
+      expect(swap(kTemperatureCatalog, 0, 'k', 'c'), closeTo(-273.15, 1e-9));
+      expect(swap(kTemperatureCatalog, 273.15, 'k', 'f'), closeTo(32, 1e-9));
+      expect(swap(kTemperatureCatalog, 0, 'r', 'k'), closeTo(0, 1e-9));
+      expect(swap(kTemperatureCatalog, 0, 'r', 'c'), closeTo(-273.15, 1e-9));
+      // 摄氏与开尔文同刻度，华氏与兰氏同刻度
+      expect(swap(kTemperatureCatalog, 10, 'c', 'k'), closeTo(283.15, 1e-9));
+      expect(swap(kTemperatureCatalog, 9, 'f', 'r'), closeTo(468.67, 1e-9));
+      // 温度只有公制 / 英制两套体系
+      expect(kTemperatureCatalog.systems, <MeasureSystem>[
+        MeasureSystem.metric,
+        MeasureSystem.imperial,
+      ]);
+      expect(kTemperatureCatalog.unitsOf(MeasureSystem.chinese), isEmpty);
+    });
+
+    test('速度：1 节 = 1.852 千米/小时，1 马赫 = 340.3 米/秒', () {
+      expect(swap(kSpeedCatalog, 1, 'kmh', 'ms'), closeTo(1 / 3.6, 1e-12));
+      expect(swap(kSpeedCatalog, 36, 'kmh', 'ms'), closeTo(10, 1e-12));
+      expect(swap(kSpeedCatalog, 1, 'mph', 'kmh'), closeTo(1.609344, 1e-9));
+      expect(swap(kSpeedCatalog, 1, 'kn', 'kmh'), closeTo(1.852, 1e-9));
+      expect(swap(kSpeedCatalog, 1, 'mach', 'ms'), closeTo(340.3, 1e-9));
+      expect(swap(kSpeedCatalog, 1, 'kms', 'kmh'), closeTo(3600, 1e-9));
+      expect(swap(kSpeedCatalog, 1, 'fts', 'ms'), closeTo(0.3048, 1e-12));
+      expect(swap(kSpeedCatalog, 3600, 'lishi', 'ms'), closeTo(500, 1e-9));
+      expect(swap(kSpeedCatalog, 100, 'kmh', 'mach'), closeTo(0.081627, 1e-6));
+    });
+
+    test('五张单位表：id 唯一、体系自洽、参照物都落到真实单位', () {
+      for (final catalog in <MeasureCatalog>[
+        kAreaCatalog,
+        kVolumeCatalog,
+        kWeightCatalog,
+        kTemperatureCatalog,
+        kSpeedCatalog,
+      ]) {
+        final ids = catalog.units.map((unit) => unit.id).toList();
+        expect(ids.toSet().length, ids.length, reason: catalog.name);
+        expect(
+          catalog.unitById(catalog.defaultUnitId),
+          isNotNull,
+          reason: catalog.name,
+        );
+        for (final unit in catalog.units) {
+          expect(
+            unit.baseValue.isFinite && unit.baseValue > 0,
+            isTrue,
+            reason: '${catalog.name} ${unit.id}',
+          );
+          expect(
+            catalog.systems.contains(unit.system),
+            isTrue,
+            reason: '${catalog.name} ${unit.id}',
+          );
+        }
+        expect(catalog.samples, isNotEmpty, reason: catalog.name);
+        for (final sample in catalog.samples) {
+          expect(
+            catalog.unitOfSample(sample),
+            isNotNull,
+            reason: '${catalog.name} ${sample.label}',
+          );
+        }
+        // 任意两个单位互为反函数
+        for (final from in catalog.units) {
+          for (final to in catalog.units) {
+            final forward = catalog.convert(7.5, from: from, to: to)!;
+            final back = catalog.convert(forward, from: to, to: from)!;
+            expect(
+              back,
+              closeTo(7.5, 1e-6),
+              reason: '${catalog.name} ${from.id} → ${to.id}',
+            );
+          }
+        }
+      }
     });
   });
 }

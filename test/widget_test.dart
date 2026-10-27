@@ -8,12 +8,17 @@ import 'package:free_clac/services/plot_file_saver.dart';
 import 'package:free_clac/state/plot_controller.dart';
 import 'package:free_clac/tools/loan.dart';
 import 'package:free_clac/ui/widgets/plot_export_dialog.dart';
+import 'package:free_clac/ui/tools/area/area_page.dart';
 import 'package:free_clac/ui/tools/bmi/bmi_page.dart';
 import 'package:free_clac/ui/tools/compound/compound_page.dart';
 import 'package:free_clac/ui/tools/distance/distance_page.dart';
 import 'package:free_clac/ui/tools/interest/interest_page.dart';
 import 'package:free_clac/ui/tools/loan/loan_page.dart';
+import 'package:free_clac/ui/tools/speed/speed_page.dart';
 import 'package:free_clac/ui/tools/tax/tax_page.dart';
+import 'package:free_clac/ui/tools/temperature/temperature_page.dart';
+import 'package:free_clac/ui/tools/volume/volume_page.dart';
+import 'package:free_clac/ui/tools/weight/weight_page.dart';
 import 'package:free_clac/ui/tools/widgets/tool_bars.dart';
 import 'package:free_clac/ui/widgets/calc_display.dart';
 import 'package:free_clac/ui/widgets/keypad.dart';
@@ -266,6 +271,56 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.textContaining('164,700.95'), findsOneWidget);
     expect(find.textContaining('每月计息'), findsWidgets);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('复利计算：本金 / 利率 / 年限按 2 : 1 : 1 排一行', (tester) async {
+    await pumpApp(tester, const Size(1440, 900));
+
+    await tester.tap(find.text('工具'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('复利计算'));
+    await tester.pumpAndSettle();
+
+    final principal = tester.getSize(find.byType(TextField).at(0)).width;
+    final rate = tester.getSize(find.byType(TextField).at(1)).width;
+    final years = tester.getSize(find.byType(TextField).at(2)).width;
+    // 本金占两份宽度，利率与年限各一份
+    expect(principal, closeTo(rate * 2, 1.5));
+    expect(years, closeTo(rate, 0.5));
+    // 三个输入框仍在同一行
+    expect(
+      tester.getTopLeft(find.byType(TextField).at(0)).dy,
+      closeTo(tester.getTopLeft(find.byType(TextField).at(2)).dy, 0.5),
+    );
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('手机尺寸：复利计算利率 / 年限改两行且不溢出', (tester) async {
+    tester.view.physicalSize = const Size(390, 844);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+
+    await tester.pumpWidget(
+      const FreeCalcApp(initialTab: 2, initialTool: 'compound'),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.byType(CompoundPage), findsOneWidget);
+    // 本金独占一行，利率与年限在下一行
+    final principalY = tester.getTopLeft(find.byType(TextField).at(0)).dy;
+    final rateY = tester.getTopLeft(find.byType(TextField).at(1)).dy;
+    expect(rateY, greaterThan(principalY));
+    expect(
+      tester.getTopLeft(find.byType(TextField).at(2)).dy,
+      closeTo(rateY, 0.5),
+    );
+    for (var i = 0; i < 3; i++) {
+      expect(
+        tester.getSize(find.byType(EditableText).at(i)).width,
+        greaterThanOrEqualTo(60),
+      );
+    }
     expect(tester.takeException(), isNull);
   });
 
@@ -552,6 +607,175 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
+  // (深链 id, 页面类型, 默认换算的标题, 结果里必须出现的一行)
+  const convertCases = <(String, Type, String, String)>[
+    ('area', AreaPage, '1 平方米', '10000'),
+    ('volume', VolumePage, '1 升', '1000'),
+    ('weight', WeightPage, '1 千克', '1000'),
+  ];
+  for (final (id, type, headline, row) in convertCases) {
+    testWidgets('工具页：$id 深链打开并换算', (tester) async {
+      tester.view.physicalSize = const Size(1440, 1600);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.reset);
+      await tester.pumpWidget(FreeCalcApp(initialTab: 2, initialTool: id));
+      await tester.pumpAndSettle();
+
+      expect(find.byType(type), findsOneWidget);
+      expect(find.byKey(Key('$id-system')), findsOneWidget);
+      expect(find.byKey(Key('$id-unit')), findsOneWidget);
+      expect(find.byKey(Key('$id-samples')), findsOneWidget);
+      expect(find.text(headline), findsOneWidget);
+      expect(find.text(row), findsOneWidget);
+      // 结果区三个体系 tab 齐全
+      expect(find.widgetWithText(Tab, '公制'), findsOneWidget);
+      expect(find.widgetWithText(Tab, '英制'), findsOneWidget);
+      expect(find.widgetWithText(Tab, '市制'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    });
+  }
+
+  testWidgets('重量换算：切市制 tab、点参照物与复制整行', (tester) async {
+    String? clipboard;
+    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+        .setMockMethodCallHandler(SystemChannels.platform, (call) async {
+          if (call.method == 'Clipboard.setData') {
+            clipboard = (call.arguments as Map)['text'] as String?;
+          }
+          return null;
+        });
+    addTearDown(
+      () => TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+          .setMockMethodCallHandler(SystemChannels.platform, null),
+    );
+
+    tester.view.physicalSize = const Size(1440, 1600);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+    await tester.pumpWidget(
+      const FreeCalcApp(initialTab: 2, initialTool: 'weight'),
+    );
+    await tester.pumpAndSettle();
+
+    // 默认 1 千克：公制 tab 只有公制单位
+    expect(find.text('克'), findsOneWidget);
+    expect(find.text('斤'), findsNothing);
+
+    // 点参照物「一袋大米」代入 10 千克
+    await tester.ensureVisible(find.text('一袋大米'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('一袋大米'));
+    await tester.pumpAndSettle();
+    expect(find.text('10 千克'), findsOneWidget);
+
+    // 切到市制 tab 才会出现斤两钱，输入不变
+    await tester.tap(find.widgetWithText(Tab, '市制'));
+    await tester.pumpAndSettle();
+    expect(find.text('斤'), findsWidgets);
+    expect(find.text('20'), findsOneWidget); // 10 千克 = 20 斤
+    expect(find.text('克'), findsNothing);
+
+    // 点「斤」那一行复制（结果区里最后一个「斤」）
+    await tester.tap(find.text('斤').last);
+    await tester.pumpAndSettle();
+    expect(clipboard, '20 斤');
+    expect(find.text('已复制 20 斤'), findsOneWidget);
+
+    // 体系下拉切市制：单位落到该体系第一个（担），数值保持不变
+    await tester.tap(find.byKey(const Key('weight-system')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('市制').last);
+    await tester.pumpAndSettle();
+    expect(find.text('10 担'), findsOneWidget);
+    expect(find.text('1000'), findsOneWidget); // 10 担 = 1000 斤
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('温度换算：只有公制与英制两个 tab，仿射换算正确', (tester) async {
+    tester.view.physicalSize = const Size(1440, 1600);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+    await tester.pumpWidget(
+      const FreeCalcApp(initialTab: 2, initialTool: 'temperature'),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.byType(TemperaturePage), findsOneWidget);
+    // 1 °C = 33.8 °F = 274.15 K
+    expect(find.text('1 摄氏度'), findsOneWidget);
+    expect(find.text('274.15'), findsOneWidget); // 开尔文
+
+    // 华氏度在英制 tab 里
+    await tester.tap(find.widgetWithText(Tab, '英制'));
+    await tester.pumpAndSettle();
+    expect(find.text('33.8'), findsOneWidget);
+    // 温度没有市制，tab 只有两个
+    expect(find.widgetWithText(Tab, '公制'), findsOneWidget);
+    expect(find.widgetWithText(Tab, '英制'), findsOneWidget);
+    expect(find.widgetWithText(Tab, '市制'), findsNothing);
+    expect(find.text('25'), findsNothing);
+    expect(find.text('千米'), findsNothing);
+
+    // 体系下拉也只有两项：公制 / 英制
+    await tester.tap(find.byKey(const Key('temperature-system')));
+    await tester.pumpAndSettle();
+    expect(find.text('市制'), findsNothing);
+    await tester.tap(find.text('英制').last);
+    await tester.pumpAndSettle();
+    expect(find.text('华氏度（°F）'), findsOneWidget);
+
+    // 1 °F = −17.22 °C
+    await tester.enterText(find.byType(TextField).first, '32');
+    await tester.pumpAndSettle();
+    expect(find.text('32 华氏度'), findsOneWidget);
+    await tester.tap(find.widgetWithText(Tab, '公制'));
+    await tester.pumpAndSettle();
+    expect(find.text('0'), findsWidgets); // 32 °F = 0 °C
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('速度换算：千米每小时与米每秒互转', (tester) async {
+    tester.view.physicalSize = const Size(1440, 1600);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+    await tester.pumpWidget(
+      const FreeCalcApp(initialTab: 2, initialTool: 'speed'),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.byType(SpeedPage), findsOneWidget);
+    // 默认 1 千米/小时 ≈ 0.2778 米/秒
+    expect(find.text('1 千米/小时'), findsOneWidget);
+    expect(find.text('0.2777777778'), findsOneWidget);
+
+    // 输入 36 千米/小时 = 10 米/秒
+    await tester.enterText(find.byType(TextField).first, '36');
+    await tester.pumpAndSettle();
+    expect(find.text('36 千米/小时'), findsOneWidget);
+    expect(find.text('10'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('手机尺寸：新换算工具页不溢出', (tester) async {
+    for (final id in <String>[
+      'area',
+      'volume',
+      'weight',
+      'temperature',
+      'speed',
+    ]) {
+      tester.view.physicalSize = const Size(390, 844);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.reset);
+
+      await tester.pumpWidget(FreeCalcApp(initialTab: 2, initialTool: id));
+      await tester.pumpAndSettle();
+      expect(find.byType(NavigationBar), findsOneWidget, reason: id);
+      expect(find.widgetWithText(Tab, '公制'), findsOneWidget, reason: id);
+      expect(tester.takeException(), isNull, reason: id);
+    }
+  });
+
   testWidgets('工具页：手机尺寸下长度换算不溢出', (tester) async {
     await pumpApp(tester, const Size(390, 844));
 
@@ -582,6 +806,13 @@ void main() {
     await tester.pumpWidget(const FreeCalcApp());
     await tester.pumpAndSettle();
     await tester.tap(find.text('工具'));
+    await tester.pumpAndSettle();
+    // 工具变多后手机上贷款计算器要滚动才看得到
+    await tester.dragUntilVisible(
+      find.text('贷款计算器'),
+      find.byType(GridView),
+      const Offset(0, -120),
+    );
     await tester.pumpAndSettle();
     await tester.tap(find.text('贷款计算器'));
     await tester.pumpAndSettle();

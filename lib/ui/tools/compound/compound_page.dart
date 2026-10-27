@@ -72,37 +72,57 @@ class _CompoundPageState extends State<CompoundPage> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      Row(
-                        crossAxisAlignment: CrossAxisAlignment.end,
-                        children: [
-                          Expanded(
-                            child: ToolNumberField(
-                              label: '期初本金',
-                              suffix: '元',
-                              controller: _principal,
-                              onChanged: (_) => setState(() {}),
-                            ),
-                          ),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: ToolNumberField(
-                              label: '年利率',
-                              suffix: '%',
-                              controller: _rate,
-                              allowNegative: true,
-                              onChanged: (_) => setState(() {}),
-                            ),
-                          ),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: ToolNumberField(
-                              label: '年限',
-                              suffix: '年',
-                              controller: _years,
-                              onChanged: (_) => setState(() {}),
-                            ),
-                          ),
-                        ],
+                      LayoutBuilder(
+                        builder: (context, constraints) {
+                          final principal = ToolNumberField(
+                            label: '期初本金',
+                            suffix: '元',
+                            controller: _principal,
+                            onChanged: (_) => setState(() {}),
+                          );
+                          final rate = ToolNumberField(
+                            label: '年利率',
+                            suffix: '%',
+                            controller: _rate,
+                            allowNegative: true,
+                            onChanged: (_) => setState(() {}),
+                          );
+                          final years = ToolNumberField(
+                            label: '年限',
+                            suffix: '年',
+                            controller: _years,
+                            onChanged: (_) => setState(() {}),
+                          );
+                          // 三项按 2 : 1 : 1 排一行；窄屏会把利率挤得只剩两位数，
+                          // 改成「本金一行 + 利率 / 年限一行」
+                          if (constraints.maxWidth < 420) {
+                            return Column(
+                              crossAxisAlignment: CrossAxisAlignment.stretch,
+                              children: [
+                                principal,
+                                const SizedBox(height: 12),
+                                Row(
+                                  crossAxisAlignment: CrossAxisAlignment.end,
+                                  children: [
+                                    Expanded(child: rate),
+                                    const SizedBox(width: 12),
+                                    Expanded(child: years),
+                                  ],
+                                ),
+                              ],
+                            );
+                          }
+                          return Row(
+                            crossAxisAlignment: CrossAxisAlignment.end,
+                            children: [
+                              Expanded(flex: 2, child: principal),
+                              const SizedBox(width: 12),
+                              Expanded(child: rate),
+                              const SizedBox(width: 12),
+                              Expanded(child: years),
+                            ],
+                          );
+                        },
                       ),
                       const SizedBox(height: 12),
                       ToolNumberField(
