@@ -315,8 +315,11 @@ Web 端可深链：`?page=settings` 直接打开设置页，`?page=plot` / `?pag
   页面上改为调 `<tool>Strings` 的 `methodLabel()` / `frequencyLabel()` 等方法
 - 六个换算工具共用 `lib/ui/tools/widgets/unit_convert_strings.dart`，
   体系名称统一走 `measureSystemLabel()`
-- 已接入：BMI、长度 / 面积 / 容量 / 重量 / 温度 / 速度、复利、利率换算、贷款。
-  单位名称与「常见长度」等参照物属于数据层，仍是中文，下一步再补
+- **换算数据层也带语言**：`MeasureUnit.names` / `MeasureSample.names` 存 en / ja / es，
+  `labelIn(language)` 取不到就回落简体中文（`zhHant` 与 `zhHans` 都用原文）；
+  单位说明 `MeasureUnit.notes` 只翻了英文，`noteIn()` 对中文回落原文、对其他语言用英文
+- 已接入：BMI、长度 / 面积 / 容量 / 重量 / 温度 / 速度、复利、利率换算、贷款
+- 还没接入：养老金 / 个税 / 退休年龄（只在简繁中文出现，页面仍是简体，待补繁体）
 
 ## 应用图标
 
@@ -484,7 +487,8 @@ just test
 贷款双色条与倒梯形明细条、养老金两条构成条与退休年龄切换、个税逐月明细与窄屏布局、
 设置页主题切换（含配色与本地写入）、浅色模式下按键 / 显示屏 / 工具卡片配色、语言下拉框切换后导航与工具卡片文案、
 非中文界面隐藏养老金与个税、五种语言文案表完整性、BMI 默认单位改英制后 BMI 页按英制打开、
-换算工具默认体系与结果 tab 各工具独立、退休年龄计算器按出生年月与人员类别测算（含「还需奋斗」倒计时）等 Widget 测试（共 194 项）。
+换算工具默认体系与结果 tab 各工具独立、退休年龄计算器按出生年月与人员类别测算（含「还需奋斗」倒计时）、
+换算单位名称 / 说明 / 参照物按语言回落等 Widget 与单元测试（共 199 项）。
 
 Android 的相册写入走 `MediaStore`，无法在 Widget 测试里覆盖，另有真机 / 模拟器测试 `integration_test/android_save_test.dart`（`just test-android`，需先 `just emulator` 或插上真机）。
 

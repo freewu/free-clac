@@ -5,6 +5,8 @@
 /// 纯逻辑，不依赖 Flutter。
 library;
 
+import '../../l10n/app_language.dart';
+
 /// 计量体系。
 enum MeasureSystem {
   metric('公制', 'metric'),
@@ -44,6 +46,8 @@ class MeasureUnit {
     required this.baseDenominator,
     this.baseOffset = 0,
     this.note = '',
+    this.names = const <AppLanguage, String>{},
+    this.notes = const <AppLanguage, String>{},
   }) : assert(baseDenominator > 0);
 
   /// 内部标识（也是 Web 深链参数），如 `km`、`sqm`、`kg`。
@@ -67,6 +71,27 @@ class MeasureUnit {
   /// 需要额外解释的单位（海里、亩、长吨等）附一句说明。
   final String note;
 
+  /// 各语言的单位名称；缺项回落 [label]（简体中文）。
+  final Map<AppLanguage, String> names;
+
+  /// 各语言的说明；缺项先回落英文，再回落 [note]。
+  final Map<AppLanguage, String> notes;
+
+  /// 该语言的单位名称。
+  String labelIn(AppLanguage language) => names[language] ?? label;
+
+  /// 该语言的说明文案。
+  ///
+  /// 说明目前只翻了英文：简繁中文回落到 [note]，其他语言用英文而不是中文。
+  String noteIn(AppLanguage language) {
+    final text = notes[language];
+    if (text != null) return text;
+    final isChinese =
+        language == AppLanguage.zhHans || language == AppLanguage.zhHant;
+    if (isChinese) return note;
+    return notes[AppLanguage.en] ?? note;
+  }
+
   /// 换算系数（长度是「米」，面积是「平方米」，重量是「千克」，容量是「升」）。
   double get baseValue => baseNumerator / baseDenominator;
 
@@ -86,10 +111,17 @@ class MeasureSample {
     required this.label,
     required this.value,
     required this.unitId,
+    this.names = const <AppLanguage, String>{},
   });
 
-  /// 参照物名称。
+  /// 参照物名称（简体中文）。
   final String label;
+
+  /// 各语言的参照物名称；缺项回落 [label]。
+  final Map<AppLanguage, String> names;
+
+  /// 该语言的参照物名称。
+  String labelIn(AppLanguage language) => names[language] ?? label;
 
   /// 对应的数值。
   final double value;

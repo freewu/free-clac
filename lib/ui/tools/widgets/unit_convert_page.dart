@@ -135,11 +135,15 @@ class _UnitConvertPageState extends State<UnitConvertPage>
   }
 
   Future<void> _copy(MeasureUnit unit, String text) async {
-    await Clipboard.setData(ClipboardData(text: '$text ${unit.label}'));
+    await Clipboard.setData(
+      ClipboardData(text: '$text ${unit.labelIn(appLanguage)}'),
+    );
     if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text(fill(unitConvertStrings.copied, [text, unit.label])),
+        content: Text(
+          fill(unitConvertStrings.copied, [text, unit.labelIn(appLanguage)]),
+        ),
         duration: const Duration(seconds: 2),
       ),
     );
@@ -220,7 +224,7 @@ class _UnitConvertPageState extends State<UnitConvertPage>
                       if (_from.note.isNotEmpty) ...[
                         const SizedBox(height: 8),
                         Text(
-                          _from.note,
+                          _from.noteIn(appLanguage),
                           style: TextStyle(
                             color: AppColors.textSecondary,
                             fontSize: 10.5,
@@ -243,7 +247,7 @@ class _UnitConvertPageState extends State<UnitConvertPage>
                       children: [
                         Text(
                           '${formatNumber(amount, significantDigits: 10)} '
-                          '${_from.label}',
+                          '${_from.labelIn(appLanguage)}',
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                           style: TextStyle(
@@ -296,9 +300,12 @@ class _UnitConvertPageState extends State<UnitConvertPage>
   }
 
   /// 下拉项文案：名称后带符号，符号与名称相同时（市制单位）只显示名称。
-  static String _unitLabel(MeasureUnit unit) => unit.symbol == unit.label
-      ? unit.label
-      : fill(unitConvertStrings.unitOption, [unit.label, unit.symbol]);
+  static String _unitLabel(MeasureUnit unit) {
+    final label = unit.labelIn(appLanguage);
+    // 市制单位的符号就是汉字本身，重复显示没有意义
+    if (unit.symbol == unit.label || unit.symbol == label) return label;
+    return fill(unitConvertStrings.unitOption, [label, unit.symbol]);
+  }
 
   static String _format(double? value) =>
       value == null ? '—' : formatNumber(value, significantDigits: 10);
@@ -358,7 +365,7 @@ class _SamplesCard extends StatelessWidget {
                 for (final sample in catalog.samples)
                   ActionChip(
                     label: Text(
-                      sample.label,
+                      sample.labelIn(appLanguage),
                       style: const TextStyle(fontSize: 11.5),
                     ),
                     visualDensity: VisualDensity.compact,
@@ -428,7 +435,7 @@ class _ResultRow extends StatelessWidget {
             SizedBox(
               width: 56,
               child: Text(
-                unit.label,
+                unit.labelIn(appLanguage),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: TextStyle(

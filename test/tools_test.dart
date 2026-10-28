@@ -24,6 +24,77 @@ import 'package:free_clac/ui/tools/weight/weight.dart';
 import 'package:free_clac/ui/tools/tool_catalog.dart';
 
 void main() {
+  group('换算单位的多语言名称', () {
+    MeasureUnit unitOf(String id) =>
+        kLengthCatalog.units.firstWhere((unit) => unit.id == id);
+    MeasureSample sampleOf(String label) =>
+        kLengthCatalog.samples.firstWhere((sample) => sample.label == label);
+
+    test('名称按语言取，缺中文项时回落中文原名', () {
+      final foot = unitOf('foot');
+      expect(foot.labelIn(AppLanguage.en), 'foot');
+      expect(foot.labelIn(AppLanguage.ja), 'フィート');
+      expect(foot.labelIn(AppLanguage.es), 'pie');
+      // names 里没有中文，简繁中文都用 label（简体原文）
+      expect(foot.labelIn(AppLanguage.zhHans), '英尺');
+      expect(foot.labelIn(AppLanguage.zhHant), '英尺');
+    });
+
+    test('说明只翻了英文：中文回落原文，其他语言用英文', () {
+      final foot = unitOf('foot');
+      expect(foot.noteIn(AppLanguage.zhHans), '1 英尺 = 12 英寸 = 0.3048 米');
+      expect(foot.noteIn(AppLanguage.en), '1 foot = 12 inches = 0.3048 m');
+      expect(foot.noteIn(AppLanguage.ja), '1 foot = 12 inches = 0.3048 m');
+      expect(foot.noteIn(AppLanguage.es), '1 foot = 12 inches = 0.3048 m');
+    });
+
+    test('参照物名称同样按语言取', () {
+      final marathon = sampleOf('马拉松');
+      expect(marathon.labelIn(AppLanguage.en), 'Marathon');
+      expect(marathon.labelIn(AppLanguage.ja), 'マラソン');
+      expect(marathon.labelIn(AppLanguage.es), 'Maratón');
+      expect(marathon.labelIn(AppLanguage.zhHans), '马拉松');
+    });
+
+    test('六个换算工具的单位都补齐了 en / ja / es', () {
+      for (final catalog in [
+        kLengthCatalog,
+        kAreaCatalog,
+        kVolumeCatalog,
+        kWeightCatalog,
+        kTemperatureCatalog,
+        kSpeedCatalog,
+      ]) {
+        for (final unit in catalog.units) {
+          for (final language in [
+            AppLanguage.en,
+            AppLanguage.ja,
+            AppLanguage.es,
+          ]) {
+            expect(
+              unit.names[language],
+              isNotNull,
+              reason: '${catalog.id}.${unit.id} 缺少 ${language.code}',
+            );
+          }
+        }
+        for (final sample in catalog.samples) {
+          for (final language in [
+            AppLanguage.en,
+            AppLanguage.ja,
+            AppLanguage.es,
+          ]) {
+            expect(
+              sample.names[language],
+              isNotNull,
+              reason: '${catalog.id}.${sample.label} 缺少 ${language.code}',
+            );
+          }
+        }
+      }
+    });
+  });
+
   group('BMI：计算与分级', () {
     test('基本计算', () {
       final result = calculateBmi(heightCm: 170, weightKg: 65)!;

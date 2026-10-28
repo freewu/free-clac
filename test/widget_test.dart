@@ -722,6 +722,12 @@ void main() {
     expect(find.text('Value'), findsOneWidget);
     expect(find.text('Common lengths'), findsOneWidget);
     expect(find.text('计量体系'), findsNothing);
+    // 单位名称与参照物也跟着换语言（数据层 names）
+    expect(find.text('metre'), findsOneWidget);
+    expect(find.text('kilometre'), findsOneWidget);
+    expect(find.text('Marathon'), findsOneWidget);
+    expect(find.text('米'), findsNothing);
+    expect(find.text('马拉松'), findsNothing);
 
     // BMI
     await open('bmi');

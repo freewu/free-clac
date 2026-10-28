@@ -63,7 +63,11 @@ cmd.exe /c "cd /d $(wslpath -w "$PWD") && flutter test"
   `fill(template, [args])` 填充，不要在代码里拼句子（日语 / 西语语序不同）。数据层的中文枚举名
   （`LoanMethod.label`、`CompoundFrequency.label` 等）留在枚举里，页面上改调 `xxxStrings.methodLabel(value)`。
   六个换算工具共用 `lib/ui/tools/widgets/unit_convert_strings.dart`，体系名称统一用
-  `measureSystemLabel()`（内部走 `t.systemMetric` 等）。
+  `measureSystemLabel()`（内部走 `t.systemMetric` 等）。换算 catalog 里的数据自带语言：
+  单位 / 参照物用 `names: <AppLanguage, String>{...}` + `labelIn()`
+  （取不到回落简体原文，`zhHant` 也用原文），单位说明用 `notes` + `noteIn()`
+  （只翻英文，中文回落原文、其他语言回落英文）。新增单位必须补 en / ja / es 三项，
+  `test/tools_test.dart` 会遍历六个 catalog 检查。
 - **界面文案一律走多语言**：应用级（导航、设置、工具页标题）用 `t.xxx`（`lib/l10n/app_strings.dart` 里 `AppStrings` 的五个实现都要补），工具卡片名称 / 卖点 / 说明写进 `lib/ui/tools/<tool>/<tool>_lang.dart` 的 `k<Tool>Lang`。注释用中文，界面文案用各语言母语。
 - **颜色一律走 `AppColors`**：不要硬编码 `Color(0xFF...)`，也不要在 `const` 表达式里用 `AppColors.xxx`（它不是常量），深色 / 浅色两套配色都要能看。
 - 每个小工具的东西都放在自己目录 `lib/ui/tools/<tool>/`：纯逻辑（如 `bmi.dart`、`loan.dart`，仍不依赖 Flutter）、界面（`<tool>_page.dart`）、语言包（`<tool>_lang.dart`）、`defined.dart` 与 `setting.dart` 并列放，不再有 `lib/tools/` 与 `lang/` 子目录。共用的输入框与比例条放在 `lib/ui/tools/widgets/`（`tool_field.dart`、`tool_unit_picker.dart`、`tool_select.dart`、`tool_bars.dart`），不要在每个工具里各写一份。每个工具的 `ToolInfo`（名称、卖点、图标、配色、页面构造器）写在**自己目录的 `defined.dart`** 里，`lib/ui/tools/tool_catalog.dart` 只汇总 `kTools`；新增工具 = 新建 `<tool>/<tool>.dart`（逻辑）+ `<tool>/<tool>_page.dart` + `<tool>/defined.dart` + `<tool>/<tool>_lang.dart`（五种语言）+ 在 `kTools` 追加一行 + `tool/screenshot.sh` 加一条 `shoot`。单位换算类工具共用的 `unit_catalog.dart` 放在 `lib/ui/tools/`。
