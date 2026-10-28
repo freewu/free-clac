@@ -695,6 +695,57 @@ void main() {
     expect(find.text('个人所得税'), findsOneWidget);
   });
 
+  testWidgets('工具页内部文案：英文界面下标题、字段与说明都是英文', (tester) async {
+    tester.view.physicalSize = const Size(1440, 1600);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+    final settings = SettingsController(
+      store: _MemoryStore(),
+      language: AppLanguage.en,
+    );
+
+    Future<void> open(String tool) async {
+      await tester.pumpWidget(
+        FreeCalcApp(
+          key: UniqueKey(),
+          settings: settings,
+          initialTab: 2,
+          initialTool: tool,
+        ),
+      );
+      await tester.pumpAndSettle();
+    }
+
+    // 长度换算（六个换算工具共用一套外壳文案）
+    await open('distance');
+    expect(find.text('Unit system'), findsOneWidget);
+    expect(find.text('Value'), findsOneWidget);
+    expect(find.text('Common lengths'), findsOneWidget);
+    expect(find.text('计量体系'), findsNothing);
+
+    // BMI
+    await open('bmi');
+    expect(find.text('Height'), findsOneWidget);
+    expect(find.text('Healthy weight range'), findsOneWidget);
+    expect(find.text('身高'), findsNothing);
+
+    // 复利
+    await open('compound');
+    expect(find.text('Starting principal'), findsOneWidget);
+    expect(find.text('Year by year'), findsOneWidget);
+
+    // 利率换算
+    await open('interest');
+    expect(find.text('Payment → annual rate'), findsOneWidget);
+    expect(find.text('Payout period'), findsOneWidget);
+
+    // 贷款
+    await open('loan');
+    expect(find.text('Loan amount'), findsOneWidget);
+    expect(find.text('Equal principal'), findsOneWidget);
+    expect(find.text('还款方式'), findsNothing);
+  });
+
   testWidgets('设置页：切换语言后工具卡片的深链 id 不变', (tester) async {
     tester.view.physicalSize = const Size(1440, 1600);
     tester.view.devicePixelRatio = 1;

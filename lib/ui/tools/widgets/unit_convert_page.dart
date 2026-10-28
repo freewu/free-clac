@@ -2,11 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../../../core/number_format.dart';
+import '../../../l10n/app_i18n.dart';
 import '../../../state/settings_controller.dart';
 import '../../../theme/app_theme.dart';
 import '../unit_catalog.dart';
+import 'measure_system_label.dart';
 import 'tool_field.dart';
 import 'tool_select.dart';
+import 'unit_convert_strings.dart';
 
 /// 通用单位换算页：长度 / 面积 / 重量 / 容量 / 温度 / 速度共用一套界面。
 ///
@@ -136,7 +139,7 @@ class _UnitConvertPageState extends State<UnitConvertPage>
     if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text('已复制 $text ${unit.label}'),
+        content: Text(fill(unitConvertStrings.copied, [text, unit.label])),
         duration: const Duration(seconds: 2),
       ),
     );
@@ -175,7 +178,7 @@ class _UnitConvertPageState extends State<UnitConvertPage>
                   const SizedBox(height: 12),
                 ],
                 ToolSection(
-                  title: '输入',
+                  title: unitConvertStrings.input,
                   icon: Icons.tune_rounded,
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -186,10 +189,10 @@ class _UnitConvertPageState extends State<UnitConvertPage>
                           Expanded(
                             child: ToolSelect<MeasureSystem>(
                               key: Key('${_catalog.id}-system'),
-                              label: '计量体系',
+                              label: unitConvertStrings.system,
                               value: _system,
                               items: systems,
-                              labelOf: (system) => system.label,
+                              labelOf: measureSystemLabel,
                               onChanged: _switchSystem,
                             ),
                           ),
@@ -198,7 +201,7 @@ class _UnitConvertPageState extends State<UnitConvertPage>
                             flex: 2,
                             child: ToolSelect<MeasureUnit>(
                               key: Key('${_catalog.id}-unit'),
-                              label: '单位',
+                              label: unitConvertStrings.unit,
                               value: _from,
                               items: _catalog.unitsOf(_system),
                               labelOf: _unitLabel,
@@ -209,7 +212,7 @@ class _UnitConvertPageState extends State<UnitConvertPage>
                       ),
                       const SizedBox(height: 12),
                       ToolNumberField(
-                        label: '数值',
+                        label: unitConvertStrings.value,
                         suffix: _from.symbol,
                         controller: _value,
                         onChanged: (_) => setState(() {}),
@@ -232,7 +235,7 @@ class _UnitConvertPageState extends State<UnitConvertPage>
                   ToolSection(child: _EmptyHint(icon: widget.icon))
                 else
                   ToolSection(
-                    title: '换算结果',
+                    title: unitConvertStrings.results,
                     icon: Icons.swap_horiz_rounded,
                     padding: const EdgeInsets.fromLTRB(14, 14, 14, 12),
                     child: Column(
@@ -270,7 +273,12 @@ class _UnitConvertPageState extends State<UnitConvertPage>
                           ),
                         const SizedBox(height: 4),
                         Text(
-                          '点任意一行即可复制 · 统一以${_catalog.baseName}为基准',
+                          fill(unitConvertStrings.copyHint, [
+                            unitConvertStrings.baseName(
+                              _catalog.id,
+                              _catalog.baseName,
+                            ),
+                          ]),
                           style: TextStyle(
                             color: AppColors.textSecondary,
                             fontSize: 10.5,
@@ -287,9 +295,10 @@ class _UnitConvertPageState extends State<UnitConvertPage>
     );
   }
 
-  /// 下拉项文案：中文名后带符号，符号与名称相同时（市制单位）只显示名称。
-  static String _unitLabel(MeasureUnit unit) =>
-      unit.symbol == unit.label ? unit.label : '${unit.label}（${unit.symbol}）';
+  /// 下拉项文案：名称后带符号，符号与名称相同时（市制单位）只显示名称。
+  static String _unitLabel(MeasureUnit unit) => unit.symbol == unit.label
+      ? unit.label
+      : fill(unitConvertStrings.unitOption, [unit.label, unit.symbol]);
 
   static String _format(double? value) =>
       value == null ? '—' : formatNumber(value, significantDigits: 10);
@@ -321,7 +330,9 @@ class _SamplesCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return ToolSection(
       key: Key('${catalog.id}-samples'),
-      title: '常见${catalog.name}',
+      title: fill(unitConvertStrings.samplesTitle, [
+        unitConvertStrings.catalogName(catalog.id, catalog.name),
+      ]),
       icon: Icons.lightbulb_outline_rounded,
       onHeaderTap: onToggle,
       padding: EdgeInsets.fromLTRB(14, 12, 14, expanded ? 14 : 12),
@@ -329,7 +340,7 @@ class _SamplesCard extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           Text(
-            expanded ? '收起' : '展开',
+            expanded ? unitConvertStrings.collapse : unitConvertStrings.expand,
             style: TextStyle(color: AppColors.textSecondary, fontSize: 10.5),
           ),
           Icon(
@@ -384,7 +395,10 @@ class _SystemTabs extends StatelessWidget {
         fontWeight: FontWeight.w400,
       ),
       labelPadding: EdgeInsets.zero,
-      tabs: [for (final system in systems) Tab(height: 34, text: system.label)],
+      tabs: [
+        for (final system in systems)
+          Tab(height: 34, text: measureSystemLabel(system)),
+      ],
     );
   }
 }
@@ -476,7 +490,7 @@ class _EmptyHint extends StatelessWidget {
           Icon(icon, size: 30, color: AppColors.outline),
           const SizedBox(height: 10),
           Text(
-            '填入数值并选好单位后自动换算',
+            unitConvertStrings.emptyHint,
             style: TextStyle(color: AppColors.textSecondary, fontSize: 12.5),
           ),
         ],

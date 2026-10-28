@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 
 import '../../../core/number_format.dart';
 import '../../../theme/app_theme.dart';
+import '../../../l10n/app_i18n.dart';
 import 'loan.dart';
+import 'loan_strings.dart';
 import '../widgets/tool_bars.dart';
 import '../widgets/tool_field.dart';
 import '../widgets/tool_unit_picker.dart';
@@ -80,7 +82,7 @@ class _LoanPageState extends State<LoanPage> {
     final result = _result;
     return Scaffold(
       appBar: AppBar(
-        title: const Text('贷款计算器'),
+        title: Text(loanStrings.title),
         titleTextStyle: TextStyle(
           fontSize: 16,
           fontWeight: FontWeight.w600,
@@ -97,7 +99,7 @@ class _LoanPageState extends State<LoanPage> {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 ToolSection(
-                  title: '输入',
+                  title: loanStrings.sectionInput,
                   icon: Icons.tune_rounded,
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -105,25 +107,25 @@ class _LoanPageState extends State<LoanPage> {
                       LayoutBuilder(
                         builder: (context, constraints) {
                           final amount = ToolNumberField(
-                            label: '贷款金额',
-                            suffix: '元',
+                            label: loanStrings.amount,
+                            suffix: loanStrings.currency,
                             controller: _amount,
                             onChanged: (_) => setState(() {}),
                           );
                           final rate = ToolNumberField(
-                            label: '年利率',
+                            label: loanStrings.annualRate,
                             suffix: '%',
                             controller: _rate,
                             onChanged: (_) => setState(() {}),
                           );
                           final term = ToolNumberField(
-                            label: '期限',
+                            label: loanStrings.term,
                             controller: _term,
                             trailing: ToolUnitPicker<LoanTermUnit>(
                               value: _termUnit,
                               items: LoanTermUnit.values,
-                              labelOf: (unit) => unit.label,
-                              tooltip: '期限单位',
+                              labelOf: loanStrings.termUnitLabel,
+                              tooltip: loanStrings.termUnit,
                               onSelected: _switchTermUnit,
                             ),
                             onChanged: (_) => setState(() {}),
@@ -160,7 +162,7 @@ class _LoanPageState extends State<LoanPage> {
                       ),
                       const SizedBox(height: 12),
                       Text(
-                        '还款方式',
+                        loanStrings.method,
                         style: TextStyle(
                           color: AppColors.textSecondary,
                           fontSize: 11.5,
@@ -174,7 +176,7 @@ class _LoanPageState extends State<LoanPage> {
                           for (final method in LoanMethod.values)
                             ChoiceChip(
                               label: Text(
-                                method.label,
+                                loanStrings.methodLabel(method),
                                 style: const TextStyle(fontSize: 11.5),
                               ),
                               selected: _method == method,
@@ -197,7 +199,7 @@ class _LoanPageState extends State<LoanPage> {
                   ToolSection(child: _Summary(result: result)),
                   const SizedBox(height: 12),
                   ToolSection(
-                    title: '还款明细',
+                    title: loanStrings.sectionSchedule,
                     icon: Icons.table_rows_outlined,
                     trailing: _GroupSwitch(
                       groupByYear: _groupByYear,
@@ -238,7 +240,7 @@ class _EmptyHint extends StatelessWidget {
           ),
           SizedBox(height: 10),
           Text(
-            '填写金额、利率与期限后自动计算',
+            loanStrings.emptyHint,
             style: TextStyle(color: AppColors.textSecondary, fontSize: 12.5),
           ),
         ],
@@ -259,7 +261,10 @@ class _GroupSwitch extends StatelessWidget {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        for (final (label, value) in const [('按月', false), ('按年', true)])
+        for (final (label, value) in [
+          (loanStrings.byMonth, false),
+          (loanStrings.byYear, true),
+        ])
           Padding(
             padding: const EdgeInsets.only(left: 6),
             child: ChoiceChip(
@@ -292,7 +297,7 @@ class _Summary extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         Text(
-          fixed ? '每月还款' : '首月还款',
+          fixed ? loanStrings.monthlyPayment : loanStrings.firstPayment,
           style: TextStyle(color: AppColors.textSecondary, fontSize: 11.5),
         ),
         const SizedBox(height: 4),
@@ -310,9 +315,15 @@ class _Summary extends StatelessWidget {
         const SizedBox(height: 6),
         Text(
           fixed
-              ? '${result.method.label} · 共 $months 期 · 每期还款额固定'
-              : '${result.method.label} · 共 $months 期 · '
-                    '月供逐月递减 ¥ ${formatMoney(decrease)}',
+              ? fill(loanStrings.summaryFixed, [
+                  loanStrings.methodLabel(result.method),
+                  months,
+                ])
+              : fill(loanStrings.summaryDecreasing, [
+                  loanStrings.methodLabel(result.method),
+                  months,
+                  formatMoney(decrease),
+                ]),
           style: TextStyle(color: AppColors.textSecondary, fontSize: 11),
         ),
         const SizedBox(height: 18),
@@ -320,7 +331,7 @@ class _Summary extends StatelessWidget {
         // 一眼比出差距，而不是永远等长的百分比条
         AmountBar(
           key: const ValueKey('loan-bar-贷款总额'),
-          label: '贷款总额',
+          label: loanStrings.loanTotal,
           value: '¥ ${formatMoney(result.amount, decimals: 0)}',
           ratio: result.amount / result.totalPayment,
           segments: [RatioSegment(value: 1, color: loanPrincipalColor)],
@@ -328,7 +339,7 @@ class _Summary extends StatelessWidget {
         const SizedBox(height: 8),
         AmountBar(
           key: const ValueKey('loan-bar-总利息'),
-          label: '总利息',
+          label: loanStrings.totalInterest,
           value: '¥ ${formatMoney(result.totalInterest, decimals: 0)}',
           ratio: result.interestRatio,
           segments: [RatioSegment(value: 1, color: loanInterestColor)],
@@ -336,7 +347,7 @@ class _Summary extends StatelessWidget {
         const SizedBox(height: 8),
         AmountBar(
           key: const ValueKey('loan-bar-总还款'),
-          label: '总还款',
+          label: loanStrings.totalPayment,
           value: '¥ ${formatMoney(result.totalPayment, decimals: 0)}',
           ratio: 1,
           segments: [
@@ -351,12 +362,16 @@ class _Summary extends StatelessWidget {
         Row(
           children: [
             Text(
-              '本金 ${(result.amount / result.totalPayment * 100).toStringAsFixed(1)}%',
+              fill(loanStrings.principalShare, [
+                (result.amount / result.totalPayment * 100).toStringAsFixed(1),
+              ]),
               style: TextStyle(color: loanPrincipalColor, fontSize: 10.5),
             ),
             const Spacer(),
             Text(
-              '利息 ${(result.interestRatio * 100).toStringAsFixed(1)}%',
+              fill(loanStrings.interestShare, [
+                (result.interestRatio * 100).toStringAsFixed(1),
+              ]),
               style: TextStyle(color: loanInterestColor, fontSize: 10.5),
             ),
           ],
@@ -383,12 +398,14 @@ class _Schedule extends StatelessWidget {
         Row(
           children: [
             Text(
-              '期数',
+              loanStrings.periodColumn,
               style: TextStyle(color: AppColors.textSecondary, fontSize: 10.5),
             ),
             const Spacer(),
             Text(
-              groupByYear ? '当年还款' : '本期还款',
+              groupByYear
+                  ? loanStrings.paymentThisYear
+                  : loanStrings.paymentThisPeriod,
               style: TextStyle(color: AppColors.textSecondary, fontSize: 10.5),
             ),
           ],
@@ -410,7 +427,7 @@ class _Schedule extends StatelessWidget {
         if (!result.isFixedPayment) ...[
           const SizedBox(height: 10),
           Text(
-            '条长按当期还款额缩放：首期 100%，末期 60%',
+            loanStrings.barNote,
             style: TextStyle(color: AppColors.textSecondary, fontSize: 10),
           ),
         ],
@@ -434,7 +451,9 @@ class _PeriodRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final title = byYear ? '第 ${period.index} 年' : '第 ${period.index} 期';
+    final title = fill(byYear ? loanStrings.yearRow : loanStrings.periodRow, [
+      period.index,
+    ]);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
@@ -485,12 +504,16 @@ class _PeriodRow extends StatelessWidget {
         Row(
           children: [
             Text(
-              '本金 ¥ ${formatMoney(period.principal, decimals: 0)}',
+              fill(loanStrings.principalRow, [
+                formatMoney(period.principal, decimals: 0),
+              ]),
               style: TextStyle(color: loanPrincipalColor, fontSize: 10.5),
             ),
             const Spacer(),
             Text(
-              '利息 ¥ ${formatMoney(period.interest, decimals: 0)}',
+              fill(loanStrings.interestRow, [
+                formatMoney(period.interest, decimals: 0),
+              ]),
               style: TextStyle(color: loanInterestColor, fontSize: 10.5),
             ),
           ],

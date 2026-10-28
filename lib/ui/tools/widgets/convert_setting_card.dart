@@ -4,6 +4,7 @@ import '../../../l10n/app_i18n.dart';
 import '../../../state/settings_controller.dart';
 import '../../widgets/settings_card.dart';
 import '../unit_catalog.dart';
+import 'measure_system_label.dart';
 import 'tool_select.dart';
 
 /// 单位换算类工具设置卡片的公共外壳。
@@ -29,11 +30,7 @@ class ConvertSettingCard extends StatelessWidget {
   final SettingsController controller;
 
   /// 体系名称统一走多语言（`MeasureSystem.label` 只有中文）。
-  static String systemLabel(MeasureSystem system) => switch (system) {
-    MeasureSystem.metric => t.systemMetric,
-    MeasureSystem.imperial => t.systemImperial,
-    MeasureSystem.chinese => t.systemChinese,
-  };
+  static String systemLabel(MeasureSystem system) => measureSystemLabel(system);
 
   @override
   Widget build(BuildContext context) {

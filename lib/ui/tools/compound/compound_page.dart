@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 
 import '../../../core/number_format.dart';
 import '../../../theme/app_theme.dart';
+import '../../../l10n/app_i18n.dart';
 import 'compound.dart';
+import 'compound_strings.dart';
 import '../widgets/tool_field.dart';
 
 /// 复利计算页：本金、利率、期限、复利频率与定期追加，输出本息与逐年增长表。
@@ -50,7 +52,7 @@ class _CompoundPageState extends State<CompoundPage> {
     final result = _result;
     return Scaffold(
       appBar: AppBar(
-        title: const Text('复利计算'),
+        title: Text(compoundStrings.title),
         titleTextStyle: TextStyle(
           fontSize: 16,
           fontWeight: FontWeight.w600,
@@ -67,7 +69,7 @@ class _CompoundPageState extends State<CompoundPage> {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 ToolSection(
-                  title: '输入',
+                  title: compoundStrings.sectionInput,
                   icon: Icons.tune_rounded,
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -75,21 +77,21 @@ class _CompoundPageState extends State<CompoundPage> {
                       LayoutBuilder(
                         builder: (context, constraints) {
                           final principal = ToolNumberField(
-                            label: '期初本金',
-                            suffix: '元',
+                            label: compoundStrings.principal,
+                            suffix: compoundStrings.currency,
                             controller: _principal,
                             onChanged: (_) => setState(() {}),
                           );
                           final rate = ToolNumberField(
-                            label: '年利率',
+                            label: compoundStrings.annualRate,
                             suffix: '%',
                             controller: _rate,
                             allowNegative: true,
                             onChanged: (_) => setState(() {}),
                           );
                           final years = ToolNumberField(
-                            label: '年限',
-                            suffix: '年',
+                            label: compoundStrings.years,
+                            suffix: compoundStrings.yearsSuffix,
                             controller: _years,
                             onChanged: (_) => setState(() {}),
                           );
@@ -126,14 +128,16 @@ class _CompoundPageState extends State<CompoundPage> {
                       ),
                       const SizedBox(height: 12),
                       ToolNumberField(
-                        label: '每期追加（可选）',
-                        suffix: '元 / ${_frequency.label}',
+                        label: compoundStrings.contribution,
+                        suffix: fill(compoundStrings.contributionSuffix, [
+                          compoundStrings.frequencyLabel(_frequency),
+                        ]),
                         controller: _contribution,
                         onChanged: (_) => setState(() {}),
                       ),
                       const SizedBox(height: 12),
                       Text(
-                        '复利频率',
+                        compoundStrings.frequency,
                         style: TextStyle(
                           color: AppColors.textSecondary,
                           fontSize: 11.5,
@@ -170,10 +174,12 @@ class _CompoundPageState extends State<CompoundPage> {
                   ToolSection(child: _Summary(result: result)),
                   const SizedBox(height: 12),
                   ToolSection(
-                    title: '逐年增长',
+                    title: compoundStrings.sectionTable,
                     icon: Icons.table_chart_outlined,
                     trailing: Text(
-                      '按${result.frequency.label}计息',
+                      fill(compoundStrings.frequencyNote, [
+                        compoundStrings.frequencyLabel(result.frequency),
+                      ]),
                       style: TextStyle(
                         color: AppColors.textSecondary,
                         fontSize: 10.5,
@@ -203,7 +209,7 @@ class _EmptyHint extends StatelessWidget {
           Icon(Icons.savings_outlined, size: 30, color: AppColors.outline),
           SizedBox(height: 10),
           Text(
-            '填写本金与年限后自动计算',
+            compoundStrings.emptyHint,
             style: TextStyle(color: AppColors.textSecondary, fontSize: 12.5),
           ),
         ],
@@ -225,7 +231,7 @@ class _Summary extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         Text(
-          '到期本息合计',
+          compoundStrings.futureValue,
           style: TextStyle(color: AppColors.textSecondary, fontSize: 11.5),
         ),
         const SizedBox(height: 4),
@@ -250,8 +256,11 @@ class _Summary extends StatelessWidget {
         ),
         const SizedBox(height: 6),
         Text(
-          '${result.frequency.label}计息 ${formatNumber(result.periods, significantDigits: 6)} 期 · '
-          '有效年利率 ${result.effectiveAnnualRatePercent.toStringAsFixed(2)}%',
+          fill(compoundStrings.periodsNote, [
+            compoundStrings.frequencyLabel(result.frequency),
+            formatNumber(result.periods, significantDigits: 6),
+            result.effectiveAnnualRatePercent.toStringAsFixed(2),
+          ]),
           style: TextStyle(color: AppColors.textSecondary, fontSize: 11),
         ),
         const SizedBox(height: 16),
@@ -259,21 +268,21 @@ class _Summary extends StatelessWidget {
           children: [
             Expanded(
               child: _Stat(
-                label: '总投入',
+                label: compoundStrings.totalInvested,
                 value: '¥ ${formatMoney(result.totalInvested)}',
                 color: AppColors.textPrimary,
               ),
             ),
             Expanded(
               child: _Stat(
-                label: '总收益',
+                label: compoundStrings.totalGain,
                 value: '¥ ${formatMoney(result.totalGain)}',
                 color: gainColor,
               ),
             ),
             Expanded(
               child: _Stat(
-                label: '收益率',
+                label: compoundStrings.gainRate,
                 value: '${(result.gainRate * 100).toStringAsFixed(1)}%',
                 color: gainColor,
               ),
@@ -329,7 +338,7 @@ class _YearTable extends StatelessWidget {
       return Padding(
         padding: EdgeInsets.symmetric(vertical: 10),
         child: Text(
-          '年限不足 1 年，没有逐年数据。',
+          compoundStrings.noYearly,
           style: TextStyle(color: AppColors.textSecondary, fontSize: 11.5),
         ),
       );
@@ -337,11 +346,11 @@ class _YearTable extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        const _TableRow(
-          year: '年份',
-          invested: '累计投入',
-          balance: '期末余额',
-          gain: '累计收益',
+        _TableRow(
+          year: compoundStrings.colYear,
+          invested: compoundStrings.colInvested,
+          balance: compoundStrings.colBalance,
+          gain: compoundStrings.colGain,
           header: true,
         ),
         const Divider(height: 8),
@@ -354,7 +363,7 @@ class _YearTable extends StatelessWidget {
             itemBuilder: (context, index) {
               final point = result.yearly[index];
               return _TableRow(
-                year: '第 ${point.year} 年',
+                year: fill(compoundStrings.yearRow, [point.year]),
                 invested: '¥ ${formatMoney(point.contributions, decimals: 0)}',
                 balance: '¥ ${formatMoney(point.balance, decimals: 0)}',
                 gain: '¥ ${formatMoney(point.gain, decimals: 0)}',

@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 
 import '../../../core/number_format.dart';
 import '../../../theme/app_theme.dart';
+import '../../../l10n/app_i18n.dart';
 import 'interest.dart';
+import 'interest_strings.dart';
 import '../widgets/tool_field.dart';
 
 /// 利率计算页：本金配日付 / 月付 / 年付，双向换算年化率。
@@ -18,12 +20,14 @@ class InterestPage extends StatefulWidget {
 
 /// 换算方向。
 enum _Mode {
-  fromPayment('由期付算年化'),
-  fromRate('由年化算期付');
+  fromPayment,
+  fromRate;
 
-  const _Mode(this.label);
-
-  final String label;
+  /// 方向名称走多语言。
+  String get label => switch (this) {
+    _Mode.fromPayment => interestStrings.modeFromPayment,
+    _Mode.fromRate => interestStrings.modeFromRate,
+  };
 }
 
 class _InterestPageState extends State<InterestPage> {
@@ -101,7 +105,7 @@ class _InterestPageState extends State<InterestPage> {
     final rate = _annualRatePercent;
     return Scaffold(
       appBar: AppBar(
-        title: const Text('利率计算'),
+        title: Text(interestStrings.title),
         titleTextStyle: TextStyle(
           fontSize: 16,
           fontWeight: FontWeight.w600,
@@ -118,20 +122,20 @@ class _InterestPageState extends State<InterestPage> {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 ToolSection(
-                  title: '输入',
+                  title: interestStrings.sectionInput,
                   icon: Icons.tune_rounded,
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
                       ToolNumberField(
-                        label: '本金',
-                        suffix: '元',
+                        label: interestStrings.principal,
+                        suffix: interestStrings.currency,
                         controller: _principal,
                         onChanged: (_) => setState(() {}),
                       ),
                       const SizedBox(height: 12),
                       Text(
-                        '换算方向',
+                        interestStrings.mode,
                         style: TextStyle(
                           color: AppColors.textSecondary,
                           fontSize: 11.5,
@@ -159,7 +163,7 @@ class _InterestPageState extends State<InterestPage> {
                       ),
                       const SizedBox(height: 12),
                       Text(
-                        '付息周期',
+                        interestStrings.period,
                         style: TextStyle(
                           color: AppColors.textSecondary,
                           fontSize: 11.5,
@@ -173,7 +177,7 @@ class _InterestPageState extends State<InterestPage> {
                           for (final period in InterestPeriod.values)
                             ChoiceChip(
                               label: Text(
-                                period.label,
+                                interestStrings.periodLabel(period),
                                 style: const TextStyle(fontSize: 11.5),
                               ),
                               selected: _period == period,
@@ -189,15 +193,19 @@ class _InterestPageState extends State<InterestPage> {
                       if (_mode == _Mode.fromPayment)
                         ToolNumberField(
                           // everyLabel 本身已带「每」（每天 / 每月 / 每年）
-                          label: '${_period.everyLabel}收益',
-                          suffix: '元 / ${_period.everyLabel}',
+                          label: fill(interestStrings.paymentLabel, [
+                            interestStrings.everyLabel(_period),
+                          ]),
+                          suffix: fill(interestStrings.paymentSuffix, [
+                            interestStrings.everyLabel(_period),
+                          ]),
                           controller: _payment,
                           allowNegative: true,
                           onChanged: (_) => setState(() {}),
                         )
                       else
                         ToolNumberField(
-                          label: '年化率',
+                          label: interestStrings.annualRate,
                           suffix: '%',
                           controller: _rate,
                           allowNegative: true,
@@ -253,7 +261,7 @@ class _EmptyHint extends StatelessWidget {
           Icon(Icons.percent_rounded, size: 30, color: AppColors.outline),
           SizedBox(height: 10),
           Text(
-            '填写本金与期付 / 年化率后自动换算',
+            interestStrings.emptyHint,
             style: TextStyle(color: AppColors.textSecondary, fontSize: 12.5),
           ),
         ],
@@ -280,16 +288,25 @@ class _QuoteResult extends StatelessWidget {
         ? formatRatePercent(quote.annualRatePercent)
         : '¥ ${formatMoney(quote.paymentFor(period))}';
     final caption = fromPayment
-        ? '年化率 · 本金 ¥ ${formatMoney(quote.principal, decimals: 0)} · '
-              '${period.label} ¥ ${formatMoney(quote.paymentFor(period))}'
-        : '${period.everyLabel}收益 · 年化率 '
-              '${formatRatePercent(quote.annualRatePercent)} · '
-              '本金 ¥ ${formatMoney(quote.principal, decimals: 0)}';
+        ? fill(interestStrings.annualCaption, [
+            formatMoney(quote.principal, decimals: 0),
+            interestStrings.periodLabel(period),
+            formatMoney(quote.paymentFor(period)),
+          ])
+        : fill(interestStrings.paymentCaption, [
+            interestStrings.everyLabel(period),
+            formatRatePercent(quote.annualRatePercent),
+            formatMoney(quote.principal, decimals: 0),
+          ]);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         Text(
-          fromPayment ? '年化率' : '${period.everyLabel}收益',
+          fromPayment
+              ? interestStrings.annualHeadline
+              : fill(interestStrings.paymentLabel, [
+                  interestStrings.everyLabel(period),
+                ]),
           style: TextStyle(color: AppColors.textSecondary, fontSize: 11.5),
         ),
         const SizedBox(height: 4),
@@ -316,7 +333,7 @@ class _QuoteResult extends StatelessWidget {
             for (final item in InterestPeriod.values)
               Expanded(
                 child: _Stat(
-                  label: item.label,
+                  label: interestStrings.periodLabel(item),
                   value: '¥ ${formatMoney(quote.paymentFor(item))}',
                   color: item == period
                       ? AppColors.textPrimary
@@ -334,14 +351,22 @@ class _QuoteResult extends StatelessWidget {
           runSpacing: 4,
           children: [
             _FootNote(
-              '${period.everyLabel}利率 '
-              '${formatRatePercent(quote.rateFor(period) * 100)}',
+              fill(interestStrings.periodRate, [
+                interestStrings.everyLabel(period),
+                formatRatePercent(quote.rateFor(period) * 100),
+              ]),
             ),
             _FootNote(
-              '每万元${period.label} '
-              '¥ ${formatMoney(quote.paymentPerTenThousand(period))}',
+              fill(interestStrings.perTenThousand, [
+                interestStrings.periodLabel(period),
+                formatMoney(quote.paymentPerTenThousand(period)),
+              ]),
             ),
-            _FootNote('年化 ${formatRatePercent(quote.annualRatePercent)}'),
+            _FootNote(
+              fill(interestStrings.annualNote, [
+                formatRatePercent(quote.annualRatePercent),
+              ]),
+            ),
           ],
         ),
       ],

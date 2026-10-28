@@ -3,7 +3,9 @@ import 'package:flutter/material.dart';
 import '../../../core/number_format.dart';
 import '../../../theme/app_theme.dart';
 import '../../../state/settings_controller.dart';
+import '../../../l10n/app_i18n.dart';
 import 'bmi.dart';
+import 'bmi_strings.dart';
 import '../widgets/tool_field.dart';
 import '../widgets/tool_unit_picker.dart';
 import 'bmi_gauge.dart';
@@ -105,7 +107,7 @@ class _BmiPageState extends State<BmiPage> {
     final result = _result;
     return Scaffold(
       appBar: AppBar(
-        title: const Text('BMI 计算'),
+        title: Text(bmiStrings.title),
         titleTextStyle: TextStyle(
           fontSize: 16,
           fontWeight: FontWeight.w600,
@@ -122,7 +124,7 @@ class _BmiPageState extends State<BmiPage> {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 ToolSection(
-                  title: '输入',
+                  title: bmiStrings.sectionInput,
                   icon: Icons.straighten_rounded,
                   trailing: _UnitSwitch(unit: _unit, onChanged: _switchUnit),
                   child: _unit == BmiUnitSystem.metric
@@ -131,8 +133,8 @@ class _BmiPageState extends State<BmiPage> {
                           children: [
                             Expanded(
                               child: ToolNumberField(
-                                label: '身高',
-                                hint: '170 或 1.7',
+                                label: bmiStrings.height,
+                                hint: bmiStrings.heightHint,
                                 suffix: 'cm',
                                 controller: _height,
                                 onChanged: (_) => setState(() {}),
@@ -141,7 +143,7 @@ class _BmiPageState extends State<BmiPage> {
                             const SizedBox(width: 12),
                             Expanded(
                               child: ToolNumberField(
-                                label: '体重',
+                                label: bmiStrings.weight,
                                 suffix: 'kg',
                                 controller: _weight,
                                 onChanged: (_) => setState(() {}),
@@ -154,15 +156,18 @@ class _BmiPageState extends State<BmiPage> {
                           children: [
                             Expanded(
                               child: ToolNumberField(
-                                label: '身高',
+                                label: bmiStrings.height,
                                 controller: _height,
                                 trailing: ToolUnitPicker<BmiImperialHeightUnit>(
                                   value: _heightUnit,
                                   items: BmiImperialHeightUnit.values,
                                   labelOf: (value) => value.symbol,
                                   menuLabelOf: (value) =>
-                                      '${value.symbol}（${value.label}）',
-                                  tooltip: '身高单位',
+                                      fill(bmiStrings.unitOption, [
+                                        value.symbol,
+                                        bmiStrings.heightUnitLabel(value),
+                                      ]),
+                                  tooltip: bmiStrings.heightUnit,
                                   onSelected: _switchHeightUnit,
                                 ),
                                 onChanged: (_) => setState(() {}),
@@ -171,7 +176,7 @@ class _BmiPageState extends State<BmiPage> {
                             const SizedBox(width: 12),
                             Expanded(
                               child: ToolNumberField(
-                                label: '体重',
+                                label: bmiStrings.weight,
                                 // 与身高单位同一套 suffixIcon 插槽，保证两个单位上下齐平
                                 trailing: Text(
                                   'lb',
@@ -222,7 +227,10 @@ class _UnitSwitch extends StatelessWidget {
           Padding(
             padding: const EdgeInsets.only(left: 6),
             child: ChoiceChip(
-              label: Text(value.label, style: const TextStyle(fontSize: 11.5)),
+              label: Text(
+                bmiStrings.unitLabel(value),
+                style: const TextStyle(fontSize: 11.5),
+              ),
               selected: unit == value,
               onSelected: (_) => onChanged(value),
               visualDensity: VisualDensity.compact,
@@ -251,7 +259,7 @@ class _EmptyHint extends StatelessWidget {
           ),
           SizedBox(height: 10),
           Text(
-            '输入身高与体重后自动计算',
+            bmiStrings.emptyHint,
             style: TextStyle(color: AppColors.textSecondary, fontSize: 12.5),
           ),
         ],
@@ -325,7 +333,7 @@ class _ResultBody extends StatelessWidget {
                 border: Border.all(color: color.withValues(alpha: 0.45)),
               ),
               child: Text(
-                result.category.label,
+                bmiStrings.categoryLabel(result.category),
                 style: TextStyle(
                   color: color,
                   fontSize: 12.5,
@@ -337,7 +345,7 @@ class _ResultBody extends StatelessWidget {
         ),
         const SizedBox(height: 6),
         Text(
-          '身高 $_heightText · 体重 $_weightText',
+          fill(bmiStrings.summary, [_heightText, _weightText]),
           style: TextStyle(color: AppColors.textSecondary, fontSize: 11.5),
         ),
         const SizedBox(height: 16),
@@ -345,7 +353,7 @@ class _ResultBody extends StatelessWidget {
         const SizedBox(height: 18),
         _StatRow(
           icon: Icons.check_circle_outline_rounded,
-          label: '正常体重范围',
+          label: bmiStrings.healthyRange,
           value:
               '${healthyMin.toStringAsFixed(1)} ~ '
               '${healthyMax.toStringAsFixed(1)} $unitLabel',
@@ -354,7 +362,9 @@ class _ResultBody extends StatelessWidget {
         const SizedBox(height: 10),
         _StatRow(
           icon: Icons.flag_outlined,
-          label: result.weightToHealthyCenter >= 0 ? '距理想体重还需增重' : '距理想体重还需减重',
+          label: result.weightToHealthyCenter >= 0
+              ? bmiStrings.needGain
+              : bmiStrings.needLose,
           value: '${delta.abs().toStringAsFixed(1)} $unitLabel',
           valueColor: AppColors.textPrimary,
         ),
@@ -372,7 +382,7 @@ class _ResultBody extends StatelessWidget {
               const SizedBox(width: 8),
               Expanded(
                 child: Text(
-                  result.advice,
+                  bmiStrings.adviceOf(result.category),
                   style: TextStyle(
                     color: AppColors.textSecondary,
                     fontSize: 11.5,
@@ -385,7 +395,7 @@ class _ResultBody extends StatelessWidget {
         ),
         const SizedBox(height: 12),
         Text(
-          '分级依据：中国成人 BMI 标准（WS/T 428—2013）。结果仅供健康参考，不构成医疗建议。',
+          bmiStrings.disclaimer,
           style: TextStyle(color: AppColors.textSecondary, fontSize: 10.5),
         ),
       ],

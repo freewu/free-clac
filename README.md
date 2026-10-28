@@ -307,8 +307,16 @@ Web 端可深链：`?page=settings` 直接打开设置页，`?page=plot` / `?pag
   `ToolInfo` 只存这份 map，`tool.name` 等 getter 按当前语言取，缺翻译回落简体中文
 - 新增工具时要一并补 `<tool>_lang.dart`（五种语言），测试会检查语言包齐全、
   文案非空、工具 id 唯一
-- 界面里的动态数字与单位文案（例如换算结果、税表列头）仍以中文为主，
-  正在逐步接入语言包
+- **工具页内部文案**再各放一份 `<tool>_strings.dart`：一个 `class <Tool>Strings`
+  用 `required` 具名字段列出全部文案，配合 `const Map<AppLanguage, <Tool>Strings>`
+  与 `<Tool>Strings get <tool>Strings`（`required` 保证五种语言不缺项、漏写直接编译报错）。
+  带参数的话术一律写成 `{0}` / `{1}` 模板，用 `fill()` 填充，避免在代码里拼句子
+- 数据层的中文枚举名（还款方式、计息频率、付息周期、BMI 分级…）留在枚举里，
+  页面上改为调 `<tool>Strings` 的 `methodLabel()` / `frequencyLabel()` 等方法
+- 六个换算工具共用 `lib/ui/tools/widgets/unit_convert_strings.dart`，
+  体系名称统一走 `measureSystemLabel()`
+- 已接入：BMI、长度 / 面积 / 容量 / 重量 / 温度 / 速度、复利、利率换算、贷款。
+  单位名称与「常见长度」等参照物属于数据层，仍是中文，下一步再补
 
 ## 应用图标
 
