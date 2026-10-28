@@ -23,6 +23,7 @@ import 'package:free_clac/ui/tools/distance/distance_page.dart';
 import 'package:free_clac/ui/tools/interest/interest_page.dart';
 import 'package:free_clac/ui/tools/loan/loan_page.dart';
 import 'package:free_clac/ui/tools/pension/pension_page.dart';
+import 'package:free_clac/ui/tools/retirement/retirement_page.dart';
 import 'package:free_clac/ui/tools/speed/speed_page.dart';
 import 'package:free_clac/ui/tools/tax/tax_page.dart';
 import 'package:free_clac/ui/tools/temperature/temperature_page.dart';
@@ -304,6 +305,45 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
+  testWidgets('工具页：退休年龄计算器按出生年月测算退休时间', (tester) async {
+    tester.view.physicalSize = const Size(1440, 1600);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+    await tester.pumpWidget(
+      const FreeCalcApp(initialTab: 2, initialTool: 'retirement'),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.byType(RetirementPage), findsOneWidget);
+    // 默认 1985 年 6 月出生男职工：延迟拉满 63 岁，2048 年 6 月退休
+    expect(find.text('2048 年 6 月'), findsOneWidget);
+    expect(find.text('63 岁'), findsOneWidget);
+    expect(find.text('20 年（2048 年退休）'), findsOneWidget);
+    expect(find.text('2045 年 6 月 · 60 岁'), findsOneWidget);
+    expect(find.text('2051 年 6 月 · 66 岁'), findsOneWidget);
+
+    // 换成原 50 岁的女职工：55 岁退休，时间提前 8 年
+    await tester.tap(find.byKey(const Key('retirement-group')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('女职工（工人）· 原 50 岁').last);
+    await tester.pumpAndSettle();
+    expect(find.text('2040 年 6 月'), findsOneWidget);
+    expect(find.text('55 岁'), findsOneWidget);
+
+    // 改出生年份：1990 年出生的男职工退休时间整体后移 5 年
+    await tester.tap(find.byKey(const Key('retirement-group')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('男职工 · 原 60 岁').last);
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('retirement-birth-year')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('1990 年').last);
+    await tester.pumpAndSettle();
+    expect(find.text('2053 年 6 月'), findsOneWidget);
+    expect(find.textContaining('已到 63 岁的改革目标'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
   testWidgets('工具页：养老金计算器测算基础与个人账户养老金', (tester) async {
     tester.view.physicalSize = const Size(1440, 1600);
     tester.view.devicePixelRatio = 1;
@@ -582,7 +622,7 @@ void main() {
     expect(find.text('10 個のアプリ'), findsOneWidget);
   });
 
-  testWidgets('工具页：切回简体中文后养老金与个税又出现了', (tester) async {
+  testWidgets('工具页：切回简体中文后养老金、个税与退休年龄又出现了', (tester) async {
     tester.view.physicalSize = const Size(1440, 1600);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.reset);
@@ -607,8 +647,9 @@ void main() {
 
     await tester.tap(find.text('工具').last);
     await tester.pumpAndSettle();
-    expect(find.text('12 个应用'), findsOneWidget);
+    expect(find.text('13 个应用'), findsOneWidget);
     expect(find.text('养老金计算器'), findsOneWidget);
+    expect(find.text('退休年龄计算器'), findsOneWidget);
     expect(find.text('个人所得税'), findsOneWidget);
   });
 

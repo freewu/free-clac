@@ -13,6 +13,7 @@ import 'package:free_clac/ui/tools/distance/distance.dart';
 import 'package:free_clac/ui/tools/interest/interest.dart';
 import 'package:free_clac/ui/tools/loan/loan.dart';
 import 'package:free_clac/ui/tools/pension/pension.dart';
+import 'package:free_clac/ui/tools/retirement/retirement.dart';
 import 'package:free_clac/ui/tools/speed/speed.dart';
 import 'package:free_clac/ui/tools/tax/tax.dart';
 import 'package:free_clac/ui/tools/temperature/temperature.dart';
@@ -1001,6 +1002,64 @@ void main() {
   });
   group('养老金：基础养老金 + 个人账户养老金', () {
     test('计发月数表：60 岁 139 个月，越低越少、越高越多', () {
+      // 延迟退休：男职工每 4 个月出生多延迟 1 个月，封顶 63 岁
+      RetirementResult male(DateTime birth) =>
+          calculateRetirement(birth: birth, group: RetirementGroup.male);
+      // 1964 年出生不受影响，1965 年 1 月起逐档推迟
+      expect(male(DateTime(1964, 12)).delayMonths, 0);
+      expect(male(DateTime(1964, 12)).retireMonth, DateTime(2024, 12));
+      expect(male(DateTime(1965, 1)).delayMonths, 1);
+      expect(male(DateTime(1965, 1)).retireMonth, DateTime(2025, 2));
+      expect(male(DateTime(1965, 4)).delayMonths, 1);
+      expect(male(DateTime(1965, 5)).delayMonths, 2);
+      // 1976 年 9 月起拉满 36 个月（63 岁）
+      expect(male(DateTime(1976, 8)).delayMonths, 35);
+      expect(male(DateTime(1976, 9)).delayMonths, 36);
+      expect(male(DateTime(1976, 9)).retireMonth, DateTime(2039, 9));
+      expect(male(DateTime(1976, 5)).delayMonths, 35);
+      final capped = male(DateTime(1990, 5));
+      expect(capped.isCapped, isTrue);
+      expect(capped.legalAgeYears, 63);
+      expect(capped.legalAgeExtraMonths, 0);
+      expect(capped.retireMonth, DateTime(2053, 5));
+      // 弹性：提前不低于原法定年龄，延迟最多 3 年
+      expect(capped.earliestAgeYears, 60);
+      expect(capped.latestAgeYears, 66);
+
+      // 原 55 岁女职工：节奏与男性一致，1970 年 1 月起受影响
+      RetirementResult female55(DateTime birth) =>
+          calculateRetirement(birth: birth, group: RetirementGroup.female55);
+      expect(female55(DateTime(1969, 12)).delayMonths, 0);
+      expect(female55(DateTime(1970, 1)).delayMonths, 1);
+      expect(female55(DateTime(1970, 1)).retireMonth, DateTime(2025, 2));
+      // 1981 年 9 月起拉满 36 个月（58 岁）
+      expect(female55(DateTime(1981, 8)).legalAgeYears, 57);
+      expect(female55(DateTime(1981, 9)).legalAgeYears, 58);
+
+      // 原 50 岁女职工：每 2 个月延迟 1 个月，最多 60 个月（55 岁）
+      RetirementResult female50(DateTime birth) =>
+          calculateRetirement(birth: birth, group: RetirementGroup.female50);
+      expect(female50(DateTime(1974, 12)).delayMonths, 0);
+      expect(female50(DateTime(1975, 1)).delayMonths, 1);
+      expect(female50(DateTime(1975, 2)).delayMonths, 1);
+      expect(female50(DateTime(1975, 3)).delayMonths, 2);
+      expect(female50(DateTime(1984, 10)).delayMonths, 59);
+      expect(female50(DateTime(1984, 11)).delayMonths, 60);
+      expect(female50(DateTime(1984, 11)).legalAgeYears, 55);
+      expect(female50(DateTime(1984, 11)).retireMonth, DateTime(2039, 11));
+      // 改革拉满后仍在 55 岁前 3 年内可提前
+      expect(female50(DateTime(1990, 1)).earliestAgeYears, 52);
+
+      // 最低缴费年限：2029 年前 15 年，2030 起每年 +6 个月，2039 起 20 年
+      expect(minimumContributionYearsAt(2029), 15);
+      expect(minimumContributionYearsAt(2030), 15.5);
+      expect(minimumContributionYearsAt(2035), 18);
+      expect(minimumContributionYearsAt(2039), 20);
+      expect(minimumContributionYearsAt(2060), 20);
+      expect(male(DateTime(1990, 5)).minimumContributionYears, 20);
+      // 跨月加法：12 月 + 1 个月进位到下一年
+      expect(addMonths(DateTime(2052, 12), 1), DateTime(2053, 1));
+
       expect(pensionPayoutMonthsOf(60), 139);
       expect(pensionPayoutMonthsOf(50), 195);
       expect(pensionPayoutMonthsOf(55), 170);
@@ -1279,14 +1338,14 @@ void main() {
       expect(titles.length, greaterThanOrEqualTo(4));
     });
 
-    test('养老金与个税只在中文界面展示', () {
-      // 简体、繁体都能看到 12 个工具
+    test('养老金、个税与退休年龄只在中文界面展示', () {
+      // 简体、繁体都能看到 13 个工具
       for (final language in [AppLanguage.zhHans, AppLanguage.zhHant]) {
         applyAppLanguage(language);
-        expect(visibleTools.length, 12, reason: language.code);
+        expect(visibleTools.length, 13, reason: language.code);
         expect(
           visibleTools.map((tool) => tool.id),
-          containsAll(<String>['pension', 'tax']),
+          containsAll(<String>['pension', 'tax', 'retirement']),
         );
       }
       for (final language in [AppLanguage.en, AppLanguage.ja, AppLanguage.es]) {
@@ -1302,12 +1361,18 @@ void main() {
           isNot(contains('tax')),
           reason: language.code,
         );
-        // 深链也不该打开这两个工具
+        expect(
+          visibleTools.map((tool) => tool.id),
+          isNot(contains('retirement')),
+          reason: language.code,
+        );
+        // 深链也不该打开这三个工具
         expect(toolById('pension'), isNull, reason: language.code);
+        expect(toolById('retirement'), isNull, reason: language.code);
         expect(toolById('bmi'), isNotNull, reason: language.code);
       }
       applyAppLanguage(AppLanguage.zhHans);
-      expect(kTools.length, 12);
+      expect(kTools.length, 13);
     });
 
     test('每个工具的语言包都有五种语言，且 id 唯一', () {
@@ -1322,7 +1387,7 @@ void main() {
           expect(text.description, isNotEmpty);
         }
       }
-      expect(kTools.length, 12);
+      expect(kTools.length, 13);
     });
 
     test('工具名称随语言变化，缺翻译时回落简体中文', () {
