@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 
 import '../../core/latex.dart';
 import '../../core/number_format.dart';
+import '../../l10n/calc_errors.dart';
 import '../../l10n/calc_strings.dart';
 import '../../models/history_entry.dart';
 import '../../state/calculator_controller.dart';
@@ -130,7 +131,9 @@ class _HistoryTile extends StatelessWidget {
                   ),
                   const SizedBox(height: 2),
                   Text(
-                    entry.display,
+                    entry.exception == null
+                        ? entry.display
+                        : calcErrorMessage(entry.exception!),
                     textAlign: TextAlign.right,
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,

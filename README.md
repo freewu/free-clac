@@ -330,6 +330,10 @@ Web 端可深链：`?page=settings` 直接打开设置页，`?page=plot` / `?pag
   简体直接复用 `lib/core/builtins.dart` 的中文，其余四种语言必须翻全（测试会逐条检查）
 - **示例曲线也带语言**：`PlotPreset.names` / `descriptions` 存四种语言的名称与说明，
   `nameIn()` / `descriptionIn()` 取不到时回落简体原文
+- **运算错误也走多语言**：`CalcException` 带 `CalcError` 枚举 + 模板参数 + 出错位置，
+  数据层的简体中文模板在 `lib/core/calc_error.dart`，其余四种语言在
+  `lib/l10n/calc_errors.dart`（`calcErrorMessage()` 按当前语言填充并追加位置）。
+  预览区、历史记录与绘图曲线的报错都现算当前语言，切换语言后已显示的报错跟着换
 - 已接入：BMI、长度 / 面积 / 容量 / 重量 / 温度 / 速度、复利、利率换算、贷款、计算器、绘图
 - **养老金 / 个税 / 退休年龄**按中国政策设计，`ToolInfo.availableIn` 只放简繁中文，
   两份文案都在 `<tool>_strings.dart` 里（`kPensionStrings` / `kTaxStrings` /
@@ -504,8 +508,9 @@ just test
 换算工具默认体系与结果 tab 各工具独立、退休年龄计算器按出生年月与人员类别测算（含「还需奋斗」倒计时）、
 换算单位名称 / 说明 / 参照物按语言回落、养老金 / 个税 / 退休年龄的简繁文案、
 `?lang=` 深链指定语言且不写回本地、换算页打开着切语言时标题与单位名跟着换、
-计算器与绘图页在英文界面下的提示 / 历史 / 函数库分类与说明 / 曲线类型 / 空状态 / 示例名称全是英文等
-Widget 与单元测试（共 217 项）。
+计算器与绘图页在英文界面下的提示 / 历史 / 函数库分类与说明 / 曲线类型 / 空状态 / 示例名称全是英文、
+运算错误提示按语言本地化（含位置与占位符参数）等
+Widget 与单元测试（共 222 项）。
 
 Android 的相册写入走 `MediaStore`，无法在 Widget 测试里覆盖，另有真机 / 模拟器测试 `integration_test/android_save_test.dart`（`just test-android`，需先 `just emulator` 或插上真机）。
 

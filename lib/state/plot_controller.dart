@@ -4,8 +4,10 @@ import 'dart:ui';
 import 'package:flutter/foundation.dart';
 
 import '../core/angle_mode.dart';
+import '../core/calc_error.dart';
 import '../core/math_engine.dart';
 import '../core/number_format.dart';
+import '../l10n/calc_errors.dart';
 import '../l10n/plot_strings.dart';
 import '../plot/curve_sampler.dart';
 import '../plot/plot_presets.dart';
@@ -291,6 +293,8 @@ class PlotController extends ChangeNotifier {
         }
       }
       return null;
+    } on CalcException catch (error) {
+      return calcErrorMessage(error);
     } catch (error) {
       return error.toString();
     }
@@ -335,7 +339,7 @@ class PlotController extends ChangeNotifier {
         final curve = _sampleFunction(function, size);
         samples.add(PlotSample(function: function, curve: curve));
       } catch (error) {
-        final message = error.toString();
+        final message = calcErrorText(error);
         _lastError = message;
         samples.add(PlotSample(function: function, error: message));
       }

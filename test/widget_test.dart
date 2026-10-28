@@ -831,6 +831,33 @@ void main() {
     expect(find.byTooltip('sin(x) — 正弦'), findsNothing);
   });
 
+  testWidgets('计算器页：英文界面下报错提示也是英文（含位置）', (tester) async {
+    tester.view.physicalSize = const Size(900, 1600);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+    final settings = SettingsController(
+      store: _MemoryStore(),
+      language: AppLanguage.en,
+    );
+    await tester.pumpWidget(
+      FreeCalcApp(key: UniqueKey(), settings: settings, initialTab: 0),
+    );
+    await tester.pumpAndSettle();
+
+    await tapKey(tester, '7');
+    await tapKey(tester, '+');
+    expect(find.textContaining('Expression is incomplete'), findsWidgets);
+    expect(find.textContaining('表达式不完整'), findsNothing);
+
+    // 带占位符的模板：未定义变量会带出变量名
+    await tapKey(tester, 'x');
+    expect(
+      find.textContaining('Undefined variable "x"'),
+      findsWidgets,
+      reason: '变量名要填进模板，而不是显示中文',
+    );
+  });
+
   testWidgets('绘图页：英文界面下标题、面板、空状态与示例都是英文', (tester) async {
     tester.view.physicalSize = const Size(1440, 1600);
     tester.view.devicePixelRatio = 1;

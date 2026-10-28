@@ -11,7 +11,7 @@ class Evaluator {
 
   double evaluate(Expr expression, EvalContext context) {
     if (context.depth > EvalContext.maxDepth) {
-      throw CalcException('表达式嵌套层数过多');
+      throw const CalcException(CalcError.nesting);
     }
     context.depth++;
     try {
@@ -31,7 +31,7 @@ class Evaluator {
           context.lookup(name.toLowerCase()) ??
           context.lookup(name.toUpperCase());
       if (value == null) {
-        throw CalcException('未定义变量 "$name"');
+        throw CalcException(CalcError.undefinedVariable, args: [name]);
       }
       return value;
     }
@@ -47,7 +47,10 @@ class Evaluator {
         case '%':
           return value / 100;
       }
-      throw CalcException('未知的后缀运算符 "${expression.operator}"');
+      throw CalcException(
+        CalcError.unknownPostfix,
+        args: [expression.operator],
+      );
     }
     if (expression is BinaryExpr) {
       final left = _evaluate(expression.left, context);
@@ -66,12 +69,15 @@ class Evaluator {
         case '^':
           return math.pow(left, right).toDouble();
       }
-      throw CalcException('未知的运算符 "${expression.operator}"');
+      throw CalcException(
+        CalcError.unknownOperator,
+        args: [expression.operator],
+      );
     }
     if (expression is CallExpr) {
       return _call(expression, context);
     }
-    throw CalcException('无法求值的表达式');
+    throw const CalcException(CalcError.notEvaluable);
   }
 
   double _call(CallExpr expression, EvalContext context) {
@@ -89,7 +95,7 @@ class Evaluator {
 
     final function = builtinFunctions[name];
     if (function == null) {
-      throw CalcException('未定义的函数 "$name"');
+      throw CalcException(CalcError.undefinedFunction, args: [name]);
     }
     final arguments = <double>[
       for (final argument in expression.arguments) _evaluate(argument, context),
@@ -112,7 +118,7 @@ class Evaluator {
     final from = start.ceil();
     final to = end.floor();
     if (to - from > 1000000) {
-      throw CalcException('求和/求积的项数过多（上限 1000000）');
+      throw const CalcException(CalcError.sumTooMany);
     }
     final previous = context.variables[variable];
     var accumulator = isProduct ? 1.0 : 0.0;
@@ -139,7 +145,7 @@ class Evaluator {
     final lower = _evaluate(arguments[2], context);
     final upper = _evaluate(arguments[3], context);
     if (!lower.isFinite || !upper.isFinite) {
-      throw CalcException('积分上下限必须是有限值');
+      throw const CalcException(CalcError.integralBounds);
     }
     if (lower == upper) return 0;
 
@@ -163,7 +169,7 @@ class Evaluator {
       final middle = (a + b) / 2;
       final fm = f(middle);
       if (!fa.isFinite || !fb.isFinite || !fm.isFinite) {
-        throw CalcException('积分区间内函数无定义');
+        throw const CalcException(CalcError.integralUndefined);
       }
       final whole = (b - a) / 6 * (fa + 4 * fm + fb);
       return sign * _adaptiveSimpson(f, a, b, fa, fm, fb, whole, epsilon, 24);
@@ -240,7 +246,7 @@ class Evaluator {
       final d2 = (f(at + h / 2) - f(at - h / 2)) / h;
       final result = (4 * d2 - d1) / 3;
       if (!result.isFinite) {
-        throw CalcException('该点导数不存在或无法计算');
+        throw const CalcException(CalcError.derivativeUndefined);
       }
       return result;
     } finally {
@@ -250,7 +256,7 @@ class Evaluator {
 
   String _requireVariable(Expr expression) {
     if (expression is VariableExpr) return expression.name;
-    throw CalcException('第二个参数必须是变量名，例如 sum(k^2, k, 1, 10)');
+    throw const CalcException(CalcError.secondArgVariable);
   }
 
   void _restore(EvalContext context, String name, double? previous) {

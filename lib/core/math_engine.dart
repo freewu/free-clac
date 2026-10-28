@@ -10,10 +10,21 @@ import 'token.dart';
 
 /// 一次计算的返回值。
 class EngineResult {
-  const EngineResult({this.value, this.error, this.expression, this.node});
+  const EngineResult({
+    this.value,
+    this.error,
+    this.exception,
+    this.expression,
+    this.node,
+  });
 
   final double? value;
+
+  /// 简体中文错误消息（[exception] 为 null 时才用它）。
   final String? error;
+
+  /// 结构化错误，界面用 `calcErrorMessage()` 取当前语言的文案。
+  final CalcException? exception;
   final String? expression;
   final Expr? node;
 
@@ -66,9 +77,17 @@ class MathEngine extends ChangeNotifier {
       final value = _evaluator.evaluate(node, context);
       return EngineResult(value: value, expression: source.trim(), node: node);
     } on CalcException catch (error) {
-      return EngineResult(error: error.toString(), expression: source.trim());
+      return EngineResult(
+        error: error.toString(),
+        exception: error,
+        expression: source.trim(),
+      );
     } catch (error) {
-      return EngineResult(error: '计算失败：$error', expression: source.trim());
+      return EngineResult(
+        error: '计算失败：$error',
+        exception: CalcException(CalcError.generic, args: [error]),
+        expression: source.trim(),
+      );
     }
   }
 

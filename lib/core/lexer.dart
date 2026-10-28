@@ -101,7 +101,11 @@ class Lexer {
           tokens.add(Token(TokenType.comma, char, start, _pos));
           continue;
         default:
-          throw CalcException('无法识别的字符 "$char"（位置 ${start + 1}）', start);
+          throw CalcException(
+            CalcError.unknownChar,
+            position: start,
+            args: [char],
+          );
       }
     }
   }
@@ -136,7 +140,11 @@ class Lexer {
     final text = _src.substring(start, _pos);
     final value = double.tryParse(text);
     if (value == null) {
-      throw CalcException('无效的数字 "$text"', start);
+      throw CalcException(
+        CalcError.invalidNumber,
+        position: start,
+        args: [text],
+      );
     }
     return Token(TokenType.number, text, start, _pos, value: value);
   }

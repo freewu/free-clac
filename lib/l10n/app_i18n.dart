@@ -1,6 +1,8 @@
 import 'app_language.dart';
 import 'app_strings.dart';
 
+export '../core/template.dart';
+
 /// 当前生效的语言与文案。
 ///
 /// 与 [AppColors] 的思路一致：由 `FreeCalcApp` 在构建 `MaterialApp` 之前
@@ -23,16 +25,3 @@ V toolTextFor<V>(Map<AppLanguage, V> pack, AppLanguage language) =>
 
 /// 取某个工具语言包里当前语言的文案。
 V toolText<V>(Map<AppLanguage, V> pack) => toolTextFor(pack, _language);
-
-/// 用位置占位符填充模板：`fill('{0} 年 {1} 个月', [y, m])`。
-///
-/// 多语言的语序不同（如日语把数量放在名词前），所以工具页文案一律用模板
-/// 而不是在代码里拼字符串。
-String fill(String template, [List<Object?> args = const <Object?>[]]) {
-  if (args.isEmpty) return template;
-  var text = template;
-  for (var i = 0; i < args.length; i++) {
-    text = text.replaceAll('{$i}', '${args[i]}');
-  }
-  return text;
-}

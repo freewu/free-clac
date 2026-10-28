@@ -79,7 +79,7 @@ double _gamma(double x) {
 
 double _logBase(double value, double base) {
   if (base <= 0 || base == 1) {
-    throw CalcException('对数的底数必须大于 0 且不等于 1');
+    throw const CalcException(CalcError.logBase);
   }
   return math.log(value) / math.log(base);
 }
@@ -234,7 +234,7 @@ final Map<String, BuiltinFunction> builtinFunctions = {
     body: (args, ctx) {
       final value = args[0];
       final n = args[1];
-      if (n == 0) throw CalcException('方根次数不能为 0');
+      if (n == 0) throw const CalcException(CalcError.rootDegree);
       if (value < 0 && n == n.roundToDouble() && n.toInt() % 2 != 0) {
         return -math.pow(-value, 1 / n).toDouble();
       }
@@ -408,7 +408,7 @@ final Map<String, BuiltinFunction> builtinFunctions = {
     body: (args, ctx) {
       final low = args[0].ceil();
       final high = args[1].floor();
-      if (high < low) throw CalcException('randint 的区间无效');
+      if (high < low) throw const CalcException(CalcError.randintRange);
       return (low + ctx.random.nextInt(high - low + 1)).toDouble();
     },
   ),

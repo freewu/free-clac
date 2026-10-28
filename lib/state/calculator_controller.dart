@@ -3,8 +3,10 @@ import 'package:flutter/widgets.dart';
 
 import '../core/angle_mode.dart';
 import '../core/builtins.dart';
+import '../core/calc_error.dart';
 import '../core/math_engine.dart';
 import '../core/number_format.dart';
+import '../l10n/calc_errors.dart';
 import '../models/history_entry.dart';
 
 /// 计算器状态：输入、预览、历史、内存、角度模式。
@@ -26,8 +28,15 @@ class CalculatorController extends ChangeNotifier {
   bool _secondActive = false;
   bool get secondActive => _secondActive;
 
-  String? _previewError;
-  String? get previewError => _previewError;
+  CalcException? _previewException;
+  String? _previewRawError;
+
+  /// 预览错误按当前语言现算，切换语言后已显示的报错也会跟着换。
+  String? get previewError {
+    final exception = _previewException;
+    if (exception != null) return calcErrorMessage(exception);
+    return _previewRawError;
+  }
 
   double? _previewValue;
   double? get previewValue => _previewValue;
@@ -62,12 +71,14 @@ class CalculatorController extends ChangeNotifier {
     final text = input.text.trim();
     if (text.isEmpty) {
       _previewValue = null;
-      _previewError = null;
+      _previewException = null;
+      _previewRawError = null;
       return;
     }
     final result = engine.evaluate(text, variables: _variables());
     _previewValue = result.value;
-    _previewError = result.error;
+    _previewException = result.exception;
+    _previewRawError = result.error;
   }
 
   Map<String, double> _variables() {
@@ -181,7 +192,12 @@ class CalculatorController extends ChangeNotifier {
     if (result.isError) {
       _history.insert(
         0,
-        HistoryEntry(expression: text, display: result.error!, isError: true),
+        HistoryEntry(
+          expression: text,
+          display: result.error!,
+          exception: result.exception,
+          isError: true,
+        ),
       );
       _historyCursor = -1;
       notifyListeners();
@@ -198,7 +214,8 @@ class CalculatorController extends ChangeNotifier {
     if (_history.length > 100) _history.removeLast();
     _historyCursor = -1;
     _previewValue = value;
-    _previewError = null;
+    _previewException = null;
+    _previewRawError = null;
     notifyListeners();
     HapticFeedback.mediumImpact();
     return true;

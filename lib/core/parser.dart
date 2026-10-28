@@ -22,11 +22,15 @@ class Parser {
 
   Expr parse() {
     if (_peek.isEnd) {
-      throw CalcException('表达式不能为空');
+      throw CalcException(CalcError.emptyExpression);
     }
     final expression = _parseAdditive();
     if (!_peek.isEnd) {
-      throw CalcException('多余的输入 "${_peek.lexeme}"', _peek.start);
+      throw CalcException(
+        CalcError.trailingInput,
+        position: _peek.start,
+        args: [_peek.lexeme],
+      );
     }
     return expression;
   }
@@ -132,7 +136,7 @@ class Parser {
         _advance();
         final inner = _parseAdditive();
         if (_peek.type != TokenType.rparen) {
-          throw CalcException('缺少右括号 ")"', _peek.start);
+          throw CalcException(CalcError.missingRParen, position: _peek.start);
         }
         _advance();
         return inner;
@@ -140,15 +144,26 @@ class Parser {
         return _parseIdentifier();
       case TokenType.operator:
         if (token.lexeme == ')') {
-          throw CalcException('多余的右括号 ")"', token.start);
+          throw CalcException(CalcError.extraRParen, position: token.start);
         }
-        throw CalcException('运算符 "${token.lexeme}" 位置不正确', token.start);
+        throw CalcException(
+          CalcError.misplacedOperator,
+          position: token.start,
+          args: [token.lexeme],
+        );
       case TokenType.comma:
-        throw CalcException('逗号位置不正确', token.start);
+        throw CalcException(CalcError.misplacedComma, position: token.start);
       case TokenType.end:
-        throw CalcException('表达式不完整', token.start);
+        throw CalcException(
+          CalcError.incompleteExpression,
+          position: token.start,
+        );
       default:
-        throw CalcException('无法解析 "${token.lexeme}"', token.start);
+        throw CalcException(
+          CalcError.unparsable,
+          position: token.start,
+          args: [token.lexeme],
+        );
     }
   }
 
@@ -167,8 +182,9 @@ class Parser {
           return CallExpr(name, [argument]);
         }
         throw CalcException(
-          '函数 $name 需要括号，例如 ${_signatureOf(name)}',
-          token.start,
+          CalcError.functionNeedsParens,
+          position: token.start,
+          args: [name, _signatureOf(name)],
         );
       }
       _advance(); // 吃掉 '('
@@ -181,18 +197,27 @@ class Parser {
         }
       }
       if (_peek.type != TokenType.rparen) {
-        throw CalcException('函数 $name 缺少右括号 ")"', _peek.start);
+        throw CalcException(
+          CalcError.functionMissingRParen,
+          position: _peek.start,
+          args: [name],
+        );
       }
       _advance();
       final function = builtinFunctions[name];
       if (function != null && !function.acceptsArity(arguments.length)) {
         throw CalcException(
-          '函数 $name 的参数个数不正确，用法：${function.signature}',
-          token.start,
+          CalcError.functionArgCount,
+          position: token.start,
+          args: [name, function.signature],
         );
       }
       if (function == null && !_hasSpecialArity(name, arguments.length)) {
-        throw CalcException('特殊函数 $name 的参数个数不正确', token.start);
+        throw CalcException(
+          CalcError.specialArgCount,
+          position: token.start,
+          args: [name],
+        );
       }
       return CallExpr(name, arguments);
     }

@@ -81,6 +81,13 @@ cmd.exe /c "cd /d $(wslpath -w "$PWD") && flutter test"
   示例曲线的名称与说明放在 `PlotPreset.names` / `descriptions`，用 `nameIn()` / `descriptionIn()` 取。
   平台相关的「保存位置」文案（`plotSaveLocationNote()`、`SavedPlotFile.displayLocation`）
   由服务层直接读 `plotStrings`，不要在 `lib/services/` 里写中文字面量。
+- **计算错误的文案也要走多语言**：`lib/core/` 里抛错一律
+  `throw CalcException(CalcError.xxx, position: ..., args: [...])`，别直接塞中文；
+  `CalcError` 枚举的 `template` 是简体中文兜底，其余四种语言写在
+  `lib/l10n/calc_errors.dart`（`test/l10n_test.dart` 会检查五语言齐全）。
+  界面显示用 `calcErrorMessage()`（自动追加「位置」后缀）；`EngineResult` 同时带
+  `error`（中文兜底）与 `exception`，历史记录存 `exception`，切语言后能重新本地化。
+  `fill()` 已挪到 `lib/core/template.dart`，`app_i18n.dart` 再导出，两个方向都能用。
 - **数据层不要重复存界面文案**：`BmiResult` 之前自带一份中文 `advice`，和 `bmiStrings.adviceOf()` 重复且不跟语言走，已删除；同类「数据层 getter 返回中文句子」的写法不要再加，改由页面调 `<tool>Strings`。
 - **页面构建函数不要返回 `const` 组件**：`ToolInfo.builder` 返回 `const` 实例时，重建拿到的还是同一个对象，Flutter 判定无需更新，切主题 / 语言后已打开的页面不会跟着变。换算页的标题也从 `<tool>_lang.dart` 取（`toolText(kXxxLang).name`）。
 - **颜色一律走 `AppColors`**：不要硬编码 `Color(0xFF...)`，也不要在 `const` 表达式里用 `AppColors.xxx`（它不是常量），深色 / 浅色两套配色都要能看。

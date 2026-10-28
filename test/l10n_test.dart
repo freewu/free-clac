@@ -1,6 +1,9 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:free_clac/core/angle_mode.dart';
+import 'package:free_clac/core/calc_error.dart';
 import 'package:free_clac/core/builtins.dart';
+import 'package:free_clac/l10n/app_i18n.dart';
+import 'package:free_clac/l10n/calc_errors.dart';
 import 'package:free_clac/l10n/calc_strings.dart';
 import 'package:free_clac/l10n/plot_strings.dart';
 import 'package:free_clac/l10n/app_language.dart';
@@ -94,6 +97,68 @@ void main() {
         kCalcStrings[AppLanguage.es]!.angleLabel(AngleMode.degrees),
         'grados',
       );
+    });
+  });
+
+  group('计算错误文案', () {
+    test('除简体外的四种语言翻全了所有错误', () {
+      for (final language in AppLanguage.values) {
+        if (language == AppLanguage.zhHans) continue;
+        final pack = kCalcErrorStrings[language]!;
+        for (final code in CalcError.values) {
+          expect(
+            pack[code],
+            isNotNull,
+            reason: '${language.code} 缺 ${code.name}',
+          );
+          expect(pack[code]!.trim(), isNotEmpty);
+        }
+      }
+    });
+
+    test('简体直接用数据层模板并附上位置', () {
+      applyAppLanguage(AppLanguage.zhHans);
+      addTearDown(() => applyAppLanguage(AppLanguage.zhHans));
+      expect(
+        calcErrorMessage(const CalcException(CalcError.incompleteExpression)),
+        '表达式不完整',
+      );
+      expect(
+        calcErrorMessage(
+          const CalcException(
+            CalcError.undefinedVariable,
+            position: 2,
+            args: ['x'],
+          ),
+        ),
+        '未定义变量 "x"（位置 3）',
+      );
+    });
+
+    test('切换语言后同一异常换文案', () {
+      addTearDown(() => applyAppLanguage(AppLanguage.zhHans));
+      const error = CalcException(
+        CalcError.undefinedVariable,
+        position: 0,
+        args: ['x'],
+      );
+      applyAppLanguage(AppLanguage.en);
+      expect(calcErrorMessage(error), 'Undefined variable "x" (position 1)');
+      applyAppLanguage(AppLanguage.ja);
+      expect(calcErrorMessage(error), '未定義の変数「x」（位置 1）');
+      applyAppLanguage(AppLanguage.es);
+      expect(calcErrorMessage(error), 'Variable no definida «x» (posición 1)');
+      applyAppLanguage(AppLanguage.zhHant);
+      expect(calcErrorMessage(error), '未定義的變數「x」（位置 1）');
+    });
+
+    test('非本地的异常回落 toString', () {
+      final error = StateError('boom');
+      expect(
+        calcErrorMessage(const CalcException(CalcError.nesting)),
+        isNotEmpty,
+      );
+      expect(calcErrorText(error), contains('boom'));
     });
   });
 
