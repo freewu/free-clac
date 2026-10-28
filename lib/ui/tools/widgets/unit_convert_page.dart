@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../../../core/number_format.dart';
+import '../../../state/settings_controller.dart';
 import '../../../theme/app_theme.dart';
 import '../unit_catalog.dart';
 import 'tool_field.dart';
@@ -35,19 +36,39 @@ class UnitConvertPage extends StatefulWidget {
 
 class _UnitConvertPageState extends State<UnitConvertPage>
     with SingleTickerProviderStateMixin {
-  /// 输入单位，取单位表里配置的默认单位。
-  late MeasureUnit _from = widget.catalog.defaultUnit;
+  /// 输入单位：优先用设置里为该工具选的默认体系，没选过用单位表自带的默认值。
+  late MeasureUnit _from = _initialUnit;
 
   final TextEditingController _value = TextEditingController(text: '1');
 
   /// 「常见 XX」默认展开，点标题行可折叠起来省空间。
   bool _samplesExpanded = true;
 
-  /// 结果 tab，跟输入单位所在体系联动。
+  /// 结果 tab，跟输入单位所在体系联动；初始 tab 由设置决定。
   late final TabController _tabs = TabController(
     length: widget.catalog.systems.length,
+    initialIndex: _initialTabIndex,
     vsync: this,
   )..addListener(_onTabChanged);
+
+  /// 设置里为该工具选的默认体系是否可用（温度、速度没有市制）。
+  ///
+  /// 选中的体系与单位表自带的默认体系一致时沿用 `defaultUnitId`（长度是米，
+  /// 而不是列表里的第一个单位），换了体系才取该体系的第一个单位。
+  MeasureUnit get _initialUnit {
+    final catalog = widget.catalog;
+    final preferred = currentSettings?.convertSystemFor(catalog.id);
+    if (preferred == null || preferred == catalog.defaultUnit.system) {
+      return catalog.defaultUnit;
+    }
+    final units = catalog.unitsOf(preferred);
+    return units.isEmpty ? catalog.defaultUnit : units.first;
+  }
+
+  /// 设置里为该工具选的结果 tab；体系不可用时落到第一个 tab。
+  int get _initialTabIndex => _tabIndexOf(
+    currentSettings?.convertTabFor(widget.catalog.id) ?? MeasureSystem.metric,
+  );
 
   @override
   void dispose() {

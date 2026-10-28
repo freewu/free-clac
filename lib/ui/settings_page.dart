@@ -6,6 +6,7 @@ import '../l10n/app_language.dart';
 import '../state/settings_controller.dart';
 import '../theme/app_theme.dart';
 import 'tools/bmi/setting.dart';
+import 'tools/conversion_setting.dart';
 import 'tools/widgets/tool_select.dart';
 import 'widgets/settings_card.dart';
 
@@ -82,6 +83,8 @@ class SettingsPage extends StatelessWidget {
                 ),
                 const SizedBox(height: 12),
                 BmiSetting(controller: controller),
+                const SizedBox(height: 12),
+                ConversionSetting(controller: controller),
                 const SizedBox(height: 12),
                 SettingsCard(
                   icon: Icons.info_outline_rounded,

@@ -4,6 +4,7 @@ import '../l10n/app_language.dart';
 import '../services/settings_store.dart';
 import '../theme/app_theme.dart';
 import '../ui/tools/bmi/bmi.dart';
+import '../ui/tools/unit_catalog.dart';
 
 /// 当前生效的设置控制器。
 ///
@@ -44,6 +45,9 @@ class SettingsController extends ChangeNotifier {
   static const String _languageKey = 'language';
   static const String _bmiUnitKey = 'bmi_unit';
 
+  /// 换算工具设置键的前缀，完整键如 `convert.distance.system`。
+  static const String _convertPrefix = 'convert.';
+
   final SettingsStore _store;
 
   AppThemeMode themeMode;
@@ -51,6 +55,12 @@ class SettingsController extends ChangeNotifier {
 
   /// BMI 工具默认使用的计量单位。
   BmiUnitSystem bmiUnit;
+
+  /// 各换算工具默认的计量体系（换算工具 id → 体系），没存过时为公制。
+  final Map<String, MeasureSystem> convertSystems = <String, MeasureSystem>{};
+
+  /// 各换算工具结果默认选中的 tab（换算工具 id → 体系）。
+  final Map<String, MeasureSystem> convertTabs = <String, MeasureSystem>{};
 
   /// 读取本地设置；没有存过或读取失败时保持构造时的默认值。
   Future<void> load() async {
@@ -69,6 +79,24 @@ class SettingsController extends ChangeNotifier {
     final storedBmiUnit = BmiUnitSystem.fromCode(values[_bmiUnitKey]);
     if (storedBmiUnit != null && storedBmiUnit != bmiUnit) {
       bmiUnit = storedBmiUnit;
+      changed = true;
+    }
+    for (final entry in values.entries) {
+      // convert.<工具 id>.(system|tab)
+      if (!entry.key.startsWith(_convertPrefix)) continue;
+      final rest = entry.key.substring(_convertPrefix.length);
+      final dot = rest.lastIndexOf('.');
+      if (dot <= 0) continue;
+      final id = rest.substring(0, dot);
+      final system = MeasureSystem.fromCode(entry.value);
+      if (system == null) continue;
+      final target = switch (rest.substring(dot + 1)) {
+        'system' => convertSystems,
+        'tab' => convertTabs,
+        _ => null,
+      };
+      if (target == null || target[id] == system) continue;
+      target[id] = system;
       changed = true;
     }
     if (changed) notifyListeners();
@@ -96,6 +124,30 @@ class SettingsController extends ChangeNotifier {
     bmiUnit = unit;
     notifyListeners();
     await _store.write(_bmiUnitKey, unit.code);
+  }
+
+  /// 某个换算工具默认的计量体系。
+  MeasureSystem convertSystemFor(String catalogId) =>
+      convertSystems[catalogId] ?? MeasureSystem.metric;
+
+  /// 某个换算工具结果默认选中的 tab 对应体系。
+  MeasureSystem convertTabFor(String catalogId) =>
+      convertTabs[catalogId] ?? MeasureSystem.metric;
+
+  /// 设置换算工具默认的计量体系。
+  Future<void> setConvertSystem(String catalogId, MeasureSystem system) async {
+    if (convertSystems[catalogId] == system) return;
+    convertSystems[catalogId] = system;
+    notifyListeners();
+    await _store.write('$_convertPrefix$catalogId.system', system.code);
+  }
+
+  /// 设置换算工具结果默认选中的 tab。
+  Future<void> setConvertTab(String catalogId, MeasureSystem system) async {
+    if (convertTabs[catalogId] == system) return;
+    convertTabs[catalogId] = system;
+    notifyListeners();
+    await _store.write('$_convertPrefix$catalogId.tab', system.code);
   }
 
   /// 结合系统明暗，得出当前应该使用的配色。

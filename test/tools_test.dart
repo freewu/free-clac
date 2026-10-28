@@ -16,6 +16,7 @@ import 'package:free_clac/ui/tools/pension/pension.dart';
 import 'package:free_clac/ui/tools/speed/speed.dart';
 import 'package:free_clac/ui/tools/tax/tax.dart';
 import 'package:free_clac/ui/tools/temperature/temperature.dart';
+import 'package:free_clac/ui/tools/conversion_catalogs.dart';
 import 'package:free_clac/ui/tools/unit_catalog.dart';
 import 'package:free_clac/ui/tools/volume/volume.dart';
 import 'package:free_clac/ui/tools/weight/weight.dart';
@@ -1195,6 +1196,33 @@ void main() {
       final reloaded = SettingsController(store: store);
       await reloaded.load();
       expect(reloaded.bmiUnit, BmiUnitSystem.imperial);
+    });
+
+    test('换算工具默认体系与结果 tab：各工具分别保存，默认公制', () async {
+      final store = _MemoryStore();
+      final settings = SettingsController(store: store);
+      for (final catalog in kConversionCatalogs) {
+        expect(settings.convertSystemFor(catalog.id), MeasureSystem.metric);
+        expect(settings.convertTabFor(catalog.id), MeasureSystem.metric);
+      }
+      expect(MeasureSystem.fromCode(null), isNull);
+      expect(MeasureSystem.fromCode('chinese'), MeasureSystem.chinese);
+      expect(MeasureSystem.fromCode('stone'), isNull);
+
+      await settings.setConvertSystem('distance', MeasureSystem.chinese);
+      await settings.setConvertTab('distance', MeasureSystem.imperial);
+      await settings.setConvertSystem('area', MeasureSystem.imperial);
+      expect(store.values['convert.distance.system'], 'chinese');
+      expect(store.values['convert.distance.tab'], 'imperial');
+
+      final reloaded = SettingsController(store: store);
+      await reloaded.load();
+      expect(reloaded.convertSystemFor('distance'), MeasureSystem.chinese);
+      expect(reloaded.convertTabFor('distance'), MeasureSystem.imperial);
+      expect(reloaded.convertSystemFor('area'), MeasureSystem.imperial);
+      // 没设置过的工具仍按公制
+      expect(reloaded.convertSystemFor('volume'), MeasureSystem.metric);
+      expect(reloaded.convertTabFor('temperature'), MeasureSystem.metric);
     });
 
     test('按系统语言判断首次启动的语言', () {

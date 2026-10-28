@@ -445,6 +445,66 @@ void main() {
     expect(kTools.first.color, isNot(kDarkPalette.tertiary));
   });
 
+  testWidgets('设置页：换算默认体系与结果 tab 生效且各工具互不影响', (tester) async {
+    tester.view.physicalSize = const Size(1400, 2400);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+    final store = _MemoryStore();
+    final settings = SettingsController(store: store);
+    await tester.pumpWidget(FreeCalcApp(settings: settings, initialTab: 3));
+    await tester.pumpAndSettle();
+
+    // 设置页里六个换算工具各有两项
+    expect(find.text('单位换算默认值'), findsOneWidget);
+    for (final id in ['distance', 'area', 'volume', 'weight']) {
+      expect(find.byKey(Key('settings-convert-$id-system')), findsOneWidget);
+      expect(find.byKey(Key('settings-convert-$id-tab')), findsOneWidget);
+    }
+    expect(find.text('默认体系'), findsNWidgets(6));
+
+    // 长度换算：默认体系切市制、结果 tab 切英制
+    await tester.tap(find.byKey(const Key('settings-convert-distance-system')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('市制').last);
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('settings-convert-distance-tab')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('英制').last);
+    await tester.pumpAndSettle();
+    expect(store.values['convert.distance.system'], 'chinese');
+    expect(store.values['convert.distance.tab'], 'imperial');
+
+    // 打开长度换算：体系是市制，结果 tab 停在英制
+    // （换 key 让 HomePage 重新初始化，否则会沿用上一次的 tab 状态）
+    await tester.pumpWidget(
+      FreeCalcApp(
+        key: UniqueKey(),
+        settings: settings,
+        initialTab: 2,
+        initialTool: 'distance',
+      ),
+    );
+    await tester.pumpAndSettle();
+    expect(find.byType(DistancePage), findsOneWidget);
+    expect(find.text('市制'), findsWidgets);
+    final tabBar = tester.widget<TabBar>(find.byType(TabBar).last);
+    expect(tabBar.controller?.index, 1);
+
+    // 面积换算没设置过，仍是公制
+    await tester.pumpWidget(
+      FreeCalcApp(
+        key: UniqueKey(),
+        settings: settings,
+        initialTab: 2,
+        initialTool: 'area',
+      ),
+    );
+    await tester.pumpAndSettle();
+    expect(find.byType(AreaPage), findsOneWidget);
+    final areaTabs = tester.widget<TabBar>(find.byType(TabBar).last);
+    expect(areaTabs.controller?.index, 0);
+  });
+
   testWidgets('设置页：BMI 默认单位改成英制后 BMI 页按英制打开', (tester) async {
     tester.view.physicalSize = const Size(1440, 1800);
     tester.view.devicePixelRatio = 1;

@@ -7,14 +7,26 @@ library;
 
 /// 计量体系。
 enum MeasureSystem {
-  metric('公制'),
-  imperial('英制'),
-  chinese('市制');
+  metric('公制', 'metric'),
+  imperial('英制', 'imperial'),
+  chinese('市制', 'chinese');
 
-  const MeasureSystem(this.label);
+  const MeasureSystem(this.label, this.code);
 
   /// 体系名称，用于分组标题与 tab。
   final String label;
+
+  /// 持久化用的稳定标识。
+  final String code;
+
+  /// 解析持久化的体系标识，无法识别时返回 null。
+  static MeasureSystem? fromCode(String? code) {
+    if (code == null) return null;
+    for (final system in MeasureSystem.values) {
+      if (system.code == code) return system;
+    }
+    return null;
+  }
 }
 
 /// 一个换算单位。

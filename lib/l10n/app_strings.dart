@@ -39,6 +39,13 @@ abstract class AppStrings {
   String get settingsBmiUnitHint;
   String get unitMetricDetail;
   String get unitImperialDetail;
+  String get settingsConversion;
+  String get settingsConversionHint;
+  String get settingsConvertSystem;
+  String get settingsConvertTab;
+  String get systemMetric;
+  String get systemImperial;
+  String get systemChinese;
   String get settingsAbout;
   String get aboutDescription;
   String get aboutVersion;
@@ -91,6 +98,20 @@ class _ZhHansStrings extends AppStrings {
   String get unitMetricDetail => '公制（cm / kg）';
   @override
   String get unitImperialDetail => '英制（ft·in / lb）';
+  @override
+  String get settingsConversion => '单位换算默认值';
+  @override
+  String get settingsConversionHint => '六个换算工具各记一套：打开时的计量体系，以及结果默认选中的标签页。';
+  @override
+  String get settingsConvertSystem => '默认体系';
+  @override
+  String get settingsConvertTab => '结果 tab';
+  @override
+  String get systemMetric => '公制';
+  @override
+  String get systemImperial => '英制';
+  @override
+  String get systemChinese => '市制';
   @override
   String get settingsAbout => '关于';
   @override
@@ -150,6 +171,20 @@ class _ZhHantStrings extends AppStrings {
   String get unitMetricDetail => '公制（cm / kg）';
   @override
   String get unitImperialDetail => '英制（ft·in / lb）';
+  @override
+  String get settingsConversion => '單位換算預設值';
+  @override
+  String get settingsConversionHint => '六個換算工具各記一套：開啟時的計量體系，以及結果預設選中的分頁。';
+  @override
+  String get settingsConvertSystem => '預設體系';
+  @override
+  String get settingsConvertTab => '結果分頁';
+  @override
+  String get systemMetric => '公制';
+  @override
+  String get systemImperial => '英制';
+  @override
+  String get systemChinese => '市制';
   @override
   String get settingsAbout => '關於';
   @override
@@ -213,6 +248,21 @@ class _EnStrings extends AppStrings {
   @override
   String get unitImperialDetail => 'Imperial (ft·in / lb)';
   @override
+  String get settingsConversion => 'Unit converter defaults';
+  @override
+  String get settingsConversionHint =>
+      'Stored per tool: the unit system it opens with and the result tab it shows first.';
+  @override
+  String get settingsConvertSystem => 'Default system';
+  @override
+  String get settingsConvertTab => 'Result tab';
+  @override
+  String get systemMetric => 'Metric';
+  @override
+  String get systemImperial => 'Imperial';
+  @override
+  String get systemChinese => 'Chinese';
+  @override
   String get settingsAbout => 'About';
   @override
   String get aboutDescription =>
@@ -272,6 +322,20 @@ class _JaStrings extends AppStrings {
   String get unitMetricDetail => 'メートル法（cm / kg）';
   @override
   String get unitImperialDetail => 'ヤード・ポンド法（ft·in / lb）';
+  @override
+  String get settingsConversion => '単位換算の既定値';
+  @override
+  String get settingsConversionHint => '6 つの換算ツールごとに、開いたときの単位系と結果タブを記憶します。';
+  @override
+  String get settingsConvertSystem => '既定の単位系';
+  @override
+  String get settingsConvertTab => '結果タブ';
+  @override
+  String get systemMetric => 'メートル法';
+  @override
+  String get systemImperial => 'ヤード・ポンド法';
+  @override
+  String get systemChinese => '中国の市制';
   @override
   String get settingsAbout => 'このアプリについて';
   @override
@@ -334,6 +398,21 @@ class _EsStrings extends AppStrings {
   String get unitMetricDetail => 'Métrico (cm / kg)';
   @override
   String get unitImperialDetail => 'Imperial (ft·in / lb)';
+  @override
+  String get settingsConversion => 'Valores de conversión';
+  @override
+  String get settingsConversionHint =>
+      'Se guarda por herramienta: el sistema con el que abre y la pestaña de resultados.';
+  @override
+  String get settingsConvertSystem => 'Sistema por defecto';
+  @override
+  String get settingsConvertTab => 'Pestaña de resultados';
+  @override
+  String get systemMetric => 'Métrico';
+  @override
+  String get systemImperial => 'Imperial';
+  @override
+  String get systemChinese => 'Chino';
   @override
   String get settingsAbout => 'Acerca de';
   @override
