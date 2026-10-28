@@ -35,6 +35,10 @@ abstract class AppStrings {
   String get themeDark;
   String get settingsLanguage;
   String get settingsLanguageHint;
+  String get settingsBmiUnit;
+  String get settingsBmiUnitHint;
+  String get unitMetricDetail;
+  String get unitImperialDetail;
   String get settingsAbout;
   String get aboutDescription;
   String get aboutVersion;
@@ -79,6 +83,14 @@ class _ZhHansStrings extends AppStrings {
   String get settingsLanguage => '语言';
   @override
   String get settingsLanguageHint => '界面文案立即切换；工具内部文案正在逐步补齐。';
+  @override
+  String get settingsBmiUnit => 'BMI 默认单位';
+  @override
+  String get settingsBmiUnitHint => '打开 BMI 计算时默认用这个单位，页内仍可随时切换。';
+  @override
+  String get unitMetricDetail => '公制（cm / kg）';
+  @override
+  String get unitImperialDetail => '英制（ft·in / lb）';
   @override
   String get settingsAbout => '关于';
   @override
@@ -130,6 +142,14 @@ class _ZhHantStrings extends AppStrings {
   String get settingsLanguage => '語言';
   @override
   String get settingsLanguageHint => '介面文字立即切換；工具內部文字正在逐步補齊。';
+  @override
+  String get settingsBmiUnit => 'BMI 預設單位';
+  @override
+  String get settingsBmiUnitHint => '開啟 BMI 計算時預設用這個單位，頁內仍可隨時切換。';
+  @override
+  String get unitMetricDetail => '公制（cm / kg）';
+  @override
+  String get unitImperialDetail => '英制（ft·in / lb）';
   @override
   String get settingsAbout => '關於';
   @override
@@ -184,6 +204,15 @@ class _EnStrings extends AppStrings {
   String get settingsLanguageHint =>
       'UI text switches immediately; tool contents are being translated.';
   @override
+  String get settingsBmiUnit => 'Default BMI units';
+  @override
+  String get settingsBmiUnitHint =>
+      'Used when the BMI calculator opens; you can still switch it there.';
+  @override
+  String get unitMetricDetail => 'Metric (cm / kg)';
+  @override
+  String get unitImperialDetail => 'Imperial (ft·in / lb)';
+  @override
   String get settingsAbout => 'About';
   @override
   String get aboutDescription =>
@@ -235,6 +264,14 @@ class _JaStrings extends AppStrings {
   String get settingsLanguage => '言語';
   @override
   String get settingsLanguageHint => '画面の文言はすぐに切り替わります。ツール内の文言は順次対応中です。';
+  @override
+  String get settingsBmiUnit => 'BMI の既定単位';
+  @override
+  String get settingsBmiUnitHint => 'BMI 計算を開いたときの単位です。画面内でも切り替えられます。';
+  @override
+  String get unitMetricDetail => 'メートル法（cm / kg）';
+  @override
+  String get unitImperialDetail => 'ヤード・ポンド法（ft·in / lb）';
   @override
   String get settingsAbout => 'このアプリについて';
   @override
@@ -288,6 +325,15 @@ class _EsStrings extends AppStrings {
   @override
   String get settingsLanguageHint =>
       'Los textos de la interfaz cambian al instante; el contenido de las herramientas se está traduciendo.';
+  @override
+  String get settingsBmiUnit => 'Unidades del IMC';
+  @override
+  String get settingsBmiUnitHint =>
+      'Se usa al abrir la calculadora de IMC; dentro puedes cambiarlas.';
+  @override
+  String get unitMetricDetail => 'Métrico (cm / kg)';
+  @override
+  String get unitImperialDetail => 'Imperial (ft·in / lb)';
   @override
   String get settingsAbout => 'Acerca de';
   @override

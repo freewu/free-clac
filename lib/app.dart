@@ -46,6 +46,7 @@ class _FreeCalcAppState extends State<FreeCalcApp> with WidgetsBindingObserver {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
+    currentSettings = _settings;
     _settings.addListener(_onSettingsChanged);
     // 本地设置是异步读的：读完再重建一次即可，首帧用默认值。
     _settings.load();
@@ -56,6 +57,7 @@ class _FreeCalcAppState extends State<FreeCalcApp> with WidgetsBindingObserver {
   void dispose() {
     _settings.removeListener(_onSettingsChanged);
     WidgetsBinding.instance.removeObserver(this);
+    if (currentSettings == _settings) currentSettings = null;
     if (_ownsSettings) _settings.dispose();
     super.dispose();
   }

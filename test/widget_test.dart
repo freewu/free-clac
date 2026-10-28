@@ -11,6 +11,7 @@ import 'package:free_clac/state/plot_controller.dart';
 import 'package:free_clac/state/settings_controller.dart';
 import 'package:free_clac/ui/settings_page.dart';
 import 'package:free_clac/ui/tools/tool_catalog.dart';
+import 'package:free_clac/tools/bmi.dart';
 import 'package:free_clac/tools/loan.dart';
 import 'package:free_clac/ui/widgets/plot_export_dialog.dart';
 import 'package:free_clac/ui/tools/area/area_page.dart';
@@ -391,6 +392,41 @@ void main() {
     final themed = tester.widget<MaterialApp>(find.byType(MaterialApp));
     expect(themed.theme?.brightness, Brightness.dark);
     expect(themed.theme?.scaffoldBackgroundColor, const Color(0xFF0A0E14));
+  });
+
+  testWidgets('设置页：BMI 默认单位改成英制后 BMI 页按英制打开', (tester) async {
+    tester.view.physicalSize = const Size(1440, 1800);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+    final store = _MemoryStore();
+    final settings = SettingsController(store: store);
+    await tester.pumpWidget(FreeCalcApp(settings: settings, initialTab: 3));
+    await tester.pumpAndSettle();
+
+    expect(find.text('BMI 默认单位'), findsOneWidget);
+    expect(find.text('公制（cm / kg）'), findsOneWidget);
+
+    await tester.tap(find.byKey(const Key('settings-bmi-unit')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('英制（ft·in / lb）').last);
+    await tester.pumpAndSettle();
+    expect(settings.bmiUnit, BmiUnitSystem.imperial);
+    expect(store.values['bmi_unit'], 'imperial');
+
+    // 打开 BMI 工具：单位已经是英制，数值也换算成 ft / lb
+    await tester.tap(find.text('工具').last);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('BMI 计算'));
+    await tester.pumpAndSettle();
+    expect(find.byType(BmiPage), findsOneWidget);
+    expect(find.text('lb'), findsWidgets);
+    expect(find.text('kg'), findsNothing);
+    final height = tester
+        .widget<EditableText>(find.byType(EditableText).first)
+        .controller
+        .text;
+    // 170 cm ≈ 5.58 ft
+    expect(double.parse(height), closeTo(5.58, 0.01));
   });
 
   testWidgets('设置页：切到日语后导航与工具卡片跟着变', (tester) async {

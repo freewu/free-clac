@@ -20,12 +20,25 @@ const double bmiOverweightMax = 28.0;
 
 /// 计量单位：公制（cm / kg）与英制（ft + in / lb）。
 enum BmiUnitSystem {
-  metric('公制'),
-  imperial('英制');
+  metric('公制', 'metric'),
+  imperial('英制', 'imperial');
 
-  const BmiUnitSystem(this.label);
+  const BmiUnitSystem(this.label, this.code);
 
+  /// 界面上的短标签（公制 / 英制）。
   final String label;
+
+  /// 持久化用的稳定标识。
+  final String code;
+
+  /// 解析持久化的单位标识，无法识别时返回 null。
+  static BmiUnitSystem? fromCode(String? code) {
+    if (code == null) return null;
+    for (final unit in BmiUnitSystem.values) {
+      if (unit.code == code) return unit;
+    }
+    return null;
+  }
 }
 
 /// 英制身高的输入单位。

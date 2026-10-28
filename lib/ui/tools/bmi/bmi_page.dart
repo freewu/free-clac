@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../core/number_format.dart';
 import '../../../theme/app_theme.dart';
+import '../../../state/settings_controller.dart';
 import '../../../tools/bmi.dart';
 import '../widgets/tool_field.dart';
 import '../widgets/tool_unit_picker.dart';
@@ -19,7 +20,9 @@ class BmiPage extends StatefulWidget {
 }
 
 class _BmiPageState extends State<BmiPage> {
-  BmiUnitSystem _unit = BmiUnitSystem.metric;
+  /// 默认值来自设置页（`BmiSetting`），页内仍可随时切换。
+  BmiUnitSystem _unit =
+      currentSettings?.bmiUnit ?? BmiUnitSystem.metric;
 
   /// 英制身高输入框的单位（ft / in），点输入框右侧的按钮切换。
   BmiImperialHeightUnit _heightUnit = BmiImperialHeightUnit.feet;
@@ -29,6 +32,16 @@ class _BmiPageState extends State<BmiPage> {
 
   /// 公制为体重（kg），英制为磅（lb）。
   final TextEditingController _weight = TextEditingController(text: '65');
+
+  @override
+  void initState() {
+    super.initState();
+    // 默认单位是英制时，初始数值也跟着换成英制，别把 170 cm 当 170 ft。
+    if (_unit == BmiUnitSystem.imperial) {
+      _height.text = _formatImperialHeight(170);
+      _weight.text = poundsFromKg(65).toStringAsFixed(1);
+    }
+  }
 
   @override
   void dispose() {

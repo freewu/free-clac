@@ -1180,6 +1180,23 @@ void main() {
       expect(AppLanguage.fromCode('ko'), isNull);
     });
 
+    test('BMI 默认单位：默认公制，改动后写回本地并能读回来', () async {
+      final store = _MemoryStore();
+      final settings = SettingsController(store: store);
+      expect(settings.bmiUnit, BmiUnitSystem.metric);
+      expect(BmiUnitSystem.fromCode(null), isNull);
+      expect(BmiUnitSystem.fromCode('metric'), BmiUnitSystem.metric);
+      expect(BmiUnitSystem.fromCode('imperial'), BmiUnitSystem.imperial);
+      expect(BmiUnitSystem.fromCode('yard'), isNull);
+
+      await settings.setBmiUnit(BmiUnitSystem.imperial);
+      expect(store.values['bmi_unit'], 'imperial');
+
+      final reloaded = SettingsController(store: store);
+      await reloaded.load();
+      expect(reloaded.bmiUnit, BmiUnitSystem.imperial);
+    });
+
     test('按系统语言判断首次启动的语言', () {
       expect(
         AppLanguage.fromLocale(const Locale('zh', 'CN')),

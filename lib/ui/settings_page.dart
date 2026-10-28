@@ -5,7 +5,9 @@ import '../l10n/app_i18n.dart';
 import '../l10n/app_language.dart';
 import '../state/settings_controller.dart';
 import '../theme/app_theme.dart';
+import 'tools/bmi/setting.dart';
 import 'tools/widgets/tool_select.dart';
+import 'widgets/settings_card.dart';
 
 /// 仓库地址，设置页「关于」里展示与复制。
 const String kRepositoryUrl = 'https://github.com/freewu/free-clac';
@@ -32,7 +34,7 @@ class SettingsPage extends StatelessWidget {
               children: [
                 _Header(),
                 const SizedBox(height: 14),
-                _Card(
+                SettingsCard(
                   icon: Icons.palette_outlined,
                   title: t.settingsAppearance,
                   child: Row(
@@ -52,7 +54,7 @@ class SettingsPage extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 12),
-                _Card(
+                SettingsCard(
                   icon: Icons.translate_rounded,
                   title: t.settingsLanguage,
                   child: Column(
@@ -79,7 +81,9 @@ class SettingsPage extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 12),
-                _Card(
+                BmiSetting(controller: controller),
+                const SizedBox(height: 12),
+                SettingsCard(
                   icon: Icons.info_outline_rounded,
                   title: t.settingsAbout,
                   child: Column(
@@ -163,48 +167,6 @@ class _Header extends StatelessWidget {
           ),
         ),
       ],
-    );
-  }
-}
-
-class _Card extends StatelessWidget {
-  const _Card({required this.icon, required this.title, required this.child});
-
-  final IconData icon;
-  final String title;
-  final Widget child;
-
-  @override
-  Widget build(BuildContext context) {
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.outline),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(14, 12, 14, 14),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Row(
-              children: [
-                Icon(icon, size: 15, color: AppColors.textSecondary),
-                const SizedBox(width: 6),
-                Text(
-                  title,
-                  style: const TextStyle(
-                    fontSize: 12.5,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 10),
-            child,
-          ],
-        ),
-      ),
     );
   }
 }
