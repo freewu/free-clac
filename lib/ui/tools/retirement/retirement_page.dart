@@ -7,7 +7,10 @@ import 'retirement.dart';
 
 /// 退休年龄计算器页：选出生年月与人员类别，测算退休时间与退休年龄。
 class RetirementPage extends StatefulWidget {
-  const RetirementPage({super.key});
+  const RetirementPage({super.key, this.now});
+
+  /// 计算「还需奋斗」用的当前时间，默认取系统时间（测试里可注入固定值）。
+  final DateTime? now;
 
   @override
   State<RetirementPage> createState() => _RetirementPageState();
@@ -30,6 +33,9 @@ class _RetirementPageState extends State<RetirementPage> {
   int _birthYear = 1985;
   int _birthMonth = 6;
   RetirementGroup _group = RetirementGroup.male;
+
+  /// 「还需奋斗」的基准时间，测试可注入固定值。
+  late final DateTime _now = widget.now ?? DateTime.now();
 
   RetirementResult get _result => calculateRetirement(
     birth: DateTime(_birthYear, _birthMonth),
@@ -135,6 +141,17 @@ class _RetirementPageState extends State<RetirementPage> {
                           fontFeatures: const [FontFeature.tabularFigures()],
                         ),
                       ),
+                      const SizedBox(height: 6),
+                      Text(
+                        _countdownLabel(result),
+                        key: const Key('retirement-countdown'),
+                        style: TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w700,
+                          color: AppColors.primary,
+                          fontFeatures: const [FontFeature.tabularFigures()],
+                        ),
+                      ),
                       const SizedBox(height: 4),
                       Text(
                         _summary(result),
@@ -197,6 +214,22 @@ class _RetirementPageState extends State<RetirementPage> {
         ),
       ),
     );
+  }
+
+  /// 「还需奋斗 X 年 Y 个月」，已到退休年龄时给出提示。
+  String _countdownLabel(RetirementResult result) {
+    final months = monthsUntilRetirement(result, _now);
+    if (months == 0) return '已达到法定退休年龄';
+    return '还需奋斗 ${_spanLabel(months)}';
+  }
+
+  /// 把月数写成「X 年 Y 个月」/「X 年」/「Y 个月」。
+  String _spanLabel(int months) {
+    final years = months ~/ 12;
+    final rest = months % 12;
+    if (years == 0) return '$rest 个月';
+    if (rest == 0) return '$years 年';
+    return '$years 年 $rest 个月';
   }
 
   /// 「较原法定年龄延迟 N 个月」的说明。

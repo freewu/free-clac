@@ -133,6 +133,16 @@ RetirementResult calculateRetirement({
   );
 }
 
+/// 从 [now] 到法定退休还差多少个月（按年月比较）。
+///
+/// 已经到或过了退休年月时返回 0，避免界面上出现负数。
+int monthsUntilRetirement(RetirementResult result, DateTime now) {
+  final diff =
+      (result.retireMonth.year - now.year) * 12 +
+      (result.retireMonth.month - now.month);
+  return diff < 0 ? 0 : diff;
+}
+
 /// 某年退休对应的最低缴费年限（年）：2029 年前 15 年，2030 年起每年加 6 个月，
 /// 2039 年及以后 20 年。
 double minimumContributionYearsAt(int year) {

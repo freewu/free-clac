@@ -321,6 +321,8 @@ void main() {
     expect(find.text('20 年（2048 年退休）'), findsOneWidget);
     expect(find.text('2045 年 6 月 · 60 岁'), findsOneWidget);
     expect(find.text('2051 年 6 月 · 66 岁'), findsOneWidget);
+    // 按真实当前时间算「还需奋斗」，文案格式固定
+    expect(find.textContaining('还需奋斗'), findsOneWidget);
 
     // 换成原 50 岁的女职工：55 岁退休，时间提前 8 年
     await tester.tap(find.byKey(const Key('retirement-group')));
@@ -341,6 +343,46 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('2053 年 6 月'), findsOneWidget);
     expect(find.textContaining('已到 63 岁的改革目标'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('退休年龄计算器：还需奋斗年数按注入的当前时间算', (tester) async {
+    tester.view.physicalSize = const Size(1200, 1400);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: AppTheme.dark(),
+        home: RetirementPage(now: DateTime(2030, 3)),
+      ),
+    );
+    await tester.pumpAndSettle();
+    // 默认 1985 年 6 月男职工 2048 年 6 月退休：18 年 3 个月
+    expect(find.text('还需奋斗 18 年 3 个月'), findsOneWidget);
+
+    // 提前到 2025 年 1 月：正好 23 年 5 个月
+    await tester.pumpWidget(
+      MaterialApp(
+        key: UniqueKey(),
+        theme: AppTheme.dark(),
+        home: RetirementPage(now: DateTime(2025, 1)),
+      ),
+    );
+    await tester.pumpAndSettle();
+    expect(find.text('还需奋斗 23 年 5 个月'), findsOneWidget);
+
+    // 过了退休年月：不再倒计时
+    await tester.pumpWidget(
+      MaterialApp(
+        key: UniqueKey(),
+        theme: AppTheme.dark(),
+        home: RetirementPage(now: DateTime(2060, 1)),
+      ),
+    );
+    await tester.pumpAndSettle();
+    expect(find.text('已达到法定退休年龄'), findsOneWidget);
+    expect(find.textContaining('还需奋斗'), findsNothing);
     expect(tester.takeException(), isNull);
   });
 

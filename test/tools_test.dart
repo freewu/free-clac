@@ -1060,6 +1060,13 @@ void main() {
       // 跨月加法：12 月 + 1 个月进位到下一年
       expect(addMonths(DateTime(2052, 12), 1), DateTime(2053, 1));
 
+      // 还需奋斗：从当前年月到退休年月，已到时按 0 处理
+      final target = male(DateTime(1985, 6));
+      expect(monthsUntilRetirement(target, DateTime(2030, 3)), 219);
+      expect(monthsUntilRetirement(target, DateTime(2048, 6)), 0);
+      expect(monthsUntilRetirement(target, DateTime(2049, 1)), 0);
+      expect(monthsUntilRetirement(target, DateTime(2048, 5)), 1);
+
       expect(pensionPayoutMonthsOf(60), 139);
       expect(pensionPayoutMonthsOf(50), 195);
       expect(pensionPayoutMonthsOf(55), 170);
