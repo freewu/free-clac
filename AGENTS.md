@@ -61,7 +61,10 @@ cmd.exe /c "cd /d $(wslpath -w "$PWD") && flutter test"
   `class <Tool>Strings` + `const Map<AppLanguage, <Tool>Strings> k<Tool>Strings` + `<Tool>Strings get <tool>Strings`
   （`required` 保证五种语言不缺字段，`toolText()` 负责回落）。带参数的话术写成 `{0}` 模板，用
   `fill(template, [args])` 填充，不要在代码里拼句子（日语 / 西语语序不同）。数据层的中文枚举名
-  （`LoanMethod.label`、`CompoundFrequency.label` 等）留在枚举里，页面上改调 `xxxStrings.methodLabel(value)`。
+  （`LoanMethod.label`、`CompoundFrequency.label` 等）留在枚举里，页面上改调
+  `xxxStrings.methodLabel(value)`。只在简繁中文出现的工具（养老金 / 个税 / 退休年龄）
+  同样写 `<tool>_strings.dart`，map 里只放 `zhHans` 与 `zhHant`，不要为了凑五语言
+  把中文原文复制到 en / ja / es。
   六个换算工具共用 `lib/ui/tools/widgets/unit_convert_strings.dart`，体系名称统一用
   `measureSystemLabel()`（内部走 `t.systemMetric` 等）。换算 catalog 里的数据自带语言：
   单位 / 参照物用 `names: <AppLanguage, String>{...}` + `labelIn()`
