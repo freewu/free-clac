@@ -2,7 +2,7 @@ import 'app_language.dart';
 
 /// 应用级文案（导航、设置、工具页外壳）。
 ///
-/// 工具自己的文案放在各自目录的 `lang/` 语言包里，见 `lib/ui/tools/*/lang/`。
+/// 工具自己的文案放在各自目录的 `<tool>_lang.dart` 里，见 `lib/ui/tools/<tool>/`。
 abstract class AppStrings {
   const AppStrings();
 

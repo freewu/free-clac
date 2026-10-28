@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../theme/app_theme.dart';
 import '../tool_info.dart';
-import 'lang/volume_lang.dart';
+import 'volume_lang.dart';
 import 'volume_page.dart';
 
 Widget _builder(BuildContext context) => VolumePage();

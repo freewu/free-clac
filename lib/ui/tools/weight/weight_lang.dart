@@ -1,5 +1,5 @@
-import '../../../../l10n/app_language.dart';
-import '../../tool_info.dart';
+import '../../../l10n/app_language.dart';
+import '../tool_info.dart';
 
 /// 「重量换算」卡片的多语言文案：名称、卖点、说明。
 const Map<AppLanguage, ToolText> kWeightLang = <AppLanguage, ToolText>{

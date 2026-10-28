@@ -275,10 +275,10 @@ Web 端可深链：`?page=settings` 直接打开设置页，`?page=plot` / `?pag
 
 - **应用级文案**在 `lib/l10n/`：`AppStrings` 是抽象类，五种语言各一个实现，
   用 `t.xxx` 取当前语言文案（`t` 依赖全局当前语言，切换后整棵树重建）
-- **工具语言包**放在各自目录的 `lang/` 下，如 `lib/ui/tools/bmi/lang/bmi_lang.dart`：
+- **工具语言包**和逻辑、界面放在同一个目录，如 `lib/ui/tools/bmi/bmi_lang.dart`：
   `const Map<AppLanguage, ToolText> kBmiLang`，每个语言三项——名称、卖点、说明。
   `ToolInfo` 只存这份 map，`tool.name` 等 getter 按当前语言取，缺翻译回落简体中文
-- 新增工具时要一并补 `lang/<tool>_lang.dart`（五种语言），测试会检查语言包齐全、
+- 新增工具时要一并补 `<tool>_lang.dart`（五种语言），测试会检查语言包齐全、
   文案非空、工具 id 唯一
 - 界面里的动态数字与单位文案（例如换算结果、税表列头）仍以中文为主，
   正在逐步接入语言包
@@ -464,7 +464,7 @@ lib/
 ├── state/      计算器 / 绘图 / 设置控制器（ChangeNotifier）
 ├── ui/         页面与组件（键盘、显示屏、历史面板、绘图画布、函数面板、设置页）
 │   └── tools/  工具页与各工具（每个工具一个目录：逻辑 <tool>.dart、界面 <tool>_page.dart、
-│                defined.dart、setting.dart、lang/ 语言包；共用输入框 / 比例条 / 换算页在 widgets/，
+│                defined.dart、setting.dart、<tool>_lang.dart 语言包；共用输入框 / 比例条 / 换算页在 widgets/，
 │                单位换算共用的 unit_catalog.dart 在本层）
 └── theme/      深色 / 浅色两套配色与 ThemeData
 test/           引擎、LaTeX、工具算法、绘图、Widget 测试

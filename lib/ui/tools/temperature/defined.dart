@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../theme/app_theme.dart';
 import '../tool_info.dart';
-import 'lang/temperature_lang.dart';
+import 'temperature_lang.dart';
 import 'temperature_page.dart';
 
 Widget _builder(BuildContext context) => TemperaturePage();

@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../l10n/app_language.dart';
 import '../../../theme/app_theme.dart';
 import '../tool_info.dart';
-import 'lang/tax_lang.dart';
+import 'tax_lang.dart';
 import 'tax_page.dart';
 
 Widget _builder(BuildContext context) => TaxPage();

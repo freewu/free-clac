@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../theme/app_theme.dart';
 import '../tool_info.dart';
-import 'lang/speed_lang.dart';
+import 'speed_lang.dart';
 import 'speed_page.dart';
 
 Widget _builder(BuildContext context) => SpeedPage();

@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../theme/app_theme.dart';
 import '../tool_info.dart';
-import 'lang/compound_lang.dart';
+import 'compound_lang.dart';
 import 'compound_page.dart';
 
 Widget _builder(BuildContext context) => CompoundPage();

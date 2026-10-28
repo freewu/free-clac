@@ -21,9 +21,9 @@ class ToolText {
 /// 工具页里一张「应用卡片」的元数据。
 ///
 /// 每个工具在自己的 `defined.dart` 里声明一份（如 `bmi/defined.dart`），
-/// 多语言文案放在同目录的 `lang/<tool>_lang.dart`，由 `tool_catalog.dart`
+/// 多语言文案放在同目录的 `<tool>_lang.dart`，由 `tool_catalog.dart`
 /// 汇总成 [kTools]。新增工具只需三处改动：新建 `defined.dart`、
-/// 新建 `lang/` 语言包，再在 `kTools` 里追加一行。
+/// 新建 `<tool>_lang.dart` 语言包，再在 `kTools` 里追加一行。
 class ToolInfo {
   const ToolInfo({
     required this.id,

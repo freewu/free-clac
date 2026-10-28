@@ -3,7 +3,7 @@ import 'dart:ui' show Locale;
 /// 应用支持的语言：简体中文、繁体中文、英语、日语、西班牙语。
 ///
 /// 新增语言时只需在枚举里加一项、补一份 `AppStrings` 实现，
-/// 以及各工具 `lang/` 目录下语言包里的一条记录。
+/// 以及各工具目录下 `<tool>_lang.dart` 语言包里的一条记录。
 enum AppLanguage {
   zhHans('zh-Hans', '简体中文', 'Chinese (Simplified)', 'zh', 'CN'),
   zhHant('zh-Hant', '繁體中文', 'Chinese (Traditional)', 'zh', 'TW'),

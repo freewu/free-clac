@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../theme/app_theme.dart';
 import '../tool_info.dart';
-import 'lang/interest_lang.dart';
+import 'interest_lang.dart';
 import 'interest_page.dart';
 
 Widget _builder(BuildContext context) => InterestPage();
