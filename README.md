@@ -3,6 +3,7 @@
 <img src="logo.png" alt="应用图标" width="96" align="right" />
 
 使用 Flutter 开发的一款高级科学计算器，除常规表达式计算外，还内置二维平面函数绘图。
+支持深色 / 浅色主题与五种界面语言（简体中文、繁體中文、English、日本語、Español）。
 
 ![计算器](docs/screenshots/calculator.png)
 ![函数绘图](docs/screenshots/plot.png)
@@ -246,8 +247,36 @@ Web 端可直接深链到示例：`?page=plot&preset=0`（`preset` 为示例下�
   - 个人账户按月复利滚动，每月记入缴费基数的 8%
   - 不含过渡性养老金（1996 年前参加工作的「中人」）、企业年金与地方性补贴，结果仅供参考
 
-Web 端可深链：`?page=tools` 打开工具页，`?page=tools&tool=bmi`（或 `compound`、`distance`、`area`、`weight`、`volume`、`temperature`、`speed`、`interest`、`loan`、`pension`、`tax`）直接打开某个工具；
+Web 端可深链：`?page=tools` 打开工具页（`?page=settings` 打开设置页），`?page=tools&tool=bmi`（或 `compound`、`distance`、`area`、`weight`、`volume`、`temperature`、`speed`、`interest`、`loan`、`pension`、`tax`）直接打开某个工具；
 `?page=tools&tool=loan&method=equalPrincipal` 还能直接停在等额本金，看明细的倒梯形。
+
+## 设置与多语言
+
+导航栏第四项「设置」里可以切换外观与界面语言，选择立刻生效并记在本机
+（Web 用 `localStorage`，Windows / Android 写入用户配置目录的 `free-clac/settings.json`）。
+
+![设置](docs/screenshots/settings.png)
+
+- **外观**：跟随系统 / 浅色 / 深色。深色与浅色各有一套完整配色
+  （`lib/theme/app_theme.dart` 的 `kDarkPalette` / `kLightPalette`），
+  不只是换背景色，卡片、描边、曲线调色板、按键渐变都跟着换
+- **语言**：简体中文、繁體中文、English、日本語、Español；首次启动跟随系统语言，
+  之后以设置里选的为准。工具卡片名称、卖点、说明与工具内文案都随语言切换
+- **关于**：版本号与仓库地址，一键复制链接
+
+Web 端可深链：`?page=settings` 直接打开设置页，`?page=plot` / `?page=tools` 同理。
+
+### 多语言的组织方式
+
+- **应用级文案**在 `lib/l10n/`：`AppStrings` 是抽象类，五种语言各一个实现，
+  用 `t.xxx` 取当前语言文案（`t` 依赖全局当前语言，切换后整棵树重建）
+- **工具语言包**放在各自目录的 `lang/` 下，如 `lib/ui/tools/bmi/lang/bmi_lang.dart`：
+  `const Map<AppLanguage, ToolText> kBmiLang`，每个语言三项——名称、卖点、说明。
+  `ToolInfo` 只存这份 map，`tool.name` 等 getter 按当前语言取，缺翻译回落简体中文
+- 新增工具时要一并补 `lang/<tool>_lang.dart`（五种语言），测试会检查语言包齐全、
+  文案非空、工具 id 唯一
+- 界面里的动态数字与单位文案（例如换算结果、税表列头）仍以中文为主，
+  正在逐步接入语言包
 
 ## 应用图标
 
@@ -412,7 +441,8 @@ just test
 包含计算引擎单元测试（优先级、隐式乘法、函数、微积分、错误处理、格式化、金额千分位）、LaTeX 序列化（运算优先级、函数、求和 / 积分 / 求导、异常输入、曲线方程）单元测试、BMI 分级与单位换算、复利公式、长度 / 面积 / 重量 / 容量 / 温度 / 速度单位换算
 （含仿射温度与任意两单位互逆）、养老金计发月数表与两段养老金、利率双向换算、贷款月供拆分与明细条长缩放、个税累计预扣与税率表（含专项附加扣除、比例校验、非法参数）单元测试、绘图视口 / 采样器（含隐式等值线）/ 控制器 / 示例曲线 / 导出（PNG、WebP、SVG）单元测试，以及多尺寸布局、示例面板、导出对话框（含「保存位置」与实际落盘一致）、复制 LaTeX、工具页跳转、工具页内导航菜单保留、长度换算下拉框 / 体系 tab / 可折叠参照物、面积 / 重量 / 容量深链换算、重量参照物代入与复制、
 温度两体系 tab（仿射换算）、速度千米每小时换算、复利输入框 2 : 1 : 1 与手机折行、利率双向换算、
-贷款双色条与倒梯形明细条、养老金两条构成条与退休年龄切换、个税逐月明细与窄屏布局等 Widget 测试（共 174 项）。
+贷款双色条与倒梯形明细条、养老金两条构成条与退休年龄切换、个税逐月明细与窄屏布局、
+设置页主题切换（含配色与本地写入）、语言切换后导航与工具卡片文案、五种语言文案表完整性等 Widget 测试（共 185 项）。
 
 Android 的相册写入走 `MediaStore`，无法在 Widget 测试里覆盖，另有真机 / 模拟器测试 `integration_test/android_save_test.dart`（`just test-android`，需先 `just emulator` 或插上真机）。
 
@@ -422,14 +452,15 @@ Android 的相册写入走 `MediaStore`，无法在 Widget 测试里覆盖，另
 lib/
 ├── core/       词法、语法、AST、求值器、内置函数、数字格式化、计算引擎、LaTeX 导出
 ├── plot/       视口、曲线采样器、绘图画笔、示例预设、PNG / WebP / SVG 导出
-├── tools/      小工具算法（BMI、复利、单位换算、利率、贷款、个税），纯 Dart 无 Flutter 依赖
+├── l10n/       多语言：语言枚举、应用级文案（AppStrings 五个实现）、取文案的全局入口
+├── tools/      小工具算法（BMI、复利、单位换算、利率、贷款、个税、养老金），纯 Dart 无 Flutter 依赖
 ├── models/     曲线、历史记录数据模型
-├── services/   导出文件保存（Web 下载 / 磁盘写入，条件导入隔离平台差异）
-├── state/      计算器与绘图控制器（ChangeNotifier）
-├── ui/         页面与组件（键盘、显示屏、历史面板、绘图画布、函数面板）
-│   └── tools/  工具页与各工具界面（bmi / compound / distance / interest / loan / tax，每个目录含 defined.dart；
-│                共用输入框 / 比例条在 widgets/）
-└── theme/      深色主题与配色
+├── services/   导出文件保存（Web 下载 / 磁盘写入）与本地设置存储，条件导入隔离平台差异
+├── state/      计算器 / 绘图 / 设置控制器（ChangeNotifier）
+├── ui/         页面与组件（键盘、显示屏、历史面板、绘图画布、函数面板、设置页）
+│   └── tools/  工具页与各工具界面（每个工具一个目录，含 defined.dart、界面与 lang/ 语言包；
+│                共用输入框 / 比例条 / 换算页在 widgets/）
+└── theme/      深色 / 浅色两套配色与 ThemeData
 test/           引擎、LaTeX、工具算法、绘图、Widget 测试
 integration_test/ 需真机 / 模拟器的测试（Android 导出落盘）
 tool/           辅助脚本（截图、图标生成、Android 环境探测）

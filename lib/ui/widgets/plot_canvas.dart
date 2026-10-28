@@ -205,7 +205,7 @@ class _PlotCanvasState extends State<PlotCanvas> {
                       if (trace != null)
                         _buildTraceCard(trace, traceValues, size, viewport),
                       if (controller.functions.isEmpty)
-                        const Center(
+                        Center(
                           child: Text(
                             '还没有函数，点击右上角“+”添加一条曲线',
                             style: TextStyle(
@@ -404,7 +404,7 @@ class _PlotCanvasState extends State<PlotCanvas> {
             children: [
               Text(
                 'x = ${formatNumber(trace.dx, significantDigits: 6)}',
-                style: const TextStyle(
+                style: TextStyle(
                   color: AppColors.textSecondary,
                   fontSize: 11,
                   fontWeight: FontWeight.w600,
@@ -432,7 +432,7 @@ class _PlotCanvasState extends State<PlotCanvas> {
                           value.text,
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontSize: 12,
                             color: AppColors.textPrimary,
                             fontFeatures: [FontFeature.tabularFigures()],
@@ -501,7 +501,7 @@ class _RoundIconButton extends StatelessWidget {
       message: tooltip,
       child: Material(
         color: AppColors.surface.withValues(alpha: 0.85),
-        shape: const CircleBorder(side: BorderSide(color: AppColors.outline)),
+        shape: CircleBorder(side: BorderSide(color: AppColors.outline)),
         child: InkWell(
           customBorder: const CircleBorder(),
           onTap: onTap,

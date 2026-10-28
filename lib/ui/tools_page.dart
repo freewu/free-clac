@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../l10n/app_i18n.dart';
 import '../theme/app_theme.dart';
 import 'tools/tool_catalog.dart';
 
@@ -35,11 +36,11 @@ class ToolsPage extends StatelessWidget {
       padding: const EdgeInsets.fromLTRB(18, 12, 18, 10),
       child: Row(
         children: [
-          const Icon(Icons.apps_rounded, size: 19, color: AppColors.primary),
+          Icon(Icons.apps_rounded, size: 19, color: AppColors.primary),
           const SizedBox(width: 8),
-          const Text(
-            '工具',
-            style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
+          Text(
+            t.toolsTitle,
+            style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
           ),
           const SizedBox(width: 10),
           Container(
@@ -49,8 +50,8 @@ class ToolsPage extends StatelessWidget {
               borderRadius: BorderRadius.circular(8),
             ),
             child: Text(
-              '${kTools.length} 个应用',
-              style: const TextStyle(
+              t.toolsCount(kTools.length),
+              style: TextStyle(
                 color: AppColors.secondary,
                 fontSize: 11,
                 fontWeight: FontWeight.w600,
@@ -58,9 +59,9 @@ class ToolsPage extends StatelessWidget {
             ),
           ),
           const Spacer(),
-          const Flexible(
+          Flexible(
             child: Text(
-              '全部内置，离线可用',
+              t.toolsOffline,
               overflow: TextOverflow.ellipsis,
               style: TextStyle(color: AppColors.textSecondary, fontSize: 11.5),
             ),
@@ -100,7 +101,7 @@ class _ToolCard extends StatelessWidget {
           borderRadius: BorderRadius.circular(16),
           onTap: () => Navigator.of(
             context,
-          ).push(MaterialPageRoute<void>(builder: tool.builder)),
+          ).push(MaterialPageRoute<void>(builder: tool.pageBuilder)),
           child: Padding(
             padding: const EdgeInsets.fromLTRB(14, 14, 10, 14),
             child: Row(
@@ -156,7 +157,7 @@ class _ToolCard extends StatelessWidget {
                         tool.description,
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(
+                        style: TextStyle(
                           color: AppColors.textSecondary,
                           fontSize: 11.5,
                           height: 1.35,
@@ -165,7 +166,7 @@ class _ToolCard extends StatelessWidget {
                     ],
                   ),
                 ),
-                const Icon(
+                Icon(
                   Icons.chevron_right_rounded,
                   size: 18,
                   color: AppColors.textSecondary,

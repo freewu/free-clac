@@ -248,7 +248,7 @@ class _KeyButtonState extends State<_KeyButton> {
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(14),
           gradient: widget.kind == _KeyKind.accent
-              ? const LinearGradient(
+              ? LinearGradient(
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                   colors: [AppColors.primary, AppColors.secondary],

@@ -35,13 +35,13 @@ class _ToolsTabState extends State<ToolsTab> {
         key: _navigatorKey,
         onGenerateRoute: (settings) => MaterialPageRoute<void>(
           settings: settings,
-          builder: (_) => const ToolsPage(),
+          builder: (_) => ToolsPage(),
         ),
         // 深链时首帧就是「列表 + 工具」两层路由，返回键回到列表。
         onGenerateInitialRoutes: (_, _) => [
-          MaterialPageRoute<void>(builder: (_) => const ToolsPage()),
+          MaterialPageRoute<void>(builder: (_) => ToolsPage()),
           if (_initialTool != null)
-            MaterialPageRoute<void>(builder: _initialTool.builder),
+            MaterialPageRoute<void>(builder: _initialTool.pageBuilder),
         ],
       ),
     );

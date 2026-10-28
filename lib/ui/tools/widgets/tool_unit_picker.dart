@@ -57,13 +57,13 @@ class ToolUnitPicker<T> extends StatelessWidget {
         children: [
           Text(
             labelOf(value),
-            style: const TextStyle(
+            style: TextStyle(
               color: AppColors.textSecondary,
               fontSize: 12,
               fontWeight: FontWeight.w600,
             ),
           ),
-          const Icon(
+          Icon(
             Icons.arrow_drop_down_rounded,
             size: 16,
             color: AppColors.textSecondary,

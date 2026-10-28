@@ -37,10 +37,7 @@ class ToolSelect<T> extends StatelessWidget {
       children: [
         Text(
           label,
-          style: const TextStyle(
-            color: AppColors.textSecondary,
-            fontSize: 11.5,
-          ),
+          style: TextStyle(color: AppColors.textSecondary, fontSize: 11.5),
         ),
         const SizedBox(height: 5),
         DropdownButtonFormField<T>(
@@ -51,12 +48,12 @@ class ToolSelect<T> extends StatelessWidget {
           menuMaxHeight: 340,
           borderRadius: BorderRadius.circular(12),
           dropdownColor: AppColors.surfaceHigher,
-          icon: const Icon(
+          icon: Icon(
             Icons.expand_more_rounded,
             size: 18,
             color: AppColors.textSecondary,
           ),
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 13.5,
             fontWeight: FontWeight.w600,
             color: AppColors.textPrimary,

@@ -94,12 +94,12 @@ class _BmiPageState extends State<BmiPage> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('BMI 计算'),
-        titleTextStyle: const TextStyle(
+        titleTextStyle: TextStyle(
           fontSize: 16,
           fontWeight: FontWeight.w600,
           color: AppColors.textPrimary,
         ),
-        iconTheme: const IconThemeData(color: AppColors.textSecondary),
+        iconTheme: IconThemeData(color: AppColors.textSecondary),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.fromLTRB(16, 4, 16, 28),
@@ -161,7 +161,7 @@ class _BmiPageState extends State<BmiPage> {
                               child: ToolNumberField(
                                 label: '体重',
                                 // 与身高单位同一套 suffixIcon 插槽，保证两个单位上下齐平
-                                trailing: const Text(
+                                trailing: Text(
                                   'lb',
                                   style: TextStyle(
                                     color: AppColors.textSecondary,
@@ -228,7 +228,7 @@ class _EmptyHint extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Padding(
+    return Padding(
       padding: EdgeInsets.symmetric(vertical: 26),
       child: Column(
         children: [
@@ -326,10 +326,7 @@ class _ResultBody extends StatelessWidget {
         const SizedBox(height: 6),
         Text(
           '身高 $_heightText · 体重 $_weightText',
-          style: const TextStyle(
-            color: AppColors.textSecondary,
-            fontSize: 11.5,
-          ),
+          style: TextStyle(color: AppColors.textSecondary, fontSize: 11.5),
         ),
         const SizedBox(height: 16),
         BmiGauge(bmi: result.bmi),
@@ -364,7 +361,7 @@ class _ResultBody extends StatelessWidget {
               Expanded(
                 child: Text(
                   result.advice,
-                  style: const TextStyle(
+                  style: TextStyle(
                     color: AppColors.textSecondary,
                     fontSize: 11.5,
                     height: 1.5,
@@ -375,7 +372,7 @@ class _ResultBody extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 12),
-        const Text(
+        Text(
           '分级依据：中国成人 BMI 标准（WS/T 428—2013）。结果仅供健康参考，不构成医疗建议。',
           style: TextStyle(color: AppColors.textSecondary, fontSize: 10.5),
         ),
@@ -405,10 +402,7 @@ class _StatRow extends StatelessWidget {
         const SizedBox(width: 7),
         Text(
           label,
-          style: const TextStyle(
-            color: AppColors.textSecondary,
-            fontSize: 11.5,
-          ),
+          style: TextStyle(color: AppColors.textSecondary, fontSize: 11.5),
         ),
         const Spacer(),
         Text(

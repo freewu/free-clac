@@ -114,7 +114,7 @@ class _PlotExportDialogState extends State<PlotExportDialog> {
       actionsPadding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
       title: Row(
         children: [
-          const Icon(Icons.image_outlined, size: 20, color: AppColors.primary),
+          Icon(Icons.image_outlined, size: 20, color: AppColors.primary),
           const SizedBox(width: 8),
           const Expanded(child: Text('导出图片', style: TextStyle(fontSize: 16))),
           IconButton(
@@ -145,10 +145,7 @@ class _PlotExportDialogState extends State<PlotExportDialog> {
             const SizedBox(height: 12),
             Text(
               _format.note,
-              style: const TextStyle(
-                fontSize: 12,
-                color: AppColors.textSecondary,
-              ),
+              style: TextStyle(fontSize: 12, color: AppColors.textSecondary),
             ),
             const SizedBox(height: 14),
             _InfoRow(
@@ -177,7 +174,7 @@ class _PlotExportDialogState extends State<PlotExportDialog> {
               const SizedBox(height: 10),
               Text(
                 _error!,
-                style: const TextStyle(fontSize: 12, color: AppColors.error),
+                style: TextStyle(fontSize: 12, color: AppColors.error),
               ),
             ],
           ],
@@ -228,10 +225,7 @@ class _InfoRow extends StatelessWidget {
             width: 62,
             child: Text(
               label,
-              style: const TextStyle(
-                fontSize: 12,
-                color: AppColors.textSecondary,
-              ),
+              style: TextStyle(fontSize: 12, color: AppColors.textSecondary),
             ),
           ),
           Expanded(

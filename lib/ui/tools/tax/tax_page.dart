@@ -15,7 +15,7 @@ Color insuranceColor(InsuranceItem item) => switch (item) {
 };
 
 /// 个税条的颜色。
-const Color taxBarColor = AppColors.error;
+final Color taxBarColor = AppColors.error;
 
 /// 个人所得税计算：税前月薪 → 五险一金 → 个税 → 到手，按累计预扣法逐月算。
 class TaxPage extends StatefulWidget {
@@ -77,12 +77,12 @@ class _TaxPageState extends State<TaxPage> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('个人所得税'),
-        titleTextStyle: const TextStyle(
+        titleTextStyle: TextStyle(
           fontSize: 16,
           fontWeight: FontWeight.w600,
           color: AppColors.textPrimary,
         ),
-        iconTheme: const IconThemeData(color: AppColors.textSecondary),
+        iconTheme: IconThemeData(color: AppColors.textSecondary),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.fromLTRB(16, 4, 16, 28),
@@ -152,7 +152,7 @@ class _TaxPageState extends State<TaxPage> {
                   icon: Icons.account_balance_outlined,
                   trailing: Text(
                     '合计 ${_trimRate(rates.totalPercent)}%',
-                    style: const TextStyle(
+                    style: TextStyle(
                       color: AppColors.textSecondary,
                       fontSize: 11,
                     ),
@@ -252,7 +252,7 @@ class _BaseHint extends StatelessWidget {
     return Text(
       '按基数 ¥ ${formatMoney(base, decimals: 0)} 计算，每月个人缴纳 '
       '¥ ${formatMoney(total)}',
-      style: const TextStyle(color: AppColors.textSecondary, fontSize: 10.5),
+      style: TextStyle(color: AppColors.textSecondary, fontSize: 10.5),
     );
   }
 }
@@ -262,7 +262,7 @@ class _EmptyHint extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Padding(
+    return Padding(
       padding: EdgeInsets.symmetric(vertical: 26),
       child: Column(
         children: [
@@ -288,7 +288,7 @@ class _ResultBody extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        const Text(
+        Text(
           '首月到手',
           style: TextStyle(color: AppColors.textSecondary, fontSize: 11.5),
         ),
@@ -309,7 +309,7 @@ class _ResultBody extends StatelessWidget {
           '税前 ¥ ${formatMoney(result.grossMonthly, decimals: 0)} − 五险一金 '
           '¥ ${formatMoney(result.contributionMonthly, decimals: 0)} − 个税 '
           '¥ ${formatMoney(result.firstMonthTax)}',
-          style: const TextStyle(color: AppColors.textSecondary, fontSize: 11),
+          style: TextStyle(color: AppColors.textSecondary, fontSize: 11),
         ),
         const SizedBox(height: 16),
         Row(
@@ -338,7 +338,7 @@ class _ResultBody extends StatelessWidget {
           ],
         ),
         const SizedBox(height: 16),
-        const Text(
+        Text(
           '五险一金构成（每月）',
           style: TextStyle(color: AppColors.textSecondary, fontSize: 10.5),
         ),
@@ -370,7 +370,7 @@ class _ResultBody extends StatelessWidget {
             ],
           ),
         ] else
-          const Text(
+          Text(
             '未缴纳五险一金',
             style: TextStyle(color: AppColors.textSecondary, fontSize: 11),
           ),
@@ -393,10 +393,7 @@ class _Stat extends StatelessWidget {
       children: [
         Text(
           label,
-          style: const TextStyle(
-            color: AppColors.textSecondary,
-            fontSize: 10.5,
-          ),
+          style: TextStyle(color: AppColors.textSecondary, fontSize: 10.5),
         ),
         const SizedBox(height: 3),
         Text(
@@ -461,12 +458,12 @@ class _MonthTable extends StatelessWidget {
       children: [
         Row(
           children: [
-            const SizedBox(
+            SizedBox(
               width: _monthWidth,
               child: Text('月份', style: _headerStyle),
             ),
             const Expanded(child: SizedBox()),
-            const SizedBox(
+            SizedBox(
               width: _taxWidth,
               child: Text(
                 '个税',
@@ -474,7 +471,7 @@ class _MonthTable extends StatelessWidget {
                 style: _headerStyle,
               ),
             ),
-            const SizedBox(
+            SizedBox(
               width: _netWidth,
               child: Text(
                 '到手',
@@ -496,7 +493,7 @@ class _MonthTable extends StatelessWidget {
                   child: Text(
                     '第 ${month.index} 月',
                     maxLines: 1,
-                    style: const TextStyle(
+                    style: TextStyle(
                       color: AppColors.textSecondary,
                       fontSize: 10.5,
                     ),
@@ -510,7 +507,7 @@ class _MonthTable extends StatelessWidget {
                       widthFactor: maxTax <= 0
                           ? 0
                           : (month.tax / maxTax).clamp(0.0, 1.0),
-                      child: const SegmentedBar(
+                      child: SegmentedBar(
                         height: 7,
                         radius: 3.5,
                         segments: [RatioSegment(value: 1, color: taxBarColor)],
@@ -524,7 +521,7 @@ class _MonthTable extends StatelessWidget {
                     formatMoney(month.tax),
                     maxLines: 1,
                     textAlign: TextAlign.right,
-                    style: const TextStyle(
+                    style: TextStyle(
                       color: taxBarColor,
                       fontSize: 11,
                       fontFeatures: [FontFeature.tabularFigures()],
@@ -537,7 +534,7 @@ class _MonthTable extends StatelessWidget {
                     formatMoney(month.net),
                     maxLines: 1,
                     textAlign: TextAlign.right,
-                    style: const TextStyle(
+                    style: TextStyle(
                       color: AppColors.textPrimary,
                       fontSize: 11,
                       fontFeatures: [FontFeature.tabularFigures()],
@@ -552,7 +549,7 @@ class _MonthTable extends StatelessWidget {
   }
 }
 
-const TextStyle _headerStyle = TextStyle(
+final TextStyle _headerStyle = TextStyle(
   color: AppColors.textSecondary,
   fontSize: 10,
 );

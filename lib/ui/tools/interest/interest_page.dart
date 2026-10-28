@@ -102,12 +102,12 @@ class _InterestPageState extends State<InterestPage> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('利率计算'),
-        titleTextStyle: const TextStyle(
+        titleTextStyle: TextStyle(
           fontSize: 16,
           fontWeight: FontWeight.w600,
           color: AppColors.textPrimary,
         ),
-        iconTheme: const IconThemeData(color: AppColors.textSecondary),
+        iconTheme: IconThemeData(color: AppColors.textSecondary),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.fromLTRB(16, 4, 16, 28),
@@ -130,7 +130,7 @@ class _InterestPageState extends State<InterestPage> {
                         onChanged: (_) => setState(() {}),
                       ),
                       const SizedBox(height: 12),
-                      const Text(
+                      Text(
                         '换算方向',
                         style: TextStyle(
                           color: AppColors.textSecondary,
@@ -158,7 +158,7 @@ class _InterestPageState extends State<InterestPage> {
                         ],
                       ),
                       const SizedBox(height: 12),
-                      const Text(
+                      Text(
                         '付息周期',
                         style: TextStyle(
                           color: AppColors.textSecondary,
@@ -246,7 +246,7 @@ class _EmptyHint extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Padding(
+    return Padding(
       padding: EdgeInsets.symmetric(vertical: 26),
       child: Column(
         children: [
@@ -290,17 +290,14 @@ class _QuoteResult extends StatelessWidget {
       children: [
         Text(
           fromPayment ? '年化率' : '${period.everyLabel}收益',
-          style: const TextStyle(
-            color: AppColors.textSecondary,
-            fontSize: 11.5,
-          ),
+          style: TextStyle(color: AppColors.textSecondary, fontSize: 11.5),
         ),
         const SizedBox(height: 4),
         Text(
           headline,
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 30,
             height: 1.1,
             fontWeight: FontWeight.w700,
@@ -311,7 +308,7 @@ class _QuoteResult extends StatelessWidget {
         const SizedBox(height: 6),
         Text(
           caption,
-          style: const TextStyle(color: AppColors.textSecondary, fontSize: 11),
+          style: TextStyle(color: AppColors.textSecondary, fontSize: 11),
         ),
         const SizedBox(height: 16),
         Row(
@@ -372,10 +369,7 @@ class _Stat extends StatelessWidget {
       children: [
         Text(
           label,
-          style: const TextStyle(
-            color: AppColors.textSecondary,
-            fontSize: 10.5,
-          ),
+          style: TextStyle(color: AppColors.textSecondary, fontSize: 10.5),
         ),
         const SizedBox(height: 3),
         Text(
@@ -403,7 +397,7 @@ class _FootNote extends StatelessWidget {
   Widget build(BuildContext context) {
     return Text(
       text,
-      style: const TextStyle(color: AppColors.textSecondary, fontSize: 10.5),
+      style: TextStyle(color: AppColors.textSecondary, fontSize: 10.5),
     );
   }
 }

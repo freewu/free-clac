@@ -1,4 +1,11 @@
+import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:free_clac/l10n/app_i18n.dart';
+import 'package:free_clac/l10n/app_language.dart';
+import 'package:free_clac/l10n/app_strings.dart';
+import 'package:free_clac/services/settings_store.dart';
+import 'package:free_clac/state/settings_controller.dart';
+import 'package:free_clac/theme/app_theme.dart';
 import 'package:free_clac/tools/area.dart';
 import 'package:free_clac/tools/bmi.dart';
 import 'package:free_clac/tools/compound.dart';
@@ -12,6 +19,7 @@ import 'package:free_clac/tools/temperature.dart';
 import 'package:free_clac/tools/unit_catalog.dart';
 import 'package:free_clac/tools/volume.dart';
 import 'package:free_clac/tools/weight.dart';
+import 'package:free_clac/ui/tools/tool_catalog.dart';
 
 void main() {
   group('BMI：计算与分级', () {
@@ -1127,8 +1135,142 @@ void main() {
       expect(calculatePension(input()), isNotNull);
     });
   });
+  group('设置：主题模式与本地存储', () {
+    test('默认跟随系统：按系统明暗给深色或浅色配色', () {
+      final settings = SettingsController(store: _MemoryStore());
+      expect(settings.themeMode, AppThemeMode.system);
+      expect(settings.language, AppLanguage.zhHans);
+      expect(settings.paletteFor(Brightness.dark), same(kDarkPalette));
+      expect(settings.paletteFor(Brightness.light), same(kLightPalette));
+    });
+
+    test('切主题写回本地，重建后能读回来', () async {
+      final store = _MemoryStore();
+      final settings = SettingsController(store: store);
+      await settings.setThemeMode(AppThemeMode.light);
+      expect(store.values['theme_mode'], 'light');
+      expect(settings.paletteFor(Brightness.dark), same(kLightPalette));
+
+      final reloaded = SettingsController(store: store);
+      await reloaded.load();
+      expect(reloaded.themeMode, AppThemeMode.light);
+      expect(reloaded.paletteFor(Brightness.dark), same(kLightPalette));
+    });
+
+    test('切语言写回本地，重建后能读回来', () async {
+      final store = _MemoryStore();
+      final settings = SettingsController(store: store);
+      await settings.setLanguage(AppLanguage.es);
+      expect(store.values['language'], 'es');
+
+      final reloaded = SettingsController(store: store);
+      await reloaded.load();
+      expect(reloaded.language, AppLanguage.es);
+    });
+
+    test('存了无法识别的值时保持默认', () async {
+      final store = _MemoryStore()
+        ..values['theme_mode'] = 'neon'
+        ..values['language'] = 'ko';
+      final settings = SettingsController(store: store);
+      await settings.load();
+      expect(settings.themeMode, AppThemeMode.system);
+      expect(settings.language, AppLanguage.zhHans);
+      expect(AppThemeMode.fromCode('neon'), isNull);
+      expect(AppLanguage.fromCode('ko'), isNull);
+    });
+
+    test('按系统语言判断首次启动的语言', () {
+      expect(
+        AppLanguage.fromLocale(const Locale('zh', 'CN')),
+        AppLanguage.zhHans,
+      );
+      expect(
+        AppLanguage.fromLocale(const Locale('zh', 'TW')),
+        AppLanguage.zhHant,
+      );
+      expect(
+        AppLanguage.fromLocale(const Locale('zh', 'HK')),
+        AppLanguage.zhHant,
+      );
+      expect(AppLanguage.fromLocale(const Locale('ja', 'JP')), AppLanguage.ja);
+      expect(AppLanguage.fromLocale(const Locale('es', 'ES')), AppLanguage.es);
+      expect(AppLanguage.fromLocale(const Locale('en', 'US')), AppLanguage.en);
+      expect(
+        AppLanguage.fromLocale(const Locale('de', 'DE')),
+        AppLanguage.zhHans,
+      );
+      expect(AppLanguage.fromLocale(null), AppLanguage.zhHans);
+    });
+  });
+
+  group('多语言：五种语言的文案表', () {
+    test('每种语言都有完整且互不相同的界面文案', () {
+      final titles = <String>{};
+      for (final language in AppLanguage.values) {
+        final strings = AppStrings.of(language);
+        expect(strings.appTitle, isNotEmpty, reason: language.code);
+        for (final text in [
+          strings.navCalculator,
+          strings.navPlot,
+          strings.navTools,
+          strings.navSettings,
+          strings.toolsTitle,
+          strings.toolsOffline,
+          strings.settingsTitle,
+          strings.settingsAppearance,
+          strings.themeSystem,
+          strings.themeLight,
+          strings.themeDark,
+          strings.settingsLanguage,
+          strings.settingsAbout,
+        ]) {
+          expect(text, isNotEmpty, reason: '${language.code} 有空文案');
+        }
+        expect(strings.toolsCount(12), contains('12'));
+        titles.add(strings.navSettings);
+      }
+      // 五种语言的「设置」写法互不相同（简繁算两种写法）
+      expect(titles.length, greaterThanOrEqualTo(4));
+    });
+
+    test('每个工具的语言包都有五种语言，且 id 唯一', () {
+      final ids = <String>{};
+      for (final tool in kTools) {
+        expect(ids.add(tool.id), isTrue, reason: '重复的工具 id：${tool.id}');
+        for (final language in AppLanguage.values) {
+          final text = tool.lang[language];
+          expect(text, isNotNull, reason: '${tool.id} 缺 ${language.code}');
+          expect(text!.name, isNotEmpty);
+          expect(text.tagline, isNotEmpty);
+          expect(text.description, isNotEmpty);
+        }
+      }
+      expect(kTools.length, 12);
+    });
+
+    test('工具名称随语言变化，缺翻译时回落简体中文', () {
+      final bmi = kTools.firstWhere((tool) => tool.id == 'bmi');
+      expect(bmi.lang[AppLanguage.en]!.name, 'BMI');
+      expect(bmi.lang[AppLanguage.es]!.name, 'IMC');
+      const fallback = <AppLanguage, String>{AppLanguage.zhHans: '只有中文'};
+      expect(toolTextFor(fallback, AppLanguage.ja), '只有中文');
+      expect(toolTextFor(fallback, AppLanguage.en), '只有中文');
+    });
+  });
 }
 
 /// 测试辅助：明细里最大的一个月个税。
 double maxMonthlyTaxOf(List<PayrollMonth> months) =>
     months.map((month) => month.tax).reduce((a, b) => a > b ? a : b);
+
+/// 内存版设置存储，测试里替代文件 / localStorage。
+class _MemoryStore implements SettingsStore {
+  final Map<String, String> values = <String, String>{};
+
+  @override
+  Future<Map<String, String>> readAll() async => Map<String, String>.of(values);
+
+  @override
+  Future<void> write(String key, String value) async => values[key] = value;
+}

@@ -178,7 +178,7 @@ class CalcDisplay extends StatelessWidget {
           letterSpacing: 0.4,
           fontFeatures: [FontFeature.tabularFigures()],
         ),
-        decoration: const InputDecoration(
+        decoration: InputDecoration(
           isCollapsed: false,
           filled: false,
           border: InputBorder.none,
@@ -204,14 +204,14 @@ class CalcDisplay extends StatelessWidget {
       return Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Padding(
+          Padding(
             padding: EdgeInsets.only(top: 2, right: 6),
             child: Icon(Icons.error_outline, color: AppColors.error, size: 16),
           ),
           Expanded(
             child: Text(
               error,
-              style: const TextStyle(color: AppColors.error, fontSize: 13),
+              style: TextStyle(color: AppColors.error, fontSize: 13),
             ),
           ),
         ],
@@ -219,7 +219,7 @@ class CalcDisplay extends StatelessWidget {
     }
 
     if (value == null) {
-      return const Text(
+      return Text(
         '实时预览结果会显示在这里，按 = 记录到历史',
         style: TextStyle(color: AppColors.textSecondary, fontSize: 13),
       );
@@ -248,7 +248,7 @@ class CalcDisplay extends StatelessWidget {
                 alignment: Alignment.centerRight,
                 child: Text(
                   text,
-                  style: const TextStyle(
+                  style: TextStyle(
                     color: AppColors.secondary,
                     fontSize: 30,
                     fontWeight: FontWeight.w600,
@@ -372,7 +372,7 @@ class FunctionsSheet extends StatelessWidget {
               style: TextStyle(fontSize: 17, fontWeight: FontWeight.w600),
             ),
             const SizedBox(height: 4),
-            const Text(
+            Text(
               '点击即可插入，支持隐式乘法（2x、3sin(x)）与 ans / mem 变量',
               style: TextStyle(color: AppColors.textSecondary, fontSize: 12),
             ),
@@ -404,7 +404,7 @@ class FunctionsSheet extends StatelessWidget {
           padding: const EdgeInsets.symmetric(vertical: 6),
           child: Text(
             title,
-            style: const TextStyle(
+            style: TextStyle(
               color: AppColors.textSecondary,
               fontSize: 12,
               fontWeight: FontWeight.w600,

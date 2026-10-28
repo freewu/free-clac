@@ -4,8 +4,13 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:free_clac/app.dart';
 import 'package:free_clac/core/math_engine.dart';
 import 'package:free_clac/plot/plot_export.dart';
+import 'package:free_clac/l10n/app_language.dart';
 import 'package:free_clac/services/plot_file_saver.dart';
+import 'package:free_clac/services/settings_store.dart';
 import 'package:free_clac/state/plot_controller.dart';
+import 'package:free_clac/state/settings_controller.dart';
+import 'package:free_clac/ui/settings_page.dart';
+import 'package:free_clac/ui/tools/tool_catalog.dart';
 import 'package:free_clac/tools/loan.dart';
 import 'package:free_clac/ui/widgets/plot_export_dialog.dart';
 import 'package:free_clac/ui/tools/area/area_page.dart';
@@ -355,6 +360,87 @@ void main() {
       );
     }
     expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('设置页：深链打开、切浅色主题后配色与保存都变了', (tester) async {
+    tester.view.physicalSize = const Size(1200, 1400);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+    final store = _MemoryStore();
+    final settings = SettingsController(store: store);
+    await tester.pumpWidget(FreeCalcApp(settings: settings, initialTab: 3));
+    await tester.pumpAndSettle();
+
+    expect(find.byType(SettingsPage), findsOneWidget);
+    expect(find.text('外观'), findsOneWidget);
+    expect(find.text('语言'), findsOneWidget);
+    expect(find.text('跟随系统'), findsOneWidget);
+    for (final language in AppLanguage.values) {
+      expect(
+        find.byKey(Key('settings-language-${language.code}')),
+        findsOneWidget,
+      );
+    }
+    // 默认跟随系统（测试里系统是浅色）
+    expect(
+      tester.widget<MaterialApp>(find.byType(MaterialApp)).theme?.brightness,
+      Brightness.light,
+    );
+
+    await tester.tap(find.byKey(const Key('settings-theme-dark')));
+    await tester.pumpAndSettle();
+    expect(settings.themeMode, AppThemeMode.dark);
+    expect(store.values['theme_mode'], 'dark');
+    final themed = tester.widget<MaterialApp>(find.byType(MaterialApp));
+    expect(themed.theme?.brightness, Brightness.dark);
+    expect(themed.theme?.scaffoldBackgroundColor, const Color(0xFF0A0E14));
+  });
+
+  testWidgets('设置页：切到日语后导航与工具卡片跟着变', (tester) async {
+    tester.view.physicalSize = const Size(1200, 1400);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+    final store = _MemoryStore();
+    final settings = SettingsController(store: store);
+    await tester.pumpWidget(FreeCalcApp(settings: settings, initialTab: 3));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byKey(const Key('settings-language-ja')));
+    await tester.pumpAndSettle();
+    expect(settings.language, AppLanguage.ja);
+    expect(store.values['language'], 'ja');
+    // 导航栏文案换成日语
+    expect(find.text('設定'), findsWidgets);
+    expect(find.text('計算'), findsWidgets);
+    expect(find.text('设置'), findsNothing);
+
+    // 工具页卡片名称也换成日语
+    await tester.tap(find.text('ツール').last);
+    await tester.pumpAndSettle();
+    expect(find.text('複利計算'), findsOneWidget);
+    expect(find.text('ローン計算'), findsOneWidget);
+    expect(find.text('复利计算'), findsNothing);
+  });
+
+  testWidgets('设置页：切换语言后工具卡片的深链 id 不变', (tester) async {
+    tester.view.physicalSize = const Size(1440, 1600);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+    final settings = SettingsController(
+      store: _MemoryStore(),
+      language: AppLanguage.en,
+    );
+    await tester.pumpWidget(
+      FreeCalcApp(settings: settings, initialTab: 2, initialTool: 'bmi'),
+    );
+    await tester.pumpAndSettle();
+    expect(find.byType(BmiPage), findsOneWidget);
+    expect(find.text('BMI'), findsWidgets);
+    // 卡片文案已是英文，id 仍用于深链
+    expect(
+      kTools.map((tool) => tool.id),
+      containsAll(<String>['bmi', 'loan', 'pension']),
+    );
   });
 
   testWidgets('手机尺寸：复利计算利率 / 年限改两行且不溢出', (tester) async {
@@ -1476,3 +1562,14 @@ PlotPainter _plotPainter(WidgetTester tester) => tester
     .map((widget) => widget.painter)
     .whereType<PlotPainter>()
     .single;
+
+/// 内存版设置存储，Widget 测试里替代文件 / localStorage。
+class _MemoryStore implements SettingsStore {
+  final Map<String, String> values = <String, String>{};
+
+  @override
+  Future<Map<String, String>> readAll() async => Map<String, String>.of(values);
+
+  @override
+  Future<void> write(String key, String value) async => values[key] = value;
+}

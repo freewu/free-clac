@@ -85,11 +85,7 @@ class PlotPage extends StatelessWidget {
       padding: const EdgeInsets.fromLTRB(16, 8, 10, 4),
       child: Row(
         children: [
-          const Icon(
-            Icons.insights_rounded,
-            size: 19,
-            color: AppColors.primary,
-          ),
+          Icon(Icons.insights_rounded, size: 19, color: AppColors.primary),
           const SizedBox(width: 8),
           const Text(
             '函数绘图',

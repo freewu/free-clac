@@ -8,10 +8,10 @@ import '../widgets/tool_field.dart';
 import '../widgets/tool_unit_picker.dart';
 
 /// 本金条的颜色。
-const Color loanPrincipalColor = AppColors.primary;
+final Color loanPrincipalColor = AppColors.primary;
 
 /// 利息条的颜色。
-const Color loanInterestColor = AppColors.warning;
+final Color loanInterestColor = AppColors.warning;
 
 /// 解析深链里的还款方式（Web 端 `?method=equalPrincipal`），无效值回落到等额本息。
 ///
@@ -81,12 +81,12 @@ class _LoanPageState extends State<LoanPage> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('贷款计算器'),
-        titleTextStyle: const TextStyle(
+        titleTextStyle: TextStyle(
           fontSize: 16,
           fontWeight: FontWeight.w600,
           color: AppColors.textPrimary,
         ),
-        iconTheme: const IconThemeData(color: AppColors.textSecondary),
+        iconTheme: IconThemeData(color: AppColors.textSecondary),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.fromLTRB(16, 4, 16, 28),
@@ -159,7 +159,7 @@ class _LoanPageState extends State<LoanPage> {
                         },
                       ),
                       const SizedBox(height: 12),
-                      const Text(
+                      Text(
                         '还款方式',
                         style: TextStyle(
                           color: AppColors.textSecondary,
@@ -227,7 +227,7 @@ class _EmptyHint extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Padding(
+    return Padding(
       padding: EdgeInsets.symmetric(vertical: 26),
       child: Column(
         children: [
@@ -293,10 +293,7 @@ class _Summary extends StatelessWidget {
       children: [
         Text(
           fixed ? '每月还款' : '首月还款',
-          style: const TextStyle(
-            color: AppColors.textSecondary,
-            fontSize: 11.5,
-          ),
+          style: TextStyle(color: AppColors.textSecondary, fontSize: 11.5),
         ),
         const SizedBox(height: 4),
         Text(
@@ -316,7 +313,7 @@ class _Summary extends StatelessWidget {
               ? '${result.method.label} · 共 $months 期 · 每期还款额固定'
               : '${result.method.label} · 共 $months 期 · '
                     '月供逐月递减 ¥ ${formatMoney(decrease)}',
-          style: const TextStyle(color: AppColors.textSecondary, fontSize: 11),
+          style: TextStyle(color: AppColors.textSecondary, fontSize: 11),
         ),
         const SizedBox(height: 18),
         // 三行金额条：长度按金额占「总还款」的比例缩放，本金 / 利息 / 总额
@@ -326,7 +323,7 @@ class _Summary extends StatelessWidget {
           label: '贷款总额',
           value: '¥ ${formatMoney(result.amount, decimals: 0)}',
           ratio: result.amount / result.totalPayment,
-          segments: const [RatioSegment(value: 1, color: loanPrincipalColor)],
+          segments: [RatioSegment(value: 1, color: loanPrincipalColor)],
         ),
         const SizedBox(height: 8),
         AmountBar(
@@ -334,7 +331,7 @@ class _Summary extends StatelessWidget {
           label: '总利息',
           value: '¥ ${formatMoney(result.totalInterest, decimals: 0)}',
           ratio: result.interestRatio,
-          segments: const [RatioSegment(value: 1, color: loanInterestColor)],
+          segments: [RatioSegment(value: 1, color: loanInterestColor)],
         ),
         const SizedBox(height: 8),
         AmountBar(
@@ -355,12 +352,12 @@ class _Summary extends StatelessWidget {
           children: [
             Text(
               '本金 ${(result.amount / result.totalPayment * 100).toStringAsFixed(1)}%',
-              style: const TextStyle(color: loanPrincipalColor, fontSize: 10.5),
+              style: TextStyle(color: loanPrincipalColor, fontSize: 10.5),
             ),
             const Spacer(),
             Text(
               '利息 ${(result.interestRatio * 100).toStringAsFixed(1)}%',
-              style: const TextStyle(color: loanInterestColor, fontSize: 10.5),
+              style: TextStyle(color: loanInterestColor, fontSize: 10.5),
             ),
           ],
         ),
@@ -385,17 +382,14 @@ class _Schedule extends StatelessWidget {
       children: [
         Row(
           children: [
-            const Text(
+            Text(
               '期数',
               style: TextStyle(color: AppColors.textSecondary, fontSize: 10.5),
             ),
             const Spacer(),
             Text(
               groupByYear ? '当年还款' : '本期还款',
-              style: const TextStyle(
-                color: AppColors.textSecondary,
-                fontSize: 10.5,
-              ),
+              style: TextStyle(color: AppColors.textSecondary, fontSize: 10.5),
             ),
           ],
         ),
@@ -415,7 +409,7 @@ class _Schedule extends StatelessWidget {
         ),
         if (!result.isFixedPayment) ...[
           const SizedBox(height: 10),
-          const Text(
+          Text(
             '条长按当期还款额缩放：首期 100%，末期 60%',
             style: TextStyle(color: AppColors.textSecondary, fontSize: 10),
           ),
@@ -448,7 +442,7 @@ class _PeriodRow extends StatelessWidget {
           children: [
             Text(
               title,
-              style: const TextStyle(
+              style: TextStyle(
                 color: AppColors.textSecondary,
                 fontSize: 10.5,
                 fontWeight: FontWeight.w600,
@@ -457,7 +451,7 @@ class _PeriodRow extends StatelessWidget {
             const Spacer(),
             Text(
               '¥ ${formatMoney(period.payment)}',
-              style: const TextStyle(
+              style: TextStyle(
                 color: AppColors.textPrimary,
                 fontSize: 11.5,
                 fontWeight: FontWeight.w600,
@@ -492,12 +486,12 @@ class _PeriodRow extends StatelessWidget {
           children: [
             Text(
               '本金 ¥ ${formatMoney(period.principal, decimals: 0)}',
-              style: const TextStyle(color: loanPrincipalColor, fontSize: 10.5),
+              style: TextStyle(color: loanPrincipalColor, fontSize: 10.5),
             ),
             const Spacer(),
             Text(
               '利息 ¥ ${formatMoney(period.interest, decimals: 0)}',
-              style: const TextStyle(color: loanInterestColor, fontSize: 10.5),
+              style: TextStyle(color: loanInterestColor, fontSize: 10.5),
             ),
           ],
         ),

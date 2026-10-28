@@ -58,7 +58,7 @@ class PlotPresetSheet extends StatelessWidget {
               children: [
                 Row(
                   children: [
-                    const Icon(
+                    Icon(
                       Icons.auto_awesome,
                       size: 18,
                       color: AppColors.primary,
@@ -75,7 +75,7 @@ class PlotPresetSheet extends StatelessWidget {
                     const Spacer(),
                     Text(
                       '${kPlotPresets.length}',
-                      style: const TextStyle(
+                      style: TextStyle(
                         color: AppColors.textSecondary,
                         fontSize: 12,
                       ),
@@ -85,7 +85,7 @@ class PlotPresetSheet extends StatelessWidget {
                 const SizedBox(height: 6),
                 Text(
                   '示例会追加到当前画布，视口自动扩展以容纳已有图形；重复载入不会叠加相同曲线。',
-                  style: const TextStyle(
+                  style: TextStyle(
                     color: AppColors.textSecondary,
                     fontSize: 12,
                     height: 1.4,
@@ -94,12 +94,12 @@ class PlotPresetSheet extends StatelessWidget {
               ],
             ),
           ),
-          const Divider(height: 1, color: AppColors.outline),
+          Divider(height: 1, color: AppColors.outline),
           Expanded(
             child: ListView.separated(
               padding: const EdgeInsets.symmetric(vertical: 6),
               itemCount: kPlotPresets.length,
-              separatorBuilder: (_, _) => const Divider(
+              separatorBuilder: (_, _) => Divider(
                 height: 1,
                 indent: 64,
                 endIndent: 16,
@@ -136,7 +136,7 @@ class PlotPresetSheet extends StatelessWidget {
                       preset.description,
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
+                      style: TextStyle(
                         color: AppColors.textSecondary,
                         fontSize: 12,
                         height: 1.35,
@@ -151,7 +151,7 @@ class PlotPresetSheet extends StatelessWidget {
                           padding: const EdgeInsets.only(right: 8),
                           child: Text(
                             preset.angleMode!.shortLabel,
-                            style: const TextStyle(
+                            style: TextStyle(
                               color: AppColors.textSecondary,
                               fontSize: 11,
                               letterSpacing: 0.5,
@@ -163,13 +163,13 @@ class PlotPresetSheet extends StatelessWidget {
                           padding: const EdgeInsets.only(right: 6),
                           child: Text(
                             '${preset.curves.length} 条',
-                            style: const TextStyle(
+                            style: TextStyle(
                               color: AppColors.textSecondary,
                               fontSize: 11,
                             ),
                           ),
                         ),
-                      const Icon(
+                      Icon(
                         Icons.add_circle_outline,
                         size: 18,
                         color: AppColors.textSecondary,
@@ -180,7 +180,7 @@ class PlotPresetSheet extends StatelessWidget {
               },
             ),
           ),
-          const SafeArea(
+          SafeArea(
             top: false,
             child: Padding(
               padding: EdgeInsets.fromLTRB(18, 8, 18, 10),

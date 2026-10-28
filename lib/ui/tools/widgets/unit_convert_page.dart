@@ -128,12 +128,12 @@ class _UnitConvertPageState extends State<UnitConvertPage>
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.title),
-        titleTextStyle: const TextStyle(
+        titleTextStyle: TextStyle(
           fontSize: 16,
           fontWeight: FontWeight.w600,
           color: AppColors.textPrimary,
         ),
-        iconTheme: const IconThemeData(color: AppColors.textSecondary),
+        iconTheme: IconThemeData(color: AppColors.textSecondary),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.fromLTRB(16, 4, 16, 28),
@@ -197,7 +197,7 @@ class _UnitConvertPageState extends State<UnitConvertPage>
                         const SizedBox(height: 8),
                         Text(
                           _from.note,
-                          style: const TextStyle(
+                          style: TextStyle(
                             color: AppColors.textSecondary,
                             fontSize: 10.5,
                           ),
@@ -222,7 +222,7 @@ class _UnitConvertPageState extends State<UnitConvertPage>
                           '${_from.label}',
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontSize: 24,
                             height: 1.15,
                             fontWeight: FontWeight.w700,
@@ -250,7 +250,7 @@ class _UnitConvertPageState extends State<UnitConvertPage>
                         const SizedBox(height: 4),
                         Text(
                           '点任意一行即可复制 · 统一以${_catalog.baseName}为基准',
-                          style: const TextStyle(
+                          style: TextStyle(
                             color: AppColors.textSecondary,
                             fontSize: 10.5,
                           ),
@@ -309,10 +309,7 @@ class _SamplesCard extends StatelessWidget {
         children: [
           Text(
             expanded ? '收起' : '展开',
-            style: const TextStyle(
-              color: AppColors.textSecondary,
-              fontSize: 10.5,
-            ),
+            style: TextStyle(color: AppColors.textSecondary, fontSize: 10.5),
           ),
           Icon(
             expanded ? Icons.expand_less_rounded : Icons.expand_more_rounded,
@@ -431,7 +428,7 @@ class _ResultRow extends StatelessWidget {
                 unit.symbol,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
-                style: const TextStyle(
+                style: TextStyle(
                   color: AppColors.textSecondary,
                   fontSize: 10.5,
                 ),
@@ -457,7 +454,7 @@ class _EmptyHint extends StatelessWidget {
         children: [
           Icon(icon, size: 30, color: AppColors.outline),
           const SizedBox(height: 10),
-          const Text(
+          Text(
             '填入数值并选好单位后自动换算',
             style: TextStyle(color: AppColors.textSecondary, fontSize: 12.5),
           ),

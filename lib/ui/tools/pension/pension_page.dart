@@ -64,12 +64,12 @@ class _PensionPageState extends State<PensionPage> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('养老金计算器'),
-        titleTextStyle: const TextStyle(
+        titleTextStyle: TextStyle(
           fontSize: 16,
           fontWeight: FontWeight.w600,
           color: AppColors.textPrimary,
         ),
-        iconTheme: const IconThemeData(color: AppColors.textSecondary),
+        iconTheme: IconThemeData(color: AppColors.textSecondary),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.fromLTRB(16, 4, 16, 28),
@@ -202,7 +202,7 @@ class _PensionPageState extends State<PensionPage> {
                     children: [
                       Text(
                         _advancedExpanded ? '收起' : '展开',
-                        style: const TextStyle(
+                        style: TextStyle(
                           color: AppColors.textSecondary,
                           fontSize: 10.5,
                         ),
@@ -248,7 +248,7 @@ class _PensionPageState extends State<PensionPage> {
                               '个人账户按本人缴费基数的 '
                               '${kPensionPersonalRate.toStringAsFixed(0)}% 记入，'
                               '缴费基数随社平工资同步增长。',
-                              style: const TextStyle(
+                              style: TextStyle(
                                 color: AppColors.textSecondary,
                                 fontSize: 10.5,
                               ),
@@ -277,7 +277,7 @@ class _EmptyHint extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Padding(
+    return Padding(
       padding: EdgeInsets.symmetric(vertical: 26),
       child: Column(
         children: [
@@ -306,14 +306,14 @@ class _ResultBody extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        const Text(
+        Text(
           '预计每月养老金',
           style: TextStyle(color: AppColors.textSecondary, fontSize: 11.5),
         ),
         const SizedBox(height: 4),
         Text(
           '¥ ${formatMoney(total)}',
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 26,
             height: 1.15,
             fontWeight: FontWeight.w700,
@@ -325,10 +325,7 @@ class _ResultBody extends StatelessWidget {
         Text(
           '替代率 ${(result.replacementRate * 100).toStringAsFixed(1)}%'
           ' · 退休时社平工资 ¥ ${formatMoney(result.socialWageAtRetire, decimals: 0)}/月',
-          style: const TextStyle(
-            color: AppColors.textSecondary,
-            fontSize: 10.5,
-          ),
+          style: TextStyle(color: AppColors.textSecondary, fontSize: 10.5),
         ),
         const SizedBox(height: 12),
         AmountBar(
@@ -338,7 +335,7 @@ class _ResultBody extends StatelessWidget {
           ratio: baseRatio,
           labelWidth: 64,
           valueWidth: 96,
-          segments: const [RatioSegment(value: 1, color: AppColors.primary)],
+          segments: [RatioSegment(value: 1, color: AppColors.primary)],
         ),
         const SizedBox(height: 6),
         AmountBar(
@@ -348,10 +345,10 @@ class _ResultBody extends StatelessWidget {
           ratio: accountRatio,
           labelWidth: 64,
           valueWidth: 96,
-          segments: const [RatioSegment(value: 1, color: AppColors.tertiary)],
+          segments: [RatioSegment(value: 1, color: AppColors.tertiary)],
         ),
         const SizedBox(height: 10),
-        const Divider(height: 1, color: AppColors.outline),
+        Divider(height: 1, color: AppColors.outline),
         const SizedBox(height: 8),
         _DetailRow(
           label: '缴费年限',
@@ -376,7 +373,7 @@ class _ResultBody extends StatelessWidget {
           value: '¥ ${formatMoney(result.wageAtRetire, decimals: 0)}',
         ),
         const SizedBox(height: 8),
-        const Text(
+        Text(
           '按国发〔2005〕38 号口径测算：基础养老金 =（社平工资 + 本人指数化月平均缴费工资）'
           '÷ 2 × 缴费年限 × 1%，个人账户养老金 = 账户储存额 ÷ 计发月数。'
           '不含过渡性养老金、企业年金与地方补贴，结果仅供参考。',
@@ -408,17 +405,14 @@ class _DetailRow extends StatelessWidget {
             width: 92,
             child: Text(
               label,
-              style: const TextStyle(
-                color: AppColors.textSecondary,
-                fontSize: 11,
-              ),
+              style: TextStyle(color: AppColors.textSecondary, fontSize: 11),
             ),
           ),
           Expanded(
             child: Text(
               value,
               textAlign: TextAlign.right,
-              style: const TextStyle(
+              style: TextStyle(
                 color: AppColors.textPrimary,
                 fontSize: 11.5,
                 fontWeight: FontWeight.w500,

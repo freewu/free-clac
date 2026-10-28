@@ -33,7 +33,7 @@ class HistoryPanel extends StatelessWidget {
                 padding: const EdgeInsets.fromLTRB(16, 14, 8, 8),
                 child: Row(
                   children: [
-                    const Icon(
+                    Icon(
                       Icons.history_rounded,
                       size: 18,
                       color: AppColors.textSecondary,
@@ -64,7 +64,7 @@ class HistoryPanel extends StatelessWidget {
               const Divider(),
               Expanded(
                 child: history.isEmpty
-                    ? const Center(
+                    ? Center(
                         child: Padding(
                           padding: EdgeInsets.all(24),
                           child: Text(
@@ -118,7 +118,7 @@ class _HistoryTile extends StatelessWidget {
                     textAlign: TextAlign.right,
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
+                    style: TextStyle(
                       color: AppColors.textSecondary,
                       fontSize: 12.5,
                       fontFeatures: [FontFeature.tabularFigures()],

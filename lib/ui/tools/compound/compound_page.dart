@@ -51,12 +51,12 @@ class _CompoundPageState extends State<CompoundPage> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('复利计算'),
-        titleTextStyle: const TextStyle(
+        titleTextStyle: TextStyle(
           fontSize: 16,
           fontWeight: FontWeight.w600,
           color: AppColors.textPrimary,
         ),
-        iconTheme: const IconThemeData(color: AppColors.textSecondary),
+        iconTheme: IconThemeData(color: AppColors.textSecondary),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.fromLTRB(16, 4, 16, 28),
@@ -132,7 +132,7 @@ class _CompoundPageState extends State<CompoundPage> {
                         onChanged: (_) => setState(() {}),
                       ),
                       const SizedBox(height: 12),
-                      const Text(
+                      Text(
                         '复利频率',
                         style: TextStyle(
                           color: AppColors.textSecondary,
@@ -174,7 +174,7 @@ class _CompoundPageState extends State<CompoundPage> {
                     icon: Icons.table_chart_outlined,
                     trailing: Text(
                       '按${result.frequency.label}计息',
-                      style: const TextStyle(
+                      style: TextStyle(
                         color: AppColors.textSecondary,
                         fontSize: 10.5,
                       ),
@@ -196,7 +196,7 @@ class _EmptyHint extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Padding(
+    return Padding(
       padding: EdgeInsets.symmetric(vertical: 26),
       child: Column(
         children: [
@@ -224,7 +224,7 @@ class _Summary extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        const Text(
+        Text(
           '到期本息合计',
           style: TextStyle(color: AppColors.textSecondary, fontSize: 11.5),
         ),
@@ -252,7 +252,7 @@ class _Summary extends StatelessWidget {
         Text(
           '${result.frequency.label}计息 ${formatNumber(result.periods, significantDigits: 6)} 期 · '
           '有效年利率 ${result.effectiveAnnualRatePercent.toStringAsFixed(2)}%',
-          style: const TextStyle(color: AppColors.textSecondary, fontSize: 11),
+          style: TextStyle(color: AppColors.textSecondary, fontSize: 11),
         ),
         const SizedBox(height: 16),
         Row(
@@ -299,10 +299,7 @@ class _Stat extends StatelessWidget {
       children: [
         Text(
           label,
-          style: const TextStyle(
-            color: AppColors.textSecondary,
-            fontSize: 10.5,
-          ),
+          style: TextStyle(color: AppColors.textSecondary, fontSize: 10.5),
         ),
         const SizedBox(height: 3),
         Text(
@@ -329,7 +326,7 @@ class _YearTable extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (result.yearly.isEmpty) {
-      return const Padding(
+      return Padding(
         padding: EdgeInsets.symmetric(vertical: 10),
         child: Text(
           '年限不足 1 年，没有逐年数据。',

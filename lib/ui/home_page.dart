@@ -1,24 +1,31 @@
 import 'package:flutter/material.dart';
 
 import '../core/math_engine.dart';
+import '../l10n/app_i18n.dart';
 import '../state/calculator_controller.dart';
 import '../state/plot_controller.dart';
+import '../state/settings_controller.dart';
 import '../theme/app_theme.dart';
 import '../plot/plot_presets.dart';
 import 'calculator_page.dart';
 import 'plot_page.dart';
+import 'settings_page.dart';
 import 'tools/tools_tab.dart';
 
 /// 应用主框架：计算器 / 绘图 / 工具三个页面，共享同一个计算引擎。
 class HomePage extends StatefulWidget {
   const HomePage({
     super.key,
+    required this.settings,
     this.initialTab = 0,
     this.initialPreset,
     this.initialTool,
   });
 
-  /// 初始页面：0 计算器，1 绘图，2 工具。
+  /// 设置控制器，设置页直接读写它。
+  final SettingsController settings;
+
+  /// 初始页面：0 计算器，1 绘图，2 工具，3 设置。
   final int initialTab;
 
   /// 启动时载入的示例曲线下标，越界时忽略。
@@ -38,7 +45,7 @@ class _HomePageState extends State<HomePage> {
   );
   late final PlotController _plot = PlotController(engine: _engine);
 
-  late int _index = widget.initialTab.clamp(0, 2);
+  late int _index = widget.initialTab.clamp(0, 3);
 
   @override
   void initState() {
@@ -69,6 +76,7 @@ class _HomePageState extends State<HomePage> {
             CalculatorPage(controller: _calculator),
             PlotPage(controller: _plot),
             ToolsTab(initialTool: widget.initialTool, active: _index == 2),
+            SettingsPage(controller: widget.settings),
           ],
         );
 
@@ -83,18 +91,16 @@ class _HomePageState extends State<HomePage> {
                     onDestinationSelected: (index) =>
                         setState(() => _index = index),
                     labelType: NavigationRailLabelType.all,
-                    selectedIconTheme: const IconThemeData(
-                      color: AppColors.primary,
-                    ),
-                    unselectedIconTheme: const IconThemeData(
+                    selectedIconTheme: IconThemeData(color: AppColors.primary),
+                    unselectedIconTheme: IconThemeData(
                       color: AppColors.textSecondary,
                     ),
-                    selectedLabelTextStyle: const TextStyle(
+                    selectedLabelTextStyle: TextStyle(
                       color: AppColors.primary,
                       fontSize: 11,
                       fontWeight: FontWeight.w600,
                     ),
-                    unselectedLabelTextStyle: const TextStyle(
+                    unselectedLabelTextStyle: TextStyle(
                       color: AppColors.textSecondary,
                       fontSize: 11,
                     ),
@@ -103,21 +109,26 @@ class _HomePageState extends State<HomePage> {
                       padding: EdgeInsets.symmetric(vertical: 12),
                       child: _Logo(),
                     ),
-                    destinations: const [
+                    destinations: [
                       NavigationRailDestination(
-                        icon: Icon(Icons.calculate_outlined),
-                        selectedIcon: Icon(Icons.calculate),
-                        label: Text('计算'),
+                        icon: const Icon(Icons.calculate_outlined),
+                        selectedIcon: const Icon(Icons.calculate),
+                        label: Text(t.navCalculator),
                       ),
                       NavigationRailDestination(
-                        icon: Icon(Icons.insights_outlined),
-                        selectedIcon: Icon(Icons.insights),
-                        label: Text('绘图'),
+                        icon: const Icon(Icons.insights_outlined),
+                        selectedIcon: const Icon(Icons.insights),
+                        label: Text(t.navPlot),
                       ),
                       NavigationRailDestination(
-                        icon: Icon(Icons.apps_outlined),
-                        selectedIcon: Icon(Icons.apps),
-                        label: Text('工具'),
+                        icon: const Icon(Icons.apps_outlined),
+                        selectedIcon: const Icon(Icons.apps),
+                        label: Text(t.navTools),
+                      ),
+                      NavigationRailDestination(
+                        icon: const Icon(Icons.settings_outlined),
+                        selectedIcon: const Icon(Icons.settings),
+                        label: Text(t.navSettings),
                       ),
                     ],
                   ),
@@ -135,21 +146,26 @@ class _HomePageState extends State<HomePage> {
             selectedIndex: _index,
             onDestinationSelected: (index) => setState(() => _index = index),
             height: 62,
-            destinations: const [
+            destinations: [
               NavigationDestination(
-                icon: Icon(Icons.calculate_outlined),
-                selectedIcon: Icon(Icons.calculate),
-                label: '计算',
+                icon: const Icon(Icons.calculate_outlined),
+                selectedIcon: const Icon(Icons.calculate),
+                label: t.navCalculator,
               ),
               NavigationDestination(
-                icon: Icon(Icons.insights_outlined),
-                selectedIcon: Icon(Icons.insights),
-                label: '绘图',
+                icon: const Icon(Icons.insights_outlined),
+                selectedIcon: const Icon(Icons.insights),
+                label: t.navPlot,
               ),
               NavigationDestination(
-                icon: Icon(Icons.apps_outlined),
-                selectedIcon: Icon(Icons.apps),
-                label: '工具',
+                icon: const Icon(Icons.apps_outlined),
+                selectedIcon: const Icon(Icons.apps),
+                label: t.navTools,
+              ),
+              NavigationDestination(
+                icon: const Icon(Icons.settings_outlined),
+                selectedIcon: const Icon(Icons.settings),
+                label: t.navSettings,
               ),
             ],
           ),
@@ -169,7 +185,7 @@ class _Logo extends StatelessWidget {
       height: 34,
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(10),
-        gradient: const LinearGradient(
+        gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [AppColors.primary, AppColors.secondary],

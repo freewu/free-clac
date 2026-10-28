@@ -35,10 +35,7 @@ class ToolNumberField extends StatelessWidget {
         if (label != null) ...[
           Text(
             label!,
-            style: const TextStyle(
-              color: AppColors.textSecondary,
-              fontSize: 11.5,
-            ),
+            style: TextStyle(color: AppColors.textSecondary, fontSize: 11.5),
           ),
           const SizedBox(height: 5),
         ],
@@ -68,7 +65,7 @@ class ToolNumberField extends StatelessWidget {
                     // widthFactor 必须为 1，否则 Center 会吃掉输入区宽度
                     child: Center(widthFactor: 1, child: trailing),
                   ),
-            suffixStyle: const TextStyle(
+            suffixStyle: TextStyle(
               color: AppColors.textSecondary,
               fontSize: 12,
             ),
@@ -124,7 +121,7 @@ class ToolSection extends StatelessWidget {
                   ],
                   Text(
                     title!,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 12,
                       fontWeight: FontWeight.w600,
                       color: AppColors.textSecondary,

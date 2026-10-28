@@ -7,6 +7,8 @@
 - **free-clac**：Flutter 科学计算器 + 2D 函数绘图，支持 Web / Windows / Android。
 - 表达式解析与求值：`lib/core/math_engine.dart`（自研词法 + 递归下降，无第三方计算库）。
 - 绘图：`lib/plot/`（视口、采样器、示例曲线），状态在 `lib/state/`，界面在 `lib/ui/`。
+- 多语言：`lib/l10n/`（语言枚举 `AppLanguage`、应用级文案 `AppStrings`、全局入口 `t`），工具语言包在 `lib/ui/tools/<tool>/lang/`。
+- 配色：`lib/theme/app_theme.dart` 的 `AppPalette`（深色 `kDarkPalette` / 浅色 `kLightPalette`），全局取色入口是 `AppColors`；设置页在 `lib/ui/settings_page.dart`，状态在 `lib/state/settings_controller.dart`，本地存储在 `lib/services/settings_store*.dart`。
 - 已知环境：Windows + WSL，`flutter` / `dart` 是 Windows 程序。
 
 ## 环境与命令
@@ -52,7 +54,9 @@ cmd.exe /c "cd /d $(wslpath -w "$PWD") && flutter test"
 - 严格通过 `dart format`（80 列）与 `analysis_options.yaml` 的 lint，不要用 `// ignore:` 绕过。
 - 改动计算逻辑或采样算法时，在 `test/` 补单元测试；改动交互时补 Widget 测试。
 - 新增曲线类型 / 视图行为时同步更新 README 的功能列表、示例表格与测试数量。
-- 小工具分两层：纯逻辑放 `lib/tools/`（不依赖 Flutter），界面放 `lib/ui/tools/<tool>/`。共用的输入框与比例条放在 `lib/ui/tools/widgets/`（`tool_field.dart`、`tool_unit_picker.dart`、`tool_select.dart`、`tool_bars.dart`），不要在每个工具里各写一份。每个工具的 `ToolInfo`（名称、卖点、图标、配色、页面构造器）写在**自己目录的 `defined.dart`** 里，`lib/ui/tools/tool_catalog.dart` 只汇总 `kTools`；新增工具 = 新建 `<tool>/defined.dart` + 在 `kTools` 追加一行 + `tool/screenshot.sh` 加一条 `shoot`。
+- **界面文案一律走多语言**：应用级（导航、设置、工具页标题）用 `t.xxx`（`lib/l10n/app_strings.dart` 里 `AppStrings` 的五个实现都要补），工具卡片名称 / 卖点 / 说明写进 `lib/ui/tools/<tool>/lang/<tool>_lang.dart` 的 `k<Tool>Lang`。注释用中文，界面文案用各语言母语。
+- **颜色一律走 `AppColors`**：不要硬编码 `Color(0xFF...)`，也不要在 `const` 表达式里用 `AppColors.xxx`（它不是常量），深色 / 浅色两套配色都要能看。
+- 小工具分两层：纯逻辑放 `lib/tools/`（不依赖 Flutter），界面放 `lib/ui/tools/<tool>/`。共用的输入框与比例条放在 `lib/ui/tools/widgets/`（`tool_field.dart`、`tool_unit_picker.dart`、`tool_select.dart`、`tool_bars.dart`），不要在每个工具里各写一份。每个工具的 `ToolInfo`（名称、卖点、图标、配色、页面构造器）写在**自己目录的 `defined.dart`** 里，`lib/ui/tools/tool_catalog.dart` 只汇总 `kTools`；新增工具 = 新建 `<tool>/defined.dart` + 新建 `<tool>/lang/<tool>_lang.dart`（五种语言）+ 在 `kTools` 追加一行 + `tool/screenshot.sh` 加一条 `shoot`。
 - 界面有明显变化时用 `just shots` 重新生成截图，并在 README 引用。
 - `justfile` 用到的 Python 辅助脚本（如 `tool/android_target.py`）要带 `--selftest`，并挂到 `just check` 的 `tool-check` 上。
 - 需要 Android 工具链的配方（`build-apk`、`android`）先 `. tool/android-env.sh`：它会补 `JAVA_HOME` / `ANDROID_HOME`，WSL 下再用 `WSLENV` 传给 Windows 侧进程。

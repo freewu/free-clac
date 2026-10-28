@@ -27,7 +27,7 @@ class PlotFunctionPanel extends StatelessWidget {
             padding: const EdgeInsets.fromLTRB(14, 10, 6, 8),
             child: Row(
               children: [
-                const Icon(
+                Icon(
                   Icons.show_chart,
                   size: 17,
                   color: AppColors.textSecondary,
@@ -44,7 +44,7 @@ class PlotFunctionPanel extends StatelessWidget {
                 const SizedBox(width: 6),
                 Text(
                   '${controller.functions.length}',
-                  style: const TextStyle(
+                  style: TextStyle(
                     color: AppColors.textSecondary,
                     fontSize: 12,
                   ),
@@ -69,7 +69,7 @@ class PlotFunctionPanel extends StatelessWidget {
                   ),
                 PopupMenuButton<PlotMode>(
                   tooltip: '添加曲线',
-                  icon: const Icon(
+                  icon: Icon(
                     Icons.add_circle_outline,
                     size: 20,
                     color: AppColors.primary,
@@ -106,7 +106,7 @@ class PlotFunctionPanel extends StatelessWidget {
           const Divider(),
           Expanded(
             child: controller.functions.isEmpty
-                ? const Center(
+                ? Center(
                     child: Padding(
                       padding: EdgeInsets.all(20),
                       child: Text(
@@ -260,12 +260,12 @@ class _FunctionTileState extends State<_FunctionTile> {
                   children: [
                     Text(
                       function.mode.label,
-                      style: const TextStyle(
+                      style: TextStyle(
                         color: AppColors.textSecondary,
                         fontSize: 10.5,
                       ),
                     ),
-                    const Icon(
+                    Icon(
                       Icons.arrow_drop_down,
                       size: 14,
                       color: AppColors.textSecondary,
@@ -345,7 +345,7 @@ class _FunctionTileState extends State<_FunctionTile> {
                 error,
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
-                style: const TextStyle(color: AppColors.error, fontSize: 10.5),
+                style: TextStyle(color: AppColors.error, fontSize: 10.5),
               ),
             ),
         ],
@@ -391,7 +391,7 @@ class _FunctionTileState extends State<_FunctionTile> {
         ),
         prefixIconConstraints: const BoxConstraints(minWidth: 0, minHeight: 0),
         hintText: hint,
-        hintStyle: const TextStyle(
+        hintStyle: TextStyle(
           color: AppColors.outline,
           fontSize: 12,
           fontFamily: 'monospace',

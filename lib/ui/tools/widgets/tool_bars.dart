@@ -38,7 +38,7 @@ class SegmentedBar extends StatelessWidget {
         child: LayoutBuilder(
           builder: (context, constraints) {
             if (total <= 0) {
-              return const ColoredBox(color: AppColors.outline);
+              return ColoredBox(color: AppColors.outline);
             }
             var left = 0.0;
             final bars = <Widget>[];
@@ -106,10 +106,7 @@ class AmountBar extends StatelessWidget {
           width: labelWidth,
           child: Text(
             label,
-            style: const TextStyle(
-              color: AppColors.textSecondary,
-              fontSize: 10.5,
-            ),
+            style: TextStyle(color: AppColors.textSecondary, fontSize: 10.5),
           ),
         ),
         Expanded(
@@ -136,7 +133,7 @@ class AmountBar extends StatelessWidget {
             maxLines: 1,
             textAlign: TextAlign.right,
             overflow: TextOverflow.ellipsis,
-            style: const TextStyle(
+            style: TextStyle(
               color: AppColors.textPrimary,
               fontSize: 11.5,
               fontWeight: FontWeight.w600,

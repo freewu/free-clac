@@ -113,7 +113,7 @@ class BmiGauge extends StatelessWidget {
                             ? '18.5'
                             : '${boundary.toInt()}',
                         textAlign: TextAlign.center,
-                        style: const TextStyle(
+                        style: TextStyle(
                           color: AppColors.textSecondary,
                           fontSize: 9.5,
                         ),
@@ -143,7 +143,7 @@ class BmiGauge extends StatelessWidget {
                           child: Text(
                             category.label,
                             overflow: TextOverflow.ellipsis,
-                            style: const TextStyle(
+                            style: TextStyle(
                               color: AppColors.textSecondary,
                               fontSize: 10,
                             ),
