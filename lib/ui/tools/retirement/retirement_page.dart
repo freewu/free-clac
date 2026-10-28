@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 
+import '../../../l10n/app_i18n.dart';
 import '../../../theme/app_theme.dart';
 import '../widgets/tool_field.dart';
 import '../widgets/tool_select.dart';
 import 'retirement.dart';
+import 'retirement_strings.dart';
 
 /// 退休年龄计算器页：选出生年月与人员类别，测算退休时间与退休年龄。
 class RetirementPage extends StatefulWidget {
@@ -42,18 +44,15 @@ class _RetirementPageState extends State<RetirementPage> {
     group: _group,
   );
 
-  static String _groupLabel(RetirementGroup group) => switch (group) {
-    RetirementGroup.male => '男职工 · 原 ${group.baseAge} 岁',
-    RetirementGroup.female55 => '女职工（管理技术）· 原 ${group.baseAge} 岁',
-    RetirementGroup.female50 => '女职工（工人）· 原 ${group.baseAge} 岁',
-  };
+  RetirementStrings get _s => retirementStrings;
 
   @override
   Widget build(BuildContext context) {
     final result = _result;
+    final s = _s;
     return Scaffold(
       appBar: AppBar(
-        title: const Text('退休年龄计算器'),
+        title: Text(s.title),
         titleTextStyle: TextStyle(
           fontSize: 16,
           fontWeight: FontWeight.w600,
@@ -70,7 +69,7 @@ class _RetirementPageState extends State<RetirementPage> {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 ToolSection(
-                  title: '参保人',
+                  title: s.sectionPerson,
                   icon: Icons.person_outline_rounded,
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -82,10 +81,10 @@ class _RetirementPageState extends State<RetirementPage> {
                             flex: 2,
                             child: ToolSelect<int>(
                               key: const Key('retirement-birth-year'),
-                              label: '出生年份',
+                              label: s.birthYear,
                               value: _birthYear,
                               items: _years,
-                              labelOf: (year) => '$year 年',
+                              labelOf: (year) => fill(s.yearOption, [year]),
                               onChanged: (year) =>
                                   setState(() => _birthYear = year),
                             ),
@@ -94,10 +93,10 @@ class _RetirementPageState extends State<RetirementPage> {
                           Expanded(
                             child: ToolSelect<int>(
                               key: const Key('retirement-birth-month'),
-                              label: '出生月份',
+                              label: s.birthMonth,
                               value: _birthMonth,
                               items: _months,
-                              labelOf: (month) => '$month 月',
+                              labelOf: (month) => fill(s.monthOption, [month]),
                               onChanged: (month) =>
                                   setState(() => _birthMonth = month),
                             ),
@@ -107,10 +106,10 @@ class _RetirementPageState extends State<RetirementPage> {
                       const SizedBox(height: 12),
                       ToolSelect<RetirementGroup>(
                         key: const Key('retirement-group'),
-                        label: '人员类别',
+                        label: s.group,
                         value: _group,
                         items: RetirementGroup.values,
-                        labelOf: _groupLabel,
+                        labelOf: s.groupLabel,
                         onChanged: (group) => setState(() => _group = group),
                       ),
                     ],
@@ -123,7 +122,7 @@ class _RetirementPageState extends State<RetirementPage> {
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
                       Text(
-                        '法定退休时间',
+                        s.retireTime,
                         style: TextStyle(
                           color: AppColors.textSecondary,
                           fontSize: 11.5,
@@ -131,8 +130,10 @@ class _RetirementPageState extends State<RetirementPage> {
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        '${result.retireMonth.year} 年 '
-                        '${result.retireMonth.month} 月',
+                        fill(s.yearMonth, [
+                          result.retireMonth.year,
+                          result.retireMonth.month,
+                        ]),
                         style: TextStyle(
                           fontSize: 26,
                           height: 1.15,
@@ -163,31 +164,32 @@ class _RetirementPageState extends State<RetirementPage> {
                       ),
                       const SizedBox(height: 12),
                       _InfoRow(
-                        label: '法定退休年龄',
+                        label: s.legalAge,
                         value: _ageLabel(result.legalAgeMonths),
                         key: const Key('retirement-age'),
                       ),
                       _InfoRow(
-                        label: '最低缴费年限',
-                        value:
-                            '${_yearsLabel(result.minimumContributionYears)}'
-                            '（${result.retireMonth.year} 年退休）',
+                        label: s.minContribution,
+                        value: fill(s.contributionValue, [
+                          _yearsLabel(result.minimumContributionYears),
+                          result.retireMonth.year,
+                        ]),
                         key: const Key('retirement-contribution'),
                       ),
                       _InfoRow(
-                        label: '弹性提前最早',
-                        value:
-                            '${result.earliestMonth.year} 年 '
-                            '${result.earliestMonth.month} 月 · '
-                            '${result.earliestAgeYears} 岁',
+                        label: s.earliest,
+                        value: _flexLabel(
+                          result.earliestMonth,
+                          result.earliestAgeYears,
+                        ),
                         key: const Key('retirement-earliest'),
                       ),
                       _InfoRow(
-                        label: '弹性延迟最晚',
-                        value:
-                            '${result.latestMonth.year} 年 '
-                            '${result.latestMonth.month} 月 · '
-                            '${result.latestAgeYears} 岁',
+                        label: s.latest,
+                        value: _flexLabel(
+                          result.latestMonth,
+                          result.latestAgeYears,
+                        ),
                         key: const Key('retirement-latest'),
                         last: true,
                       ),
@@ -196,12 +198,7 @@ class _RetirementPageState extends State<RetirementPage> {
                 ),
                 const SizedBox(height: 10),
                 Text(
-                  '口径：《全国人民代表大会常务委员会关于实施渐进式延迟法定退休年龄的'
-                  '决定》，2025 年 1 月 1 日起施行。男职工 60 → 63 岁、原 55 岁女职工 '
-                  '55 → 58 岁（每 4 个月出生延迟 1 个月），原 50 岁女职工 50 → 55 岁'
-                  '（每 2 个月出生延迟 1 个月）；最低缴费年限自 2030 年起每年提高 6 '
-                  '个月，2039 年及以后为 20 年。可自愿提前（不低于原法定退休年龄）或'
-                  '协商延迟，前后各不超过 3 年。不含特殊工种提前退休、病退与军龄折算。',
+                  s.policyNote,
                   style: TextStyle(
                     color: AppColors.textSecondary,
                     fontSize: 10.5,
@@ -219,43 +216,50 @@ class _RetirementPageState extends State<RetirementPage> {
   /// 「还需奋斗 X 年 Y 个月」，已到退休年龄时给出提示。
   String _countdownLabel(RetirementResult result) {
     final months = monthsUntilRetirement(result, _now);
-    if (months == 0) return '已达到法定退休年龄';
-    return '还需奋斗 ${_spanLabel(months)}';
+    if (months == 0) return _s.countdownDone;
+    return fill(_s.countdown, [_spanLabel(months)]);
   }
 
   /// 把月数写成「X 年 Y 个月」/「X 年」/「Y 个月」。
   String _spanLabel(int months) {
     final years = months ~/ 12;
     final rest = months % 12;
-    if (years == 0) return '$rest 个月';
-    if (rest == 0) return '$years 年';
-    return '$years 年 $rest 个月';
+    if (years == 0) return fill(_s.spanMonths, [rest]);
+    if (rest == 0) return fill(_s.spanYears, [years]);
+    return fill(_s.spanYearsMonths, [years, rest]);
   }
 
   /// 「较原法定年龄延迟 N 个月」的说明。
   String _summary(RetirementResult result) {
     final base = result.group.baseAge;
     if (result.delayMonths == 0) {
-      return '原法定退休年龄 $base 岁，不受延迟退休影响。';
+      return fill(_s.summaryNoDelay, [base]);
     }
     final capped = result.isCapped
-        ? '，已到 ${result.group.targetAge} 岁的改革目标'
+        ? fill(_s.capped, [result.group.targetAge])
         : '';
-    return '原法定退休年龄 $base 岁，延迟 ${result.delayMonths} 个月$capped。'
-        '可在法定退休年龄前后各 3 年内弹性选择。';
+    return fill(_s.summaryDelay, [base, result.delayMonths, capped]);
   }
+
+  /// 「2045 年 6 月 · 60 岁」。
+  String _flexLabel(DateTime month, int age) => fill(_s.flexValue, [
+    fill(_s.yearMonth, [month.year, month.month]),
+    age,
+  ]);
 
   String _ageLabel(int months) {
     final years = months ~/ 12;
     final rest = months % 12;
-    return rest == 0 ? '$years 岁' : '$years 岁 $rest 个月';
+    return rest == 0
+        ? fill(_s.ageYears, [years])
+        : fill(_s.ageYearsMonths, [years, rest]);
   }
 
   String _yearsLabel(double years) {
     final text = years == years.roundToDouble()
         ? years.toStringAsFixed(0)
         : years.toStringAsFixed(1);
-    return '$text 年';
+    return fill(_s.yearsValue, [text]);
   }
 }
 

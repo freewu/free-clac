@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 
 import '../../../core/number_format.dart';
+import '../../../l10n/app_i18n.dart';
 import '../../../theme/app_theme.dart';
 import 'tax.dart';
+import 'tax_strings.dart';
 import '../widgets/tool_bars.dart';
 import '../widgets/tool_field.dart';
 
@@ -74,9 +76,10 @@ class _TaxPageState extends State<TaxPage> {
   Widget build(BuildContext context) {
     final result = _result;
     final rates = _rates;
+    final s = taxStrings;
     return Scaffold(
       appBar: AppBar(
-        title: const Text('个人所得税'),
+        title: Text(s.title),
         titleTextStyle: TextStyle(
           fontSize: 16,
           fontWeight: FontWeight.w600,
@@ -93,26 +96,26 @@ class _TaxPageState extends State<TaxPage> {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 ToolSection(
-                  title: '收入',
+                  title: s.sectionIncome,
                   icon: Icons.payments_outlined,
                   child: LayoutBuilder(
                     builder: (context, constraints) {
                       final salary = ToolNumberField(
-                        label: '税前月薪',
-                        suffix: '元',
+                        label: s.gross,
+                        suffix: s.yuan,
                         controller: _salary,
                         onChanged: (_) => setState(() {}),
                       );
                       final base = ToolNumberField(
-                        label: '缴费基数',
-                        suffix: '元',
-                        hint: '默认等于月薪',
+                        label: s.base,
+                        suffix: s.yuan,
+                        hint: s.baseHint,
                         controller: _base,
                         onChanged: (_) => setState(() {}),
                       );
                       final special = ToolNumberField(
-                        label: '专项附加扣除',
-                        suffix: '元 / 月',
+                        label: s.special,
+                        suffix: s.perMonth,
                         controller: _special,
                         onChanged: (_) => setState(() {}),
                       );
@@ -148,10 +151,10 @@ class _TaxPageState extends State<TaxPage> {
                 ),
                 const SizedBox(height: 12),
                 ToolSection(
-                  title: '五险一金（个人缴纳比例）',
+                  title: s.sectionInsurance,
                   icon: Icons.account_balance_outlined,
                   trailing: Text(
-                    '合计 ${_trimRate(rates.totalPercent)}%',
+                    fill(s.total, [_trimRate(rates.totalPercent)]),
                     style: TextStyle(
                       color: AppColors.textSecondary,
                       fontSize: 11,
@@ -162,7 +165,7 @@ class _TaxPageState extends State<TaxPage> {
                       final fields = [
                         for (final item in InsuranceItem.values)
                           ToolNumberField(
-                            label: item.label,
+                            label: s.itemLabel(item),
                             suffix: '%',
                             controller: _rateControllers[item]!,
                             onChanged: (_) => setState(() {}),
@@ -216,13 +219,13 @@ class _TaxPageState extends State<TaxPage> {
                 const SizedBox(height: 12),
                 ToolSection(
                   child: result == null
-                      ? const _EmptyHint()
+                      ? _EmptyHint(text: s.emptyHint)
                       : _ResultBody(result: result),
                 ),
                 const SizedBox(height: 12),
                 if (result != null)
                   ToolSection(
-                    title: '月度明细',
+                    title: s.sectionMonths,
                     icon: Icons.table_rows_outlined,
                     child: _MonthTable(result: result),
                   ),
@@ -250,15 +253,19 @@ class _BaseHint extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Text(
-      '按基数 ¥ ${formatMoney(base, decimals: 0)} 计算，每月个人缴纳 '
-      '¥ ${formatMoney(total)}',
+      fill(taxStrings.baseCalc, [
+        formatMoney(base, decimals: 0),
+        formatMoney(total),
+      ]),
       style: TextStyle(color: AppColors.textSecondary, fontSize: 10.5),
     );
   }
 }
 
 class _EmptyHint extends StatelessWidget {
-  const _EmptyHint();
+  const _EmptyHint({required this.text});
+
+  final String text;
 
   @override
   Widget build(BuildContext context) {
@@ -269,7 +276,7 @@ class _EmptyHint extends StatelessWidget {
           Icon(Icons.receipt_long_outlined, size: 30, color: AppColors.outline),
           SizedBox(height: 10),
           Text(
-            '填写税前月薪与缴纳比例后自动计算',
+            text,
             style: TextStyle(color: AppColors.textSecondary, fontSize: 12.5),
           ),
         ],
@@ -285,11 +292,12 @@ class _ResultBody extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final s = taxStrings;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         Text(
-          '首月到手',
+          s.firstMonthNet,
           style: TextStyle(color: AppColors.textSecondary, fontSize: 11.5),
         ),
         const SizedBox(height: 4),
@@ -306,9 +314,11 @@ class _ResultBody extends StatelessWidget {
         ),
         const SizedBox(height: 6),
         Text(
-          '税前 ¥ ${formatMoney(result.grossMonthly, decimals: 0)} − 五险一金 '
-          '¥ ${formatMoney(result.contributionMonthly, decimals: 0)} − 个税 '
-          '¥ ${formatMoney(result.firstMonthTax)}',
+          fill(s.deduction, [
+            formatMoney(result.grossMonthly, decimals: 0),
+            formatMoney(result.contributionMonthly, decimals: 0),
+            formatMoney(result.firstMonthTax),
+          ]),
           style: TextStyle(color: AppColors.textSecondary, fontSize: 11),
         ),
         const SizedBox(height: 16),
@@ -316,21 +326,21 @@ class _ResultBody extends StatelessWidget {
           children: [
             Expanded(
               child: _Stat(
-                label: '全年个税',
+                label: s.yearlyTax,
                 value: '¥ ${formatMoney(result.yearlyTax, decimals: 0)}',
                 color: taxBarColor,
               ),
             ),
             Expanded(
               child: _Stat(
-                label: '全年到手',
+                label: s.yearlyNet,
                 value: '¥ ${formatMoney(result.yearlyNet, decimals: 0)}',
                 color: AppColors.textPrimary,
               ),
             ),
             Expanded(
               child: _Stat(
-                label: '适用税率',
+                label: s.marginalRate,
                 value: '${_trimRate(result.marginalRatePercent)}%',
                 color: AppColors.textPrimary,
               ),
@@ -339,7 +349,7 @@ class _ResultBody extends StatelessWidget {
         ),
         const SizedBox(height: 16),
         Text(
-          '五险一金构成（每月）',
+          s.breakdown,
           style: TextStyle(color: AppColors.textSecondary, fontSize: 10.5),
         ),
         const SizedBox(height: 6),
@@ -364,14 +374,14 @@ class _ResultBody extends StatelessWidget {
               for (final item in InsuranceItem.values)
                 _Legend(
                   color: insuranceColor(item),
-                  label: item.label,
+                  label: s.itemLabel(item),
                   value: '¥ ${formatMoney(result.byItem[item]!)}',
                 ),
             ],
           ),
         ] else
           Text(
-            '未缴纳五险一金',
+            s.noInsurance,
             style: TextStyle(color: AppColors.textSecondary, fontSize: 11),
           ),
       ],
@@ -452,6 +462,7 @@ class _MonthTable extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final s = taxStrings;
     final maxTax = result.maxMonthlyTax;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -460,13 +471,13 @@ class _MonthTable extends StatelessWidget {
           children: [
             SizedBox(
               width: _monthWidth,
-              child: Text('月份', style: _headerStyle),
+              child: Text(s.monthColumn, style: _headerStyle),
             ),
             const Expanded(child: SizedBox()),
             SizedBox(
               width: _taxWidth,
               child: Text(
-                '个税',
+                s.taxColumn,
                 textAlign: TextAlign.right,
                 style: _headerStyle,
               ),
@@ -474,7 +485,7 @@ class _MonthTable extends StatelessWidget {
             SizedBox(
               width: _netWidth,
               child: Text(
-                '到手',
+                s.netColumn,
                 textAlign: TextAlign.right,
                 style: _headerStyle,
               ),
@@ -491,7 +502,7 @@ class _MonthTable extends StatelessWidget {
                 SizedBox(
                   width: _monthWidth,
                   child: Text(
-                    '第 ${month.index} 月',
+                    fill(s.monthRow, [month.index]),
                     maxLines: 1,
                     style: TextStyle(
                       color: AppColors.textSecondary,

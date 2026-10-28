@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 
 import '../../../core/number_format.dart';
+import '../../../l10n/app_i18n.dart';
 import '../../../theme/app_theme.dart';
 import 'pension.dart';
+import 'pension_strings.dart';
 import '../widgets/tool_bars.dart';
 import '../widgets/tool_field.dart';
 import '../widgets/tool_select.dart';
@@ -61,9 +63,10 @@ class _PensionPageState extends State<PensionPage> {
   @override
   Widget build(BuildContext context) {
     final result = _result;
+    final s = pensionStrings;
     return Scaffold(
       appBar: AppBar(
-        title: const Text('养老金计算器'),
+        title: Text(s.title),
         titleTextStyle: TextStyle(
           fontSize: 16,
           fontWeight: FontWeight.w600,
@@ -80,28 +83,30 @@ class _PensionPageState extends State<PensionPage> {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 ToolSection(
-                  title: '参保情况',
+                  title: s.sectionPerson,
                   icon: Icons.person_outline_rounded,
                   child: LayoutBuilder(
                     builder: (context, constraints) {
                       final age = ToolNumberField(
-                        label: '当前年龄',
-                        suffix: '岁',
+                        label: s.age,
+                        suffix: s.ageSuffix,
                         controller: _age,
                         onChanged: (_) => setState(() {}),
                       );
                       final retire = ToolSelect<int>(
                         key: const Key('pension-retire-age'),
-                        label: '预计退休年龄',
+                        label: s.retireAge,
                         value: _retireAge,
                         items: kPensionRetireAges,
-                        labelOf: (age) =>
-                            '$age 岁 · 计发 ${pensionPayoutMonthsOf(age)} 个月',
+                        labelOf: (age) => fill(s.retireAgeOption, [
+                          age,
+                          pensionPayoutMonthsOf(age),
+                        ]),
                         onChanged: (age) => setState(() => _retireAge = age),
                       );
                       final paid = ToolNumberField(
-                        label: '已缴费年限',
-                        suffix: '年',
+                        label: s.paidYears,
+                        suffix: s.yearsSuffix,
                         controller: _paidYears,
                         onChanged: (_) => setState(() {}),
                       );
@@ -138,25 +143,25 @@ class _PensionPageState extends State<PensionPage> {
                 ),
                 const SizedBox(height: 12),
                 ToolSection(
-                  title: '缴费与账户',
+                  title: s.sectionMoney,
                   icon: Icons.account_balance_wallet_outlined,
                   child: LayoutBuilder(
                     builder: (context, constraints) {
                       final wage = ToolNumberField(
-                        label: '月缴费工资',
-                        suffix: '元',
+                        label: s.wage,
+                        suffix: s.yuan,
                         controller: _wage,
                         onChanged: (_) => setState(() {}),
                       );
                       final social = ToolNumberField(
-                        label: '当地社平工资',
-                        suffix: '元/月',
+                        label: s.socialWage,
+                        suffix: s.socialWageSuffix,
                         controller: _socialWage,
                         onChanged: (_) => setState(() {}),
                       );
                       final balance = ToolNumberField(
-                        label: '个人账户余额',
-                        suffix: '元',
+                        label: s.balance,
+                        suffix: s.yuan,
                         controller: _balance,
                         onChanged: (_) => setState(() {}),
                       );
@@ -187,7 +192,7 @@ class _PensionPageState extends State<PensionPage> {
                 const SizedBox(height: 12),
                 ToolSection(
                   key: const Key('pension-advanced'),
-                  title: '增长假设',
+                  title: s.sectionAdvanced,
                   icon: Icons.trending_up_rounded,
                   onHeaderTap: () =>
                       setState(() => _advancedExpanded = !_advancedExpanded),
@@ -201,7 +206,7 @@ class _PensionPageState extends State<PensionPage> {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Text(
-                        _advancedExpanded ? '收起' : '展开',
+                        _advancedExpanded ? s.collapse : s.expand,
                         style: TextStyle(
                           color: AppColors.textSecondary,
                           fontSize: 10.5,
@@ -225,7 +230,7 @@ class _PensionPageState extends State<PensionPage> {
                               children: [
                                 Expanded(
                                   child: ToolNumberField(
-                                    label: '社平工资年增长',
+                                    label: s.growth,
                                     suffix: '%',
                                     controller: _growth,
                                     onChanged: (_) => setState(() {}),
@@ -234,7 +239,7 @@ class _PensionPageState extends State<PensionPage> {
                                 const SizedBox(width: 10),
                                 Expanded(
                                   child: ToolNumberField(
-                                    label: '个人账户记账利率',
+                                    label: s.accountRate,
                                     suffix: '%',
                                     allowNegative: true,
                                     controller: _accountRate,
@@ -245,9 +250,9 @@ class _PensionPageState extends State<PensionPage> {
                             ),
                             const SizedBox(height: 8),
                             Text(
-                              '个人账户按本人缴费基数的 '
-                              '${kPensionPersonalRate.toStringAsFixed(0)}% 记入，'
-                              '缴费基数随社平工资同步增长。',
+                              fill(s.accountNote, [
+                                kPensionPersonalRate.toStringAsFixed(0),
+                              ]),
                               style: TextStyle(
                                 color: AppColors.textSecondary,
                                 fontSize: 10.5,
@@ -260,7 +265,7 @@ class _PensionPageState extends State<PensionPage> {
                 const SizedBox(height: 12),
                 ToolSection(
                   child: result == null
-                      ? const _EmptyHint()
+                      ? _EmptyHint(text: s.emptyHint)
                       : _ResultBody(result: result),
                 ),
               ],
@@ -273,7 +278,9 @@ class _PensionPageState extends State<PensionPage> {
 }
 
 class _EmptyHint extends StatelessWidget {
-  const _EmptyHint();
+  const _EmptyHint({required this.text});
+
+  final String text;
 
   @override
   Widget build(BuildContext context) {
@@ -284,7 +291,7 @@ class _EmptyHint extends StatelessWidget {
           Icon(Icons.savings_outlined, size: 30, color: AppColors.outline),
           SizedBox(height: 10),
           Text(
-            '填入年龄、缴费工资与账户余额后自动测算',
+            text,
             style: TextStyle(color: AppColors.textSecondary, fontSize: 12.5),
           ),
         ],
@@ -300,6 +307,7 @@ class _ResultBody extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final s = pensionStrings;
     final total = result.totalMonthly;
     final baseRatio = total <= 0 ? 0.0 : result.basePension / total;
     final accountRatio = total <= 0 ? 0.0 : result.accountPension / total;
@@ -307,7 +315,7 @@ class _ResultBody extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         Text(
-          '预计每月养老金',
+          s.expectedMonthly,
           style: TextStyle(color: AppColors.textSecondary, fontSize: 11.5),
         ),
         const SizedBox(height: 4),
@@ -323,14 +331,16 @@ class _ResultBody extends StatelessWidget {
         ),
         const SizedBox(height: 4),
         Text(
-          '替代率 ${(result.replacementRate * 100).toStringAsFixed(1)}%'
-          ' · 退休时社平工资 ¥ ${formatMoney(result.socialWageAtRetire, decimals: 0)}/月',
+          fill(s.replacement, [
+            (result.replacementRate * 100).toStringAsFixed(1),
+            formatMoney(result.socialWageAtRetire, decimals: 0),
+          ]),
           style: TextStyle(color: AppColors.textSecondary, fontSize: 10.5),
         ),
         const SizedBox(height: 12),
         AmountBar(
           key: const Key('pension-base'),
-          label: '基础养老金',
+          label: s.basePension,
           value: '¥ ${formatMoney(result.basePension)}',
           ratio: baseRatio,
           labelWidth: 64,
@@ -340,7 +350,7 @@ class _ResultBody extends StatelessWidget {
         const SizedBox(height: 6),
         AmountBar(
           key: const Key('pension-account'),
-          label: '个人账户',
+          label: s.accountPension,
           value: '¥ ${formatMoney(result.accountPension)}',
           ratio: accountRatio,
           labelWidth: 64,
@@ -351,32 +361,35 @@ class _ResultBody extends StatelessWidget {
         Divider(height: 1, color: AppColors.outline),
         const SizedBox(height: 8),
         _DetailRow(
-          label: '缴费年限',
-          value:
-              '已缴 ${formatNumber(result.paidYears)} 年'
-              ' + 续缴 ${result.remainingYears} 年'
-              ' = ${formatNumber(result.totalYears)} 年',
+          label: s.paidYearsRow,
+          value: fill(s.paidYearsValue, [
+            formatNumber(result.paidYears),
+            result.remainingYears,
+            formatNumber(result.totalYears),
+          ]),
         ),
         _DetailRow(
-          label: '平均缴费指数',
+          label: s.avgIndex,
           value: result.contributionIndex.toStringAsFixed(2),
         ),
         _DetailRow(
-          label: '退休时个人账户',
-          value:
-              '¥ ${formatMoney(result.accountAtRetire, decimals: 0)}'
-              '（其中利息 ¥ ${formatMoney(result.accountInterest, decimals: 0)}）',
+          label: s.accountAtRetire,
+          value: fill(s.accountAtRetireValue, [
+            formatMoney(result.accountAtRetire, decimals: 0),
+            formatMoney(result.accountInterest, decimals: 0),
+          ]),
         ),
-        _DetailRow(label: '计发月数', value: '${result.payoutMonths} 个月'),
         _DetailRow(
-          label: '退休前月工资',
+          label: s.payoutMonths,
+          value: fill(s.payoutMonthsValue, [result.payoutMonths]),
+        ),
+        _DetailRow(
+          label: s.wageAtRetire,
           value: '¥ ${formatMoney(result.wageAtRetire, decimals: 0)}',
         ),
         const SizedBox(height: 8),
         Text(
-          '按国发〔2005〕38 号口径测算：基础养老金 =（社平工资 + 本人指数化月平均缴费工资）'
-          '÷ 2 × 缴费年限 × 1%，个人账户养老金 = 账户储存额 ÷ 计发月数。'
-          '不含过渡性养老金、企业年金与地方补贴，结果仅供参考。',
+          s.policyNote,
           style: TextStyle(
             color: AppColors.textSecondary,
             fontSize: 10.5,

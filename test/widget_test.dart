@@ -752,6 +752,50 @@ void main() {
     expect(find.text('还款方式'), findsNothing);
   });
 
+  testWidgets('工具页内部文案：繁体中文下中文专属工具也显示繁体', (tester) async {
+    tester.view.physicalSize = const Size(1440, 1600);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+    final settings = SettingsController(
+      store: _MemoryStore(),
+      language: AppLanguage.zhHant,
+    );
+
+    Future<void> open(String tool) async {
+      await tester.pumpWidget(
+        FreeCalcApp(
+          key: UniqueKey(),
+          settings: settings,
+          initialTab: 2,
+          initialTool: tool,
+        ),
+      );
+      await tester.pumpAndSettle();
+    }
+
+    // 退休年龄：标题、字段、结果行、「还需奋斗」都是繁体
+    await open('retirement');
+    expect(find.text('退休年齡計算器'), findsWidgets);
+    expect(find.text('法定退休時間'), findsOneWidget);
+    expect(find.text('最低繳費年限'), findsOneWidget);
+    expect(find.textContaining('還需奮鬥'), findsOneWidget);
+    expect(find.text('退休年龄计算器'), findsNothing);
+
+    // 养老金
+    await open('pension');
+    expect(find.text('養老金計算器'), findsWidgets);
+    expect(find.text('預計每月養老金'), findsOneWidget);
+    expect(find.text('展開'), findsOneWidget);
+    expect(find.text('养老金计算器'), findsNothing);
+
+    // 个人所得税
+    await open('tax');
+    expect(find.text('個人所得稅'), findsWidgets);
+    expect(find.text('稅前月薪'), findsOneWidget);
+    expect(find.text('五險一金（個人繳納比例）'), findsOneWidget);
+    expect(find.text('个人所得税'), findsNothing);
+  });
+
   testWidgets('设置页：切换语言后工具卡片的深链 id 不变', (tester) async {
     tester.view.physicalSize = const Size(1440, 1600);
     tester.view.devicePixelRatio = 1;

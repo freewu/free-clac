@@ -19,11 +19,59 @@ import 'package:free_clac/ui/tools/tax/tax.dart';
 import 'package:free_clac/ui/tools/temperature/temperature.dart';
 import 'package:free_clac/ui/tools/conversion_catalogs.dart';
 import 'package:free_clac/ui/tools/unit_catalog.dart';
+import 'package:free_clac/ui/tools/pension/pension_strings.dart';
+import 'package:free_clac/ui/tools/retirement/retirement_strings.dart';
+import 'package:free_clac/ui/tools/tax/tax_strings.dart';
 import 'package:free_clac/ui/tools/volume/volume.dart';
 import 'package:free_clac/ui/tools/weight/weight.dart';
 import 'package:free_clac/ui/tools/tool_catalog.dart';
 
 void main() {
+  group('只在中文界面出现的三张页面也有繁体文案', () {
+    test('养老金文案区分简繁，繁体不复用简体原文', () {
+      final hans = kPensionStrings[AppLanguage.zhHans]!;
+      final hant = kPensionStrings[AppLanguage.zhHant]!;
+      expect(hans.title, '养老金计算器');
+      expect(hant.title, '養老金計算器');
+      expect(hant.expectedMonthly, '預計每月養老金');
+      expect(hant.expand, '展開');
+      expect(hant.paidYears, '已繳費年限');
+    });
+
+    test('个税文案区分简繁，五险一金项名跟着变', () {
+      final hant = kTaxStrings[AppLanguage.zhHant]!;
+      expect(hant.title, '個人所得稅');
+      expect(hant.itemLabel(InsuranceItem.pension), '養老');
+      expect(hant.itemLabel(InsuranceItem.housingFund), '公積金');
+      expect(
+        kTaxStrings[AppLanguage.zhHans]!.itemLabel(InsuranceItem.medical),
+        '医疗',
+      );
+    });
+
+    test('退休年龄文案区分简繁，人员类别用模板带年龄', () {
+      final hant = kRetirementStrings[AppLanguage.zhHant]!;
+      expect(hant.title, '退休年齡計算器');
+      expect(hant.groupLabel(RetirementGroup.male), '男職工 · 原 60 歲');
+      expect(hant.countdownDone, '已達法定退休年齡');
+      expect(hant.groupLabel(RetirementGroup.female50), '女職工（工人）· 原 50 歲');
+    });
+
+    test('三份文案都只提供简繁中文（工具本身按中国政策设计）', () {
+      for (final languages in [
+        kPensionStrings.keys,
+        kTaxStrings.keys,
+        kRetirementStrings.keys,
+      ]) {
+        expect(
+          languages,
+          containsAll(<AppLanguage>[AppLanguage.zhHans, AppLanguage.zhHant]),
+        );
+        expect(languages.length, 2);
+      }
+    });
+  });
+
   group('换算单位的多语言名称', () {
     MeasureUnit unitOf(String id) =>
         kLengthCatalog.units.firstWhere((unit) => unit.id == id);
