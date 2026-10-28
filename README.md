@@ -511,8 +511,9 @@ just test
 计算器与绘图页在英文界面下的提示 / 历史 / 函数库分类与说明 / 曲线类型 / 空状态 / 示例名称全是英文、
 运算错误提示按语言本地化（含位置与占位符参数）、
 换算单位说明的英 / 日 / 西三种语言齐全、
-SVG 导出标题跟随界面语言等
-Widget 与单元测试（共 224 项）。
+SVG 导出标题跟随界面语言、
+特殊函数用法提示写成通用占位名等
+Widget 与单元测试（共 225 项）。
 
 Android 的相册写入走 `MediaStore`，无法在 Widget 测试里覆盖，另有真机 / 模拟器测试 `integration_test/android_save_test.dart`（`just test-android`，需先 `just emulator` 或插上真机）。
 

@@ -2,8 +2,10 @@ import 'dart:math' as math;
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:free_clac/core/angle_mode.dart';
+import 'package:free_clac/core/calc_error.dart';
 import 'package:free_clac/core/math_engine.dart';
 import 'package:free_clac/core/number_format.dart';
+import 'package:free_clac/core/parser.dart';
 
 void main() {
   late MathEngine engine;
@@ -124,6 +126,18 @@ void main() {
         final result = engine.evaluate(source);
         expect(result.isError, isTrue, reason: '应当报错：$source');
         expect(result.error, isNotEmpty);
+      }
+    });
+
+    test('特殊函数的用法提示写成通用占位名，不掺中文', () {
+      // 少了括号时提示里要给出可直接照抄的签名（任何界面语言下都能读）
+      try {
+        Parser('sum 1').parse();
+        fail('应当抛出缺少括号的错误');
+      } on CalcException catch (error) {
+        expect(error.code, CalcError.functionNeedsParens);
+        expect(error.message, contains('sum(expr, k, start, end)'));
+        expect(error.message, isNot(contains('表达式')));
       }
     });
 

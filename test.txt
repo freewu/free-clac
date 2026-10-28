@@ -1,0 +1,228 @@
+Flutter assets will be downloaded from https://storage.flutter-io.cn. Make sure you trust this source!
+00:00 +0: loading E:/work/github/free-clac/test/core_test.dart
+00:00 +0: E:/work/github/free-clac/test/core_test.dart: 优先级与基本运算 四则运算
+00:00 +1: E:/work/github/free-clac/test/core_test.dart: 优先级与基本运算 隐式乘法
+00:00 +2: E:/work/github/free-clac/test/core_test.dart: 优先级与基本运算 阶乘与百分号
+00:00 +3: E:/work/github/free-clac/test/core_test.dart: 优先级与基本运算 Unicode 与上标
+00:00 +4: E:/work/github/free-clac/test/core_test.dart: 函数 三角（角度制）
+00:00 +5: E:/work/github/free-clac/test/core_test.dart: 函数 弧度制
+00:00 +6: E:/work/github/free-clac/test/core_test.dart: 函数 对数与幂
+00:00 +7: E:/work/github/free-clac/test/core_test.dart: 函数 组合与取整
+00:00 +8: E:/work/github/free-clac/test/core_test.dart: 函数 无需括号的一元函数
+00:00 +9: E:/work/github/free-clac/test/core_test.dart: 高级：求和 / 积分 / 求导 sum 与 prod
+00:00 +10: E:/work/github/free-clac/test/core_test.dart: 高级：求和 / 积分 / 求导 integrate
+00:00 +11: E:/work/github/free-clac/test/core_test.dart: 高级：求和 / 积分 / 求导 diff
+00:00 +12: E:/work/github/free-clac/test/core_test.dart: 错误处理 非法表达式给出错误信息
+00:00 +13: E:/work/github/free-clac/test/core_test.dart: 错误处理 特殊函数的用法提示写成通用占位名，不掺中文
+00:00 +14: E:/work/github/free-clac/test/core_test.dart: 错误处理 未定义变量
+00:00 +15: E:/work/github/free-clac/test/core_test.dart: 数字格式化 去除浮点噪声
+00:00 +16: E:/work/github/free-clac/test/core_test.dart: 数字格式化 科学计数法
+00:00 +17: E:/work/github/free-clac/test/core_test.dart: 数字格式化 金额格式（千分位）
+00:00 +18: E:/work/github/free-clac/test/core_test.dart: 数字格式化 自动闭包求值（绘图用）
+00:00 +19: E:/work/github/free-clac/test/core_test.dart: 数字格式化 二元闭包求值（隐式方程用）
+00:01 +20: E:/work/github/free-clac/test/export_test.dart: 导出图片 PNG：带正确文件头且尺寸为 2 倍图
+00:01 +21: E:/work/github/free-clac/test/export_test.dart: 导出图片 PNG：带正确文件头且尺寸为 2 倍图
+00:01 +22: E:/work/github/free-clac/test/export_test.dart: 导出图片 PNG：带正确文件头且尺寸为 2 倍图
+00:01 +23: E:/work/github/free-clac/test/export_test.dart: 导出图片 PNG：带正确文件头且尺寸为 2 倍图
+00:01 +24: E:/work/github/free-clac/test/export_test.dart: 导出图片 PNG：带正确文件头且尺寸为 2 倍图
+00:01 +25: E:/work/github/free-clac/test/export_test.dart: 导出图片 PNG：带正确文件头且尺寸为 2 倍图
+00:01 +26: E:/work/github/free-clac/test/export_test.dart: 导出图片 PNG：带正确文件头且尺寸为 2 倍图
+00:01 +27: E:/work/github/free-clac/test/export_test.dart: 导出图片 PNG：带正确文件头且尺寸为 2 倍图
+00:01 +28: E:/work/github/free-clac/test/export_test.dart: 导出图片 PNG：带正确文件头且尺寸为 2 倍图
+00:01 +29: E:/work/github/free-clac/test/export_test.dart: 导出图片 PNG：带正确文件头且尺寸为 2 倍图
+00:01 +30: E:/work/github/free-clac/test/export_test.dart: 导出图片 PNG：带正确文件头且尺寸为 2 倍图
+00:01 +31: E:/work/github/free-clac/test/export_test.dart: 导出图片 PNG：带正确文件头且尺寸为 2 倍图
+00:01 +32: E:/work/github/free-clac/test/export_test.dart: 导出图片 PNG：带正确文件头且尺寸为 2 倍图
+00:01 +33: E:/work/github/free-clac/test/export_test.dart: 导出图片 PNG：带正确文件头且尺寸为 2 倍图
+00:01 +34: E:/work/github/free-clac/test/export_test.dart: 导出图片 PNG：带正确文件头且尺寸为 2 倍图
+00:01 +35: E:/work/github/free-clac/test/latex_test.dart: LaTeX：基础运算 阶乘、百分号与取模
+00:01 +36: E:/work/github/free-clac/test/export_test.dart: 导出图片 WebP：RIFF/WEBP 文件头，可被解码
+00:01 +37: E:/work/github/free-clac/test/export_test.dart: 导出图片 WebP：RIFF/WEBP 文件头，可被解码
+00:01 +38: E:/work/github/free-clac/test/export_test.dart: 导出图片 WebP：RIFF/WEBP 文件头，可被解码
+00:01 +39: E:/work/github/free-clac/test/export_test.dart: 导出图片 WebP：RIFF/WEBP 文件头，可被解码
+00:01 +40: E:/work/github/free-clac/test/export_test.dart: 导出图片 WebP：RIFF/WEBP 文件头，可被解码
+00:01 +41: E:/work/github/free-clac/test/export_test.dart: 导出图片 WebP：RIFF/WEBP 文件头，可被解码
+00:01 +42: E:/work/github/free-clac/test/export_test.dart: 导出图片 WebP：RIFF/WEBP 文件头，可被解码
+00:01 +43: E:/work/github/free-clac/test/export_test.dart: 导出图片 WebP：RIFF/WEBP 文件头，可被解码
+00:01 +44: E:/work/github/free-clac/test/export_test.dart: 导出图片 WebP：RIFF/WEBP 文件头，可被解码
+00:01 +45: E:/work/github/free-clac/test/export_test.dart: 导出图片 WebP：RIFF/WEBP 文件头，可被解码
+00:01 +46: E:/work/github/free-clac/test/export_test.dart: 导出图片 WebP：RIFF/WEBP 文件头，可被解码
+00:01 +47: E:/work/github/free-clac/test/export_test.dart: 导出图片 WebP：RIFF/WEBP 文件头，可被解码
+00:01 +48: E:/work/github/free-clac/test/export_test.dart: 导出图片 WebP：RIFF/WEBP 文件头，可被解码
+00:01 +49: E:/work/github/free-clac/test/export_test.dart: 导出图片 WebP：RIFF/WEBP 文件头，可被解码
+00:01 +50: E:/work/github/free-clac/test/export_test.dart: 导出图片 WebP：RIFF/WEBP 文件头，可被解码
+00:01 +51: E:/work/github/free-clac/test/export_test.dart: 导出图片 WebP：RIFF/WEBP 文件头，可被解码
+00:01 +52: E:/work/github/free-clac/test/export_test.dart: 导出图片 WebP：RIFF/WEBP 文件头，可被解码
+00:01 +53: E:/work/github/free-clac/test/export_test.dart: 导出图片 WebP：RIFF/WEBP 文件头，可被解码
+00:01 +54: E:/work/github/free-clac/test/export_test.dart: 导出图片 WebP：RIFF/WEBP 文件头，可被解码
+00:01 +55: E:/work/github/free-clac/test/export_test.dart: 导出图片 WebP：RIFF/WEBP 文件头，可被解码
+00:01 +56: E:/work/github/free-clac/test/export_test.dart: 导出图片 WebP：RIFF/WEBP 文件头，可被解码
+00:01 +57: E:/work/github/free-clac/test/export_test.dart: 导出图片 WebP：RIFF/WEBP 文件头，可被解码
+00:01 +58: E:/work/github/free-clac/test/export_test.dart: 导出图片 WebP：RIFF/WEBP 文件头，可被解码
+00:01 +59: E:/work/github/free-clac/test/export_test.dart: 导出图片 WebP：RIFF/WEBP 文件头，可被解码
+00:01 +60: E:/work/github/free-clac/test/export_test.dart: 导出图片 WebP：RIFF/WEBP 文件头，可被解码
+00:02 +61: E:/work/github/free-clac/test/export_test.dart: 导出图片 WebP：RIFF/WEBP 文件头，可被解码
+00:02 +62: E:/work/github/free-clac/test/export_test.dart: 导出图片 WebP：RIFF/WEBP 文件头，可被解码
+00:02 +63: E:/work/github/free-clac/test/plot_test.dart: 绘图控制器 参数区间缺省时回退到视口范围
+00:02 +64: E:/work/github/free-clac/test/export_test.dart: 导出图片 SVG：矢量输出包含视口、曲线路径与刻度
+00:02 +65: E:/work/github/free-clac/test/plot_test.dart: 绘图控制器 示例曲线全部可编译且能采样出可见曲线
+00:02 +66: E:/work/github/free-clac/test/plot_test.dart: 绘图控制器 示例曲线全部可编译且能采样出可见曲线
+00:02 +67: E:/work/github/free-clac/test/tools_test.dart: 只在中文界面出现的三张页面也有繁体文案 养老金文案区分简繁，繁体不复用简体原文
+00:02 +68: E:/work/github/free-clac/test/tools_test.dart: 只在中文界面出现的三张页面也有繁体文案 养老金文案区分简繁，繁体不复用简体原文
+00:02 +69: E:/work/github/free-clac/test/tools_test.dart: 只在中文界面出现的三张页面也有繁体文案 养老金文案区分简繁，繁体不复用简体原文
+00:02 +70: E:/work/github/free-clac/test/export_test.dart: 导出图片 示例曲线也能导出 SVG，且不随画布尺寸产生 NaN
+00:02 +71: E:/work/github/free-clac/test/export_test.dart: 导出图片 示例曲线也能导出 SVG，且不随画布尺寸产生 NaN
+00:02 +72: E:/work/github/free-clac/test/export_test.dart: 导出图片 示例曲线也能导出 SVG，且不随画布尺寸产生 NaN
+00:02 +73: E:/work/github/free-clac/test/plot_test.dart: 绘图画布可渲染并响应缩放
+00:02 +74: E:/work/github/free-clac/test/plot_test.dart: 绘图画布可渲染并响应缩放
+00:02 +75: E:/work/github/free-clac/test/plot_test.dart: 绘图画布可渲染并响应缩放
+00:02 +76: E:/work/github/free-clac/test/plot_test.dart: 绘图画布可渲染并响应缩放
+00:02 +77: E:/work/github/free-clac/test/plot_test.dart: 绘图画布可渲染并响应缩放
+00:02 +78: E:/work/github/free-clac/test/plot_test.dart: 绘图画布可渲染并响应缩放
+00:02 +79: E:/work/github/free-clac/test/plot_test.dart: 绘图画布可渲染并响应缩放
+00:02 +80: E:/work/github/free-clac/test/plot_test.dart: 绘图画布可渲染并响应缩放
+00:02 +81: E:/work/github/free-clac/test/plot_test.dart: 绘图画布可渲染并响应缩放
+00:02 +82: E:/work/github/free-clac/test/plot_test.dart: 绘图画布可渲染并响应缩放
+00:02 +83: E:/work/github/free-clac/test/plot_test.dart: 绘图画布可渲染并响应缩放
+00:02 +84: E:/work/github/free-clac/test/plot_test.dart: 绘图画布可渲染并响应缩放
+00:02 +85: E:/work/github/free-clac/test/plot_test.dart: 绘图画布可渲染并响应缩放
+00:02 +86: E:/work/github/free-clac/test/plot_test.dart: 绘图画布可渲染并响应缩放
+00:02 +87: E:/work/github/free-clac/test/plot_test.dart: 绘图画布可渲染并响应缩放
+00:02 +88: E:/work/github/free-clac/test/plot_test.dart: 绘图画布可渲染并响应缩放
+00:02 +89: E:/work/github/free-clac/test/plot_test.dart: 绘图画布可渲染并响应缩放
+00:02 +90: E:/work/github/free-clac/test/plot_test.dart: 绘图画布可渲染并响应缩放
+00:02 +91: E:/work/github/free-clac/test/plot_test.dart: 绘图画布可渲染并响应缩放
+00:02 +92: E:/work/github/free-clac/test/plot_test.dart: 绘图画布可渲染并响应缩放
+00:02 +93: E:/work/github/free-clac/test/plot_test.dart: 绘图画布可渲染并响应缩放
+00:02 +94: E:/work/github/free-clac/test/plot_test.dart: 绘图画布可渲染并响应缩放
+00:02 +95: E:/work/github/free-clac/test/plot_test.dart: 绘图画布可渲染并响应缩放
+00:02 +96: E:/work/github/free-clac/test/plot_test.dart: 绘图画布可渲染并响应缩放
+00:02 +97: E:/work/github/free-clac/test/plot_test.dart: 绘图画布可渲染并响应缩放
+00:02 +98: E:/work/github/free-clac/test/plot_test.dart: 绘图画布可渲染并响应缩放
+00:02 +99: E:/work/github/free-clac/test/plot_test.dart: 绘图画布可渲染并响应缩放
+00:02 +100: E:/work/github/free-clac/test/plot_test.dart: 绘图画布可渲染并响应缩放
+00:02 +101: E:/work/github/free-clac/test/plot_test.dart: 绘图画布可渲染并响应缩放
+00:02 +102: E:/work/github/free-clac/test/plot_test.dart: 绘图画布可渲染并响应缩放
+00:02 +103: E:/work/github/free-clac/test/plot_test.dart: 绘图画布可渲染并响应缩放
+00:02 +104: E:/work/github/free-clac/test/plot_test.dart: 绘图画布可渲染并响应缩放
+00:02 +105: E:/work/github/free-clac/test/plot_test.dart: 绘图画布可渲染并响应缩放
+00:02 +106: E:/work/github/free-clac/test/plot_test.dart: 绘图画布可渲染并响应缩放
+00:02 +107: E:/work/github/free-clac/test/plot_test.dart: 绘图画布可渲染并响应缩放
+00:02 +108: E:/work/github/free-clac/test/plot_test.dart: 绘图画布可渲染并响应缩放
+00:02 +109: E:/work/github/free-clac/test/plot_test.dart: 绘图画布可渲染并响应缩放
+00:02 +110: E:/work/github/free-clac/test/plot_test.dart: 绘图画布可渲染并响应缩放
+00:02 +111: E:/work/github/free-clac/test/plot_test.dart: 绘图画布可渲染并响应缩放
+00:02 +112: E:/work/github/free-clac/test/plot_test.dart: 绘图画布可渲染并响应缩放
+00:02 +113: E:/work/github/free-clac/test/plot_test.dart: 绘图画布可渲染并响应缩放
+00:02 +114: E:/work/github/free-clac/test/plot_test.dart: 绘图画布可渲染并响应缩放
+00:02 +115: E:/work/github/free-clac/test/plot_test.dart: 绘图画布可渲染并响应缩放
+00:02 +116: E:/work/github/free-clac/test/plot_test.dart: 绘图画布可渲染并响应缩放
+00:02 +117: E:/work/github/free-clac/test/plot_test.dart: 绘图画布可渲染并响应缩放
+00:02 +118: E:/work/github/free-clac/test/plot_test.dart: 绘图画布可渲染并响应缩放
+00:02 +119: E:/work/github/free-clac/test/plot_test.dart: 绘图画布可渲染并响应缩放
+00:02 +120: E:/work/github/free-clac/test/plot_test.dart: 绘图画布可渲染并响应缩放
+00:02 +121: E:/work/github/free-clac/test/plot_test.dart: 绘图画布可渲染并响应缩放
+00:02 +122: E:/work/github/free-clac/test/plot_test.dart: 绘图画布可渲染并响应缩放
+00:02 +123: E:/work/github/free-clac/test/plot_test.dart: 绘图画布可渲染并响应缩放
+00:02 +124: E:/work/github/free-clac/test/plot_test.dart: 绘图画布可渲染并响应缩放
+00:02 +125: E:/work/github/free-clac/test/plot_test.dart: 绘图画布可渲染并响应缩放
+00:02 +126: E:/work/github/free-clac/test/plot_test.dart: 绘图画布可渲染并响应缩放
+00:02 +127: E:/work/github/free-clac/test/plot_test.dart: 绘图画布可渲染并响应缩放
+00:02 +128: E:/work/github/free-clac/test/plot_test.dart: 绘图画布可渲染并响应缩放
+00:02 +129: E:/work/github/free-clac/test/plot_test.dart: 绘图画布可渲染并响应缩放
+00:02 +130: E:/work/github/free-clac/test/plot_test.dart: 绘图画布可渲染并响应缩放
+00:02 +131: E:/work/github/free-clac/test/plot_test.dart: 绘图画布可渲染并响应缩放
+00:02 +132: E:/work/github/free-clac/test/plot_test.dart: 绘图画布可渲染并响应缩放
+00:02 +133: E:/work/github/free-clac/test/plot_test.dart: 绘图画布可渲染并响应缩放
+00:02 +134: E:/work/github/free-clac/test/plot_test.dart: 绘图画布可渲染并响应缩放
+00:02 +135: E:/work/github/free-clac/test/plot_test.dart: 绘图画布可渲染并响应缩放
+00:02 +136: E:/work/github/free-clac/test/plot_test.dart: 绘图画布可渲染并响应缩放
+00:02 +137: E:/work/github/free-clac/test/plot_test.dart: 绘图画布可渲染并响应缩放
+00:02 +138: E:/work/github/free-clac/test/plot_test.dart: 绘图画布可渲染并响应缩放
+00:02 +139: E:/work/github/free-clac/test/plot_test.dart: 绘图画布可渲染并响应缩放
+00:02 +140: E:/work/github/free-clac/test/plot_test.dart: 绘图画布可渲染并响应缩放
+00:02 +141: E:/work/github/free-clac/test/plot_test.dart: 绘图画布可渲染并响应缩放
+00:02 +142: E:/work/github/free-clac/test/plot_test.dart: 绘图画布可渲染并响应缩放
+00:02 +143: E:/work/github/free-clac/test/plot_test.dart: 绘图画布可渲染并响应缩放
+00:02 +144: E:/work/github/free-clac/test/plot_test.dart: 绘图画布可渲染并响应缩放
+00:02 +145: E:/work/github/free-clac/test/plot_test.dart: 绘图画布可渲染并响应缩放
+00:02 +146: E:/work/github/free-clac/test/plot_test.dart: 绘图画布可渲染并响应缩放
+00:02 +147: E:/work/github/free-clac/test/plot_test.dart: 绘图画布可渲染并响应缩放
+00:02 +148: E:/work/github/free-clac/test/plot_test.dart: 绘图画布可渲染并响应缩放
+00:02 +149: E:/work/github/free-clac/test/plot_test.dart: 绘图画布可渲染并响应缩放
+00:02 +150: E:/work/github/free-clac/test/plot_test.dart: 绘图画布可渲染并响应缩放
+00:02 +151: E:/work/github/free-clac/test/plot_test.dart: 绘图画布可渲染并响应缩放
+00:02 +152: E:/work/github/free-clac/test/plot_test.dart: 绘图画布可渲染并响应缩放
+00:02 +153: E:/work/github/free-clac/test/plot_test.dart: 绘图画布可渲染并响应缩放
+00:02 +154: E:/work/github/free-clac/test/plot_test.dart: 绘图画布可渲染并响应缩放
+00:02 +155: E:/work/github/free-clac/test/plot_test.dart: 绘图画布可渲染并响应缩放
+00:02 +156: E:/work/github/free-clac/test/plot_test.dart: 绘图画布可渲染并响应缩放
+00:02 +157: E:/work/github/free-clac/test/plot_test.dart: 绘图画布可渲染并响应缩放
+00:02 +158: E:/work/github/free-clac/test/plot_test.dart: 绘图画布可渲染并响应缩放
+00:02 +159: E:/work/github/free-clac/test/plot_test.dart: 绘图画布可渲染并响应缩放
+00:02 +160: E:/work/github/free-clac/test/plot_test.dart: 绘图画布可渲染并响应缩放
+00:02 +161: E:/work/github/free-clac/test/plot_test.dart: 绘图画布可渲染并响应缩放
+00:02 +162: E:/work/github/free-clac/test/widget_test.dart: 桌面尺寸：键盘输入并计算 30° 的正弦
+00:04 +163: E:/work/github/free-clac/test/widget_test.dart: 表达式错误时展示提示且不崩溃
+00:04 +164: E:/work/github/free-clac/test/widget_test.dart: 切换到绘图页并平移画布
+00:05 +165: E:/work/github/free-clac/test/widget_test.dart: 绘图画布：方向按钮与键盘平移视图
+00:05 +166: E:/work/github/free-clac/test/widget_test.dart: 手机尺寸：布局不溢出
+00:06 +167: E:/work/github/free-clac/test/widget_test.dart: 工具页：进入并打开 BMI 计算
+00:07 +168: E:/work/github/free-clac/test/widget_test.dart: BMI：公制 / 英制与 ft·in 切换
+00:08 +169: E:/work/github/free-clac/test/widget_test.dart: 工具页：复利计算显示本息与逐年表格
+00:10 +170: E:/work/github/free-clac/test/widget_test.dart: 复利计算：本金 / 利率 / 年限按 2 : 1 : 1 排一行
+00:11 +171: E:/work/github/free-clac/test/widget_test.dart: 工具页：退休年龄计算器按出生年月测算退休时间
+00:11 +172: E:/work/github/free-clac/test/widget_test.dart: 退休年龄计算器：还需奋斗年数按注入的当前时间算
+00:12 +173: E:/work/github/free-clac/test/widget_test.dart: 工具页：养老金计算器测算基础与个人账户养老金
+00:12 +174: E:/work/github/free-clac/test/widget_test.dart: 手机尺寸：养老金计算器输入框改多行且不溢出
+00:13 +175: E:/work/github/free-clac/test/widget_test.dart: 设置页：深链打开、切浅色主题后配色与保存都变了
+00:14 +176: E:/work/github/free-clac/test/widget_test.dart: 浅色模式：计算器按键、显示屏与工具卡片都跟着变浅
+00:15 +177: E:/work/github/free-clac/test/widget_test.dart: 设置页：换算默认体系与结果 tab 生效且各工具互不影响
+00:17 +178: E:/work/github/free-clac/test/widget_test.dart: 设置页：BMI 默认单位改成英制后 BMI 页按英制打开
+00:18 +179: E:/work/github/free-clac/test/widget_test.dart: 设置页：切到日语后导航与工具卡片跟着变
+00:19 +180: E:/work/github/free-clac/test/widget_test.dart: 工具页：切回简体中文后养老金、个税与退休年龄又出现了
+00:20 +181: E:/work/github/free-clac/test/widget_test.dart: 工具页内部文案：英文界面下标题、字段与说明都是英文
+00:21 +182: E:/work/github/free-clac/test/widget_test.dart: 工具页内部文案：繁体中文下中文专属工具也显示繁体
+00:22 +183: E:/work/github/free-clac/test/widget_test.dart: 计算器页：英文界面下提示、历史与函数库都是英文
+00:23 +184: E:/work/github/free-clac/test/widget_test.dart: 计算器页：英文界面下报错提示也是英文（含位置）
+00:23 +185: E:/work/github/free-clac/test/widget_test.dart: 绘图页：英文界面下标题、面板、空状态与示例都是英文
+00:24 +186: E:/work/github/free-clac/test/widget_test.dart: 换算页打开着切语言：标题、字段与单位名一起换
+00:25 +187: E:/work/github/free-clac/test/widget_test.dart: 深链 ?lang=en 覆盖本地设置，但不写回本地
+00:25 +188: E:/work/github/free-clac/test/widget_test.dart: 设置页：切换语言后工具卡片的深链 id 不变
+00:26 +189: E:/work/github/free-clac/test/widget_test.dart: 手机尺寸：复利计算利率 / 年限改两行且不溢出
+00:26 +190: E:/work/github/free-clac/test/widget_test.dart: 工具页：打开工具后可与其它 tab 来回切换
+00:27 +191: E:/work/github/free-clac/test/widget_test.dart: 利率计算：期付 ⇄ 年化双向换算
+00:27 +192: E:/work/github/free-clac/test/widget_test.dart: 贷款计算器：深链解析还款方式，无效值回落等额本息
+00:27 +193: E:/work/github/free-clac/test/widget_test.dart: 贷款计算器：月供拆分与双色条
+00:28 +194: E:/work/github/free-clac/test/widget_test.dart: 工具页：长度换算用下拉框选体系单位，结果分三个 tab
+00:29 +195: E:/work/github/free-clac/test/widget_test.dart: 工具页：area 深链打开并换算
+00:29 +196: E:/work/github/free-clac/test/widget_test.dart: 工具页：volume 深链打开并换算
+00:30 +197: E:/work/github/free-clac/test/widget_test.dart: 工具页：weight 深链打开并换算
+00:30 +198: E:/work/github/free-clac/test/widget_test.dart: 重量换算：切市制 tab、点参照物与复制整行
+00:31 +199: E:/work/github/free-clac/test/widget_test.dart: 温度换算：只有公制与英制两个 tab，仿射换算正确
+00:31 +200: E:/work/github/free-clac/test/widget_test.dart: 速度换算：千米每小时与米每秒互转
+00:32 +201: E:/work/github/free-clac/test/widget_test.dart: 手机尺寸：新换算工具页不溢出
+00:33 +202: E:/work/github/free-clac/test/widget_test.dart: 工具页：手机尺寸下长度换算不溢出
+00:34 +203: E:/work/github/free-clac/test/widget_test.dart: 手机尺寸：贷款计算器三栏改两行且不溢出
+00:34 +204: E:/work/github/free-clac/test/widget_test.dart: 工具页：深链 ?tool=bmi 直接打开工具并可返回
+00:35 +205: E:/work/github/free-clac/test/widget_test.dart: 工具页：手机尺寸下卡片与工具页不溢出
+00:35 +206: E:/work/github/free-clac/test/widget_test.dart: 平板尺寸：绘图页切换导航不溢出
+00:36 +207: E:/work/github/free-clac/test/widget_test.dart: 绘图页：添加曲线、编辑表达式、错误提示与删除
+00:36 +208: E:/work/github/free-clac/test/widget_test.dart: 绘图页：切换到参数方程需要两个表达式
+00:37 +209: E:/work/github/free-clac/test/widget_test.dart: 绘图页：添加隐式方程曲线并输入表达式
+00:37 +210: E:/work/github/free-clac/test/widget_test.dart: 绘图页：追踪模式与纵向自适应
+00:38 +211: E:/work/github/free-clac/test/widget_test.dart: 乘号按键显示 * 并参与计算
+00:38 +212: E:/work/github/free-clac/test/widget_test.dart: 绘图页：示例追加曲线且不把已有图形挤出视野
+00:39 +213: E:/work/github/free-clac/test/widget_test.dart: 绘图页：连续载入两个示例后曲线都还在视野内
+00:39 +214: E:/work/github/free-clac/test/widget_test.dart: 绘图页：导出对话框可打开并切换格式
+00:40 +215: E:/work/github/free-clac/test/widget_test.dart: 导出对话框：选 WebP 后保存，结果交给保存器
+00:40 +216: E:/work/github/free-clac/test/widget_test.dart: 手机尺寸：示例面板可滚动且不溢出
+00:41 +217: E:/work/github/free-clac/test/widget_test.dart: 手机横屏：绘图页使用左右布局且不溢出
+00:41 +218: E:/work/github/free-clac/test/widget_test.dart: 复制为 LaTeX 显示屏：复制公式为 LaTeX
+00:41 +219: E:/work/github/free-clac/test/widget_test.dart: 复制为 LaTeX 显示屏：复制公式与结果
+00:42 +220: E:/work/github/free-clac/test/widget_test.dart: 复制为 LaTeX 绘图页：复制曲线 LaTeX
+00:43 +221: E:/work/github/free-clac/test/widget_test.dart: 复制为 LaTeX 历史记录：复制 LaTeX
+00:43 +222: E:/work/github/free-clac/test/widget_test.dart: 方向键翻阅历史记录
+00:44 +223: E:/work/github/free-clac/test/widget_test.dart: 个人所得税：五险一金比例与累计预扣
+00:44 +224: E:/work/github/free-clac/test/widget_test.dart: 手机尺寸：个人所得税输入框改多行且不溢出
+00:45 +225: All tests passed!

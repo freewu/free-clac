@@ -246,15 +246,16 @@ class Parser {
   String _signatureOf(String name) {
     final function = builtinFunctions[name];
     if (function != null) return function.signature;
+    // 参数提示写成通用的占位名，任何界面语言下都能读（错误文案走多语言）
     switch (name) {
       case 'sum':
-        return 'sum(表达式, 变量, 起始, 结束)';
+        return 'sum(expr, k, start, end)';
       case 'prod':
-        return 'prod(表达式, 变量, 起始, 结束)';
+        return 'prod(expr, k, start, end)';
       case 'integrate':
-        return 'integrate(表达式, 变量, 下限, 上限)';
+        return 'integrate(expr, x, a, b)';
       case 'diff':
-        return 'diff(表达式, 变量, 取值点)';
+        return 'diff(expr, x, at)';
     }
     return '$name(...)';
   }
