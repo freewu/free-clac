@@ -34,6 +34,9 @@ const MeasureCatalog kTemperatureCatalog = MeasureCatalog(
       notes: <AppLanguage, String>{
         AppLanguage.en:
             'Water freezes at 0 °C and boils at 100 °C (standard pressure)',
+        AppLanguage.ja: '水は 0 °C で凍り、100 °C で沸騰します（標準気圧）',
+        AppLanguage.es:
+            'El agua se congela a 0 °C y hierve a 100 °C (presión estándar)',
       },
     ),
     MeasureUnit(
@@ -53,6 +56,9 @@ const MeasureCatalog kTemperatureCatalog = MeasureCatalog(
       notes: <AppLanguage, String>{
         AppLanguage.en:
             'Absolute zero = 0 K = −273.15 °C; same step size as Celsius',
+        AppLanguage.ja: '絶対零度 = 0 K = −273.15 °C、目盛りの間隔は摂氏と同じです',
+        AppLanguage.es:
+            'Cero absoluto = 0 K = −273,15 °C; el intervalo es igual que en Celsius',
       },
     ),
     // 英制
@@ -73,6 +79,9 @@ const MeasureCatalog kTemperatureCatalog = MeasureCatalog(
       notes: <AppLanguage, String>{
         AppLanguage.en:
             'Water freezes at 32 °F and boils at 212 °F; C = (F − 32) × 5/9',
+        AppLanguage.ja: '水は 32 °F で凍り、212 °F で沸騰します；C = (F − 32) × 5/9',
+        AppLanguage.es:
+            'El agua se congela a 32 °F y hierve a 212 °F; C = (F − 32) × 5/9',
       },
     ),
     MeasureUnit(
@@ -91,6 +100,9 @@ const MeasureCatalog kTemperatureCatalog = MeasureCatalog(
       note: '绝对零度 = 0 °R，1 °R = 1 °F 的间隔',
       notes: <AppLanguage, String>{
         AppLanguage.en: 'Absolute zero = 0 °R; 1 °R has the same step as 1 °F',
+        AppLanguage.ja: '絶対零度 = 0 °R、1 °R の間隔は 1 °F と同じです',
+        AppLanguage.es:
+            'Cero absoluto = 0 °R; 1 °R tiene el mismo intervalo que 1 °F',
       },
     ),
   ],

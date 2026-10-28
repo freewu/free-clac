@@ -29,7 +29,11 @@ const MeasureCatalog kWeightCatalog = MeasureCatalog(
       baseNumerator: 1000,
       baseDenominator: 1,
       note: '1 吨 = 1000 千克',
-      notes: <AppLanguage, String>{AppLanguage.en: '1 tonne = 1000 kg'},
+      notes: <AppLanguage, String>{
+        AppLanguage.en: '1 tonne = 1000 kg',
+        AppLanguage.ja: '1 トン = 1000 kg',
+        AppLanguage.es: '1 tonelada = 1000 kg',
+      },
     ),
     MeasureUnit(
       id: 'kg',
@@ -46,6 +50,8 @@ const MeasureCatalog kWeightCatalog = MeasureCatalog(
       note: '千克是国际单位制的质量基本单位，日常也叫公斤',
       notes: <AppLanguage, String>{
         AppLanguage.en: 'The kilogram is the SI base unit of mass',
+        AppLanguage.ja: 'キログラムは SI の質量の基本単位です',
+        AppLanguage.es: 'El kilogramo es la unidad básica de masa del SI',
       },
     ),
     MeasureUnit(
@@ -103,6 +109,9 @@ const MeasureCatalog kWeightCatalog = MeasureCatalog(
       note: '英吨，1 长吨 = 2240 磅 = 1016.0469088 千克',
       notes: <AppLanguage, String>{
         AppLanguage.en: 'Long ton: 1 long ton = 2240 lb = 1016.0469088 kg',
+        AppLanguage.ja: '英トン：1 英トン = 2240 ポンド = 1016.0469088 kg',
+        AppLanguage.es:
+            'Tonelada larga: 1 tonelada larga = 2240 lb = 1016,0469088 kg',
       },
     ),
     MeasureUnit(
@@ -120,6 +129,9 @@ const MeasureCatalog kWeightCatalog = MeasureCatalog(
       note: '美吨，1 短吨 = 2000 磅 = 907.18474 千克',
       notes: <AppLanguage, String>{
         AppLanguage.en: 'Short ton: 1 short ton = 2000 lb = 907.18474 kg',
+        AppLanguage.ja: '米トン：1 米トン = 2000 ポンド = 907.18474 kg',
+        AppLanguage.es:
+            'Tonelada corta: 1 tonelada corta = 2000 lb = 907,18474 kg',
       },
     ),
     MeasureUnit(
@@ -137,6 +149,8 @@ const MeasureCatalog kWeightCatalog = MeasureCatalog(
       note: '1 磅 = 16 盎司 = 0.45359237 千克',
       notes: <AppLanguage, String>{
         AppLanguage.en: '1 lb = 16 oz = 0.45359237 kg',
+        AppLanguage.ja: '1 ポンド = 16 オンス = 0.45359237 kg',
+        AppLanguage.es: '1 lb = 16 oz = 0,45359237 kg',
       },
     ),
     MeasureUnit(
@@ -154,6 +168,8 @@ const MeasureCatalog kWeightCatalog = MeasureCatalog(
       note: '常衡盎司，1 盎司 = 1/16 磅 ≈ 28.35 克',
       notes: <AppLanguage, String>{
         AppLanguage.en: 'Avoirdupois ounce: 1 oz = 1/16 lb ≈ 28.35 g',
+        AppLanguage.ja: '常用オンス：1 オンス = 1/16 ポンド ≈ 28.35 g',
+        AppLanguage.es: 'Onza avoirdupois: 1 oz = 1/16 lb ≈ 28,35 g',
       },
     ),
     MeasureUnit(
@@ -172,6 +188,9 @@ const MeasureCatalog kWeightCatalog = MeasureCatalog(
       notes: <AppLanguage, String>{
         AppLanguage.en:
             '1 stone = 14 lb = 6.35029318 kg, used for body weight in the UK',
+        AppLanguage.ja: '1 ストーン = 14 ポンド = 6.35029318 kg、英国で体重に使います',
+        AppLanguage.es:
+            '1 stone = 14 lb = 6,35029318 kg, se usa para el peso corporal en el Reino Unido',
       },
     ),
     MeasureUnit(
@@ -190,6 +209,8 @@ const MeasureCatalog kWeightCatalog = MeasureCatalog(
       notes: <AppLanguage, String>{
         AppLanguage.en:
             '1 grain = 64.79891 mg, used in pharmacy and ammunition',
+        AppLanguage.ja: '1 グレーン = 64.79891 mg、薬学や弾薬で使います',
+        AppLanguage.es: '1 grano = 64,79891 mg, se usa en farmacia y munición',
       },
     ),
     // 市制（1 斤 = 500 克 = 10 两）
@@ -206,7 +227,11 @@ const MeasureCatalog kWeightCatalog = MeasureCatalog(
       baseNumerator: 50,
       baseDenominator: 1,
       note: '1 担 = 100 斤 = 50 千克',
-      notes: <AppLanguage, String>{AppLanguage.en: '1 dan = 100 jin = 50 kg'},
+      notes: <AppLanguage, String>{
+        AppLanguage.en: '1 dan = 100 jin = 50 kg',
+        AppLanguage.ja: '1 担 = 100 斤 = 50 kg',
+        AppLanguage.es: '1 dan = 100 jin = 50 kg',
+      },
     ),
     MeasureUnit(
       id: 'jin',
@@ -221,7 +246,11 @@ const MeasureCatalog kWeightCatalog = MeasureCatalog(
       baseNumerator: 1,
       baseDenominator: 2,
       note: '1 斤 = 500 克 = 10 两',
-      notes: <AppLanguage, String>{AppLanguage.en: '1 jin = 500 g = 10 liang'},
+      notes: <AppLanguage, String>{
+        AppLanguage.en: '1 jin = 500 g = 10 liang',
+        AppLanguage.ja: '1 斤 = 500 g = 10 両',
+        AppLanguage.es: '1 jin = 500 g = 10 liang',
+      },
     ),
     MeasureUnit(
       id: 'liang',
@@ -238,6 +267,9 @@ const MeasureCatalog kWeightCatalog = MeasureCatalog(
       note: '1 两 = 50 克（旧制 1 斤 = 16 两，今按 10 两计）',
       notes: <AppLanguage, String>{
         AppLanguage.en: '1 liang = 50 g (the old system had 16 liang per jin)',
+        AppLanguage.ja: '1 両 = 50 g（昔は 1 斤 = 16 両でした）',
+        AppLanguage.es:
+            '1 liang = 50 g (el sistema antiguo tenía 16 liang por jin)',
       },
     ),
     MeasureUnit(
@@ -255,6 +287,8 @@ const MeasureCatalog kWeightCatalog = MeasureCatalog(
       note: '1 钱 = 5 克，中药抓药常用',
       notes: <AppLanguage, String>{
         AppLanguage.en: '1 qian = 5 g, used in Chinese herbal medicine',
+        AppLanguage.ja: '1 銭 = 5 g、漢方薬で使います',
+        AppLanguage.es: '1 qian = 5 g, se usa en la medicina herbal china',
       },
     ),
     MeasureUnit(
@@ -270,7 +304,11 @@ const MeasureCatalog kWeightCatalog = MeasureCatalog(
       baseNumerator: 1,
       baseDenominator: 2000,
       note: '1 分 = 0.5 克',
-      notes: <AppLanguage, String>{AppLanguage.en: '1 fen = 0.5 g'},
+      notes: <AppLanguage, String>{
+        AppLanguage.en: '1 fen = 0.5 g',
+        AppLanguage.ja: '1 分 = 0.5 g',
+        AppLanguage.es: '1 fen = 0,5 g',
+      },
     ),
     MeasureUnit(
       id: 'li2',
@@ -285,7 +323,11 @@ const MeasureCatalog kWeightCatalog = MeasureCatalog(
       baseNumerator: 1,
       baseDenominator: 20000,
       note: '1 厘 = 0.05 克',
-      notes: <AppLanguage, String>{AppLanguage.en: '1 li = 0.05 g'},
+      notes: <AppLanguage, String>{
+        AppLanguage.en: '1 li = 0.05 g',
+        AppLanguage.ja: '1 厘 = 0.05 g',
+        AppLanguage.es: '1 li (厘) = 0,05 g',
+      },
     ),
   ],
   samples: <MeasureSample>[

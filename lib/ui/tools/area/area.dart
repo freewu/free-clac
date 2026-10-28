@@ -31,6 +31,8 @@ const MeasureCatalog kAreaCatalog = MeasureCatalog(
       note: '1 平方千米 = 1000000 平方米 = 100 公顷',
       notes: <AppLanguage, String>{
         AppLanguage.en: '1 sq km = 1,000,000 m² = 100 hectares',
+        AppLanguage.ja: '1 km² = 1,000,000 m² = 100 ヘクタール',
+        AppLanguage.es: '1 km² = 1.000.000 m² = 100 hectáreas',
       },
     ),
     MeasureUnit(
@@ -48,6 +50,8 @@ const MeasureCatalog kAreaCatalog = MeasureCatalog(
       note: '1 公顷 = 10000 平方米 = 15 亩',
       notes: <AppLanguage, String>{
         AppLanguage.en: '1 hectare = 10,000 m² = 15 mu',
+        AppLanguage.ja: '1 ヘクタール = 10,000 m² = 15 畝',
+        AppLanguage.es: '1 hectárea = 10.000 m² = 15 mu',
       },
     ),
     MeasureUnit(
@@ -63,7 +67,11 @@ const MeasureCatalog kAreaCatalog = MeasureCatalog(
       baseNumerator: 100,
       baseDenominator: 1,
       note: '1 公亩 = 100 平方米',
-      notes: <AppLanguage, String>{AppLanguage.en: '1 are = 100 m²'},
+      notes: <AppLanguage, String>{
+        AppLanguage.en: '1 are = 100 m²',
+        AppLanguage.ja: '1 アール = 100 m²',
+        AppLanguage.es: '1 área = 100 m²',
+      },
     ),
     MeasureUnit(
       id: 'sqm',
@@ -133,6 +141,8 @@ const MeasureCatalog kAreaCatalog = MeasureCatalog(
       note: '1 平方英里 = 640 英亩 = 2.58999 平方千米',
       notes: <AppLanguage, String>{
         AppLanguage.en: '1 sq mile = 640 acres = 2.58999 km²',
+        AppLanguage.ja: '1 mi² = 640 エーカー = 2.58999 km²',
+        AppLanguage.es: '1 mi² = 640 acres = 2,58999 km²',
       },
     ),
     MeasureUnit(
@@ -150,6 +160,8 @@ const MeasureCatalog kAreaCatalog = MeasureCatalog(
       note: '1 英亩 = 4840 平方码 ≈ 4046.86 平方米 ≈ 6.07 亩',
       notes: <AppLanguage, String>{
         AppLanguage.en: '1 acre = 4840 sq yd ≈ 4046.86 m² ≈ 6.07 mu',
+        AppLanguage.ja: '1 エーカー = 4840 yd² ≈ 4046.86 m² ≈ 6.07 畝',
+        AppLanguage.es: '1 acre = 4840 yd² ≈ 4046,86 m² ≈ 6,07 mu',
       },
     ),
     MeasureUnit(
@@ -165,7 +177,11 @@ const MeasureCatalog kAreaCatalog = MeasureCatalog(
       baseNumerator: 83612736,
       baseDenominator: 100000000,
       note: '1 平方码 = 9 平方英尺',
-      notes: <AppLanguage, String>{AppLanguage.en: '1 sq yd = 9 sq ft'},
+      notes: <AppLanguage, String>{
+        AppLanguage.en: '1 sq yd = 9 sq ft',
+        AppLanguage.ja: '1 yd² = 9 ft²',
+        AppLanguage.es: '1 yd² = 9 ft²',
+      },
     ),
     MeasureUnit(
       id: 'sqft',
@@ -182,6 +198,8 @@ const MeasureCatalog kAreaCatalog = MeasureCatalog(
       note: '1 平方英尺 = 144 平方英寸 ≈ 0.0929 平方米',
       notes: <AppLanguage, String>{
         AppLanguage.en: '1 sq ft = 144 sq in ≈ 0.0929 m²',
+        AppLanguage.ja: '1 ft² = 144 in² ≈ 0.0929 m²',
+        AppLanguage.es: '1 ft² = 144 in² ≈ 0,0929 m²',
       },
     ),
     MeasureUnit(
@@ -197,7 +215,11 @@ const MeasureCatalog kAreaCatalog = MeasureCatalog(
       baseNumerator: 64516,
       baseDenominator: 100000000,
       note: '1 平方英寸 = 6.4516 平方厘米',
-      notes: <AppLanguage, String>{AppLanguage.en: '1 sq in = 6.4516 cm²'},
+      notes: <AppLanguage, String>{
+        AppLanguage.en: '1 sq in = 6.4516 cm²',
+        AppLanguage.ja: '1 in² = 6.4516 cm²',
+        AppLanguage.es: '1 in² = 6,4516 cm²',
+      },
     ),
     // 市制（1 尺 = 1/3 米 → 1 平方尺 = 1/9 米²，1 亩 = 60 平方丈 = 2000/3 米²）
     MeasureUnit(
@@ -215,6 +237,8 @@ const MeasureCatalog kAreaCatalog = MeasureCatalog(
       note: '1 平方里 = 500² 平方米 = 0.25 平方千米',
       notes: <AppLanguage, String>{
         AppLanguage.en: '1 sq li = 500² m² = 0.25 km²',
+        AppLanguage.ja: '1 平方里 = 500² m² = 0.25 km²',
+        AppLanguage.es: '1 li² = 500² m² = 0,25 km²',
       },
     ),
     MeasureUnit(
@@ -232,6 +256,8 @@ const MeasureCatalog kAreaCatalog = MeasureCatalog(
       note: '1 顷 = 100 亩 ≈ 6.667 公顷',
       notes: <AppLanguage, String>{
         AppLanguage.en: '1 qing = 100 mu ≈ 6.667 ha',
+        AppLanguage.ja: '1 頃 = 100 畝 ≈ 6.667 ha',
+        AppLanguage.es: '1 qing = 100 mu ≈ 6,667 ha',
       },
     ),
     MeasureUnit(
@@ -249,6 +275,8 @@ const MeasureCatalog kAreaCatalog = MeasureCatalog(
       note: '1 亩 = 60 平方丈 ≈ 666.67 平方米',
       notes: <AppLanguage, String>{
         AppLanguage.en: '1 mu = 60 sq zhang ≈ 666.67 m²',
+        AppLanguage.ja: '1 畝 = 60 平方丈 ≈ 666.67 m²',
+        AppLanguage.es: '1 mu = 60 zhang² ≈ 666,67 m²',
       },
     ),
     MeasureUnit(
@@ -266,6 +294,8 @@ const MeasureCatalog kAreaCatalog = MeasureCatalog(
       note: '1 分 = 1/10 亩 ≈ 66.67 平方米',
       notes: <AppLanguage, String>{
         AppLanguage.en: '1 fen = 1/10 mu ≈ 66.67 m²',
+        AppLanguage.ja: '1 分 = 1/10 畝 ≈ 66.67 m²',
+        AppLanguage.es: '1 fen = 1/10 mu ≈ 66,67 m²',
       },
     ),
     MeasureUnit(
@@ -281,7 +311,11 @@ const MeasureCatalog kAreaCatalog = MeasureCatalog(
       baseNumerator: 20,
       baseDenominator: 3,
       note: '1 厘 = 1/10 分 ≈ 6.67 平方米',
-      notes: <AppLanguage, String>{AppLanguage.en: '1 li = 1/10 fen ≈ 6.67 m²'},
+      notes: <AppLanguage, String>{
+        AppLanguage.en: '1 li = 1/10 fen ≈ 6.67 m²',
+        AppLanguage.ja: '1 厘 = 1/10 分 ≈ 6.67 m²',
+        AppLanguage.es: '1 li (厘) = 1/10 fen ≈ 6,67 m²',
+      },
     ),
     MeasureUnit(
       id: 'sqzhang',
@@ -298,6 +332,8 @@ const MeasureCatalog kAreaCatalog = MeasureCatalog(
       note: '1 平方丈 = 100/9 平方米 ≈ 11.11 平方米',
       notes: <AppLanguage, String>{
         AppLanguage.en: '1 sq zhang = 100/9 m² ≈ 11.11 m²',
+        AppLanguage.ja: '1 平方丈 = 100/9 m² ≈ 11.11 m²',
+        AppLanguage.es: '1 zhang² = 100/9 m² ≈ 11,11 m²',
       },
     ),
     MeasureUnit(
@@ -315,6 +351,8 @@ const MeasureCatalog kAreaCatalog = MeasureCatalog(
       note: '1 平方尺 = 1/9 平方米 ≈ 0.111 平方米',
       notes: <AppLanguage, String>{
         AppLanguage.en: '1 sq chi = 1/9 m² ≈ 0.111 m²',
+        AppLanguage.ja: '1 平方尺 = 1/9 m² ≈ 0.111 m²',
+        AppLanguage.es: '1 chi² = 1/9 m² ≈ 0,111 m²',
       },
     ),
   ],

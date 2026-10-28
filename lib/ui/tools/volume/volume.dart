@@ -32,6 +32,9 @@ const MeasureCatalog kVolumeCatalog = MeasureCatalog(
       notes: <AppLanguage, String>{
         AppLanguage.en:
             '1 m³ = 1000 L; water and gas are billed per cubic metre',
+        AppLanguage.ja: '1 m³ = 1000 L、水道・ガスは立方メートル単位で請求されます',
+        AppLanguage.es:
+            '1 m³ = 1000 L; el agua y el gas se facturan por metro cúbico',
       },
     ),
     MeasureUnit(
@@ -60,7 +63,11 @@ const MeasureCatalog kVolumeCatalog = MeasureCatalog(
       baseNumerator: 1,
       baseDenominator: 10,
       note: '1 分升 = 0.1 升 = 100 毫升',
-      notes: <AppLanguage, String>{AppLanguage.en: '1 dL = 0.1 L = 100 mL'},
+      notes: <AppLanguage, String>{
+        AppLanguage.en: '1 dL = 0.1 L = 100 mL',
+        AppLanguage.ja: '1 dL = 0.1 L = 100 mL',
+        AppLanguage.es: '1 dL = 0,1 L = 100 mL',
+      },
     ),
     MeasureUnit(
       id: 'cl',
@@ -75,7 +82,11 @@ const MeasureCatalog kVolumeCatalog = MeasureCatalog(
       baseNumerator: 1,
       baseDenominator: 100,
       note: '1 厘升 = 10 毫升',
-      notes: <AppLanguage, String>{AppLanguage.en: '1 cL = 10 mL'},
+      notes: <AppLanguage, String>{
+        AppLanguage.en: '1 cL = 10 mL',
+        AppLanguage.ja: '1 cL = 10 mL',
+        AppLanguage.es: '1 cL = 10 mL',
+      },
     ),
     MeasureUnit(
       id: 'ml',
@@ -90,7 +101,11 @@ const MeasureCatalog kVolumeCatalog = MeasureCatalog(
       baseNumerator: 1,
       baseDenominator: 1000,
       note: '1 毫升 = 1 立方厘米',
-      notes: <AppLanguage, String>{AppLanguage.en: '1 mL = 1 cm³'},
+      notes: <AppLanguage, String>{
+        AppLanguage.en: '1 mL = 1 cm³',
+        AppLanguage.ja: '1 mL = 1 cm³',
+        AppLanguage.es: '1 mL = 1 cm³',
+      },
     ),
     MeasureUnit(
       id: 'ul',
@@ -107,6 +122,8 @@ const MeasureCatalog kVolumeCatalog = MeasureCatalog(
       note: '1 微升 = 1 立方毫米，实验室常用',
       notes: <AppLanguage, String>{
         AppLanguage.en: '1 µL = 1 mm³, common in labs',
+        AppLanguage.ja: '1 µL = 1 mm³、実験室でよく使います',
+        AppLanguage.es: '1 µL = 1 mm³, habitual en laboratorios',
       },
     ),
     // 英制（英制 UK 口径；美制加仑约 3.785 升）
@@ -125,6 +142,9 @@ const MeasureCatalog kVolumeCatalog = MeasureCatalog(
       note: '英制加仑 = 4.54609 升（美制加仑 ≈ 3.785 升）',
       notes: <AppLanguage, String>{
         AppLanguage.en: '1 imperial gallon = 4.54609 L (US gallon ≈ 3.785 L)',
+        AppLanguage.ja: '1 英ガロン = 4.54609 L（米ガロン ≈ 3.785 L）',
+        AppLanguage.es:
+            '1 galón imperial = 4,54609 L (galón estadounidense ≈ 3,785 L)',
       },
     ),
     MeasureUnit(
@@ -142,6 +162,8 @@ const MeasureCatalog kVolumeCatalog = MeasureCatalog(
       note: '1 夸脱 = 1/4 加仑 = 1.1365225 升',
       notes: <AppLanguage, String>{
         AppLanguage.en: '1 quart = 1/4 gallon = 1.1365225 L',
+        AppLanguage.ja: '1 クォート = 1/4 ガロン = 1.1365225 L',
+        AppLanguage.es: '1 cuarto = 1/4 de galón = 1,1365225 L',
       },
     ),
     MeasureUnit(
@@ -159,6 +181,9 @@ const MeasureCatalog kVolumeCatalog = MeasureCatalog(
       note: '1 品脱 = 1/2 夸脱 ≈ 568.26 毫升，酒吧常见',
       notes: <AppLanguage, String>{
         AppLanguage.en: '1 pint = 1/2 quart ≈ 568.26 mL, common in pubs',
+        AppLanguage.ja: '1 パイント = 1/2 クォート ≈ 568.26 mL、パブでよく使います',
+        AppLanguage.es:
+            '1 pinta = 1/2 cuarto ≈ 568,26 mL, habitual en los pubs',
       },
     ),
     MeasureUnit(
@@ -176,6 +201,8 @@ const MeasureCatalog kVolumeCatalog = MeasureCatalog(
       note: '英制液量盎司 = 1/160 加仑 ≈ 28.41 毫升',
       notes: <AppLanguage, String>{
         AppLanguage.en: '1 imperial fluid ounce = 1/160 gallon ≈ 28.41 mL',
+        AppLanguage.ja: '1 英液量オンス = 1/160 ガロン ≈ 28.41 mL',
+        AppLanguage.es: '1 onza líquida imperial = 1/160 de galón ≈ 28,41 mL',
       },
     ),
     MeasureUnit(
@@ -193,6 +220,9 @@ const MeasureCatalog kVolumeCatalog = MeasureCatalog(
       note: '1 蒲式耳 = 8 加仑 = 36.36872 升，谷物计量单位',
       notes: <AppLanguage, String>{
         AppLanguage.en: '1 bushel = 8 gallons = 36.36872 L, used for grain',
+        AppLanguage.ja: '1 ブッシェル = 8 ガロン = 36.36872 L、穀物の計量に使います',
+        AppLanguage.es:
+            '1 bushel = 8 galones = 36,36872 L, se usa para el grano',
       },
     ),
     // 市制（1 石 = 10 斗 = 100 升，1 升 = 10 合 = 100 勺）
@@ -211,6 +241,8 @@ const MeasureCatalog kVolumeCatalog = MeasureCatalog(
       note: '1 石 = 10 斗 = 100 升，古代粮米常用',
       notes: <AppLanguage, String>{
         AppLanguage.en: '1 dan = 10 dou = 100 L, a historical grain measure',
+        AppLanguage.ja: '1 石 = 10 斗 = 100 L、昔の穀物の単位です',
+        AppLanguage.es: '1 dan = 10 dou = 100 L, medida histórica de grano',
       },
     ),
     MeasureUnit(
@@ -226,7 +258,11 @@ const MeasureCatalog kVolumeCatalog = MeasureCatalog(
       baseNumerator: 10,
       baseDenominator: 1,
       note: '1 斗 = 10 升',
-      notes: <AppLanguage, String>{AppLanguage.en: '1 dou = 10 L'},
+      notes: <AppLanguage, String>{
+        AppLanguage.en: '1 dou = 10 L',
+        AppLanguage.ja: '1 斗 = 10 L',
+        AppLanguage.es: '1 dou = 10 L',
+      },
     ),
     MeasureUnit(
       id: 'sheng',
@@ -241,7 +277,11 @@ const MeasureCatalog kVolumeCatalog = MeasureCatalog(
       baseNumerator: 1,
       baseDenominator: 1,
       note: '1 市升 = 1 升 = 1000 毫升',
-      notes: <AppLanguage, String>{AppLanguage.en: '1 sheng = 1 L = 1000 mL'},
+      notes: <AppLanguage, String>{
+        AppLanguage.en: '1 sheng = 1 L = 1000 mL',
+        AppLanguage.ja: '1 升 = 1 L = 1000 mL',
+        AppLanguage.es: '1 sheng = 1 L = 1000 mL',
+      },
     ),
     MeasureUnit(
       id: 'ge',
@@ -256,7 +296,11 @@ const MeasureCatalog kVolumeCatalog = MeasureCatalog(
       baseNumerator: 1,
       baseDenominator: 10,
       note: '1 合 = 1/10 升 = 100 毫升',
-      notes: <AppLanguage, String>{AppLanguage.en: '1 ge = 1/10 L = 100 mL'},
+      notes: <AppLanguage, String>{
+        AppLanguage.en: '1 ge = 1/10 L = 100 mL',
+        AppLanguage.ja: '1 合 = 1/10 L = 100 mL',
+        AppLanguage.es: '1 ge = 1/10 L = 100 mL',
+      },
     ),
     MeasureUnit(
       id: 'shao',
@@ -271,7 +315,11 @@ const MeasureCatalog kVolumeCatalog = MeasureCatalog(
       baseNumerator: 1,
       baseDenominator: 100,
       note: '1 勺 = 1/10 合 = 10 毫升',
-      notes: <AppLanguage, String>{AppLanguage.en: '1 shao = 1/10 ge = 10 mL'},
+      notes: <AppLanguage, String>{
+        AppLanguage.en: '1 shao = 1/10 ge = 10 mL',
+        AppLanguage.ja: '1 勺 = 1/10 合 = 10 mL',
+        AppLanguage.es: '1 shao = 1/10 ge = 10 mL',
+      },
     ),
     MeasureUnit(
       id: 'cuo',
@@ -286,7 +334,11 @@ const MeasureCatalog kVolumeCatalog = MeasureCatalog(
       baseNumerator: 1,
       baseDenominator: 1000,
       note: '1 撮 = 1/10 勺 = 1 毫升',
-      notes: <AppLanguage, String>{AppLanguage.en: '1 cuo = 1/10 shao = 1 mL'},
+      notes: <AppLanguage, String>{
+        AppLanguage.en: '1 cuo = 1/10 shao = 1 mL',
+        AppLanguage.ja: '1 撮 = 1/10 勺 = 1 mL',
+        AppLanguage.es: '1 cuo = 1/10 shao = 1 mL',
+      },
     ),
   ],
   samples: <MeasureSample>[

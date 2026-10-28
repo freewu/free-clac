@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
 
@@ -6,6 +7,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:free_clac/core/math_engine.dart';
 import 'package:free_clac/plot/plot_export.dart';
 import 'package:free_clac/plot/plot_presets.dart';
+import 'package:free_clac/l10n/app_language.dart';
+import 'package:free_clac/l10n/plot_strings.dart';
 import 'package:free_clac/plot/plot_svg.dart';
 import 'package:free_clac/plot/plot_viewport.dart';
 import 'package:free_clac/services/plot_file_saver_io.dart';
@@ -91,6 +94,25 @@ void main() {
       expect(svg, contains('stroke-width="1.8"'));
       expect(svg, endsWith('</svg>\n'));
       expect(svg, isNot(contains('NaN')));
+      // 中文默认标题，可由调用方换成当前语言（注意 bytes 是 UTF-8）
+      expect(
+        utf8.decode(file.bytes),
+        contains('<title>free-clac 函数绘图</title>'),
+      );
+    });
+
+    test('SVG 标题跟随界面语言', () async {
+      final controller = _controller(expression: 'sin(x)');
+      final file = await const PlotExporter().export(
+        controller: controller,
+        size: size,
+        format: PlotImageFormat.svg,
+        title: kPlotStrings[AppLanguage.en]!.svgTitle,
+      );
+      expect(
+        utf8.decode(file.bytes),
+        contains('<title>free-clac function plot</title>'),
+      );
     });
 
     test('示例曲线也能导出 SVG，且不随画布尺寸产生 NaN', () async {

@@ -2068,6 +2068,7 @@ class _FakeExporter extends PlotExporter {
     required Size size,
     required PlotImageFormat format,
     String name = 'plot',
+    String title = 'free-clac 函数绘图',
     DateTime? now,
   }) async {
     return PlotExportFile(

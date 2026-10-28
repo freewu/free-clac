@@ -82,7 +82,9 @@ class MeasureUnit {
 
   /// 该语言的说明文案。
   ///
-  /// 说明目前只翻了英文：简繁中文回落到 [note]，其他语言用英文而不是中文。
+  /// 简繁中文回落 [note]（数据层中文原文），缺翻译的其他语言先用英文，
+  /// 再退到 [note]。新增单位必须补 en / ja / es 三项，
+  /// `test/tools_test.dart` 会遍历六个 catalog 检查。
   String noteIn(AppLanguage language) {
     final text = notes[language];
     if (text != null) return text;

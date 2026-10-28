@@ -11,18 +11,15 @@ import 'plot_viewport.dart';
 
 /// 导出图片的格式。
 enum PlotImageFormat {
-  png('PNG', 'png', 'image/png', '位图，无损，兼容性最好'),
-  webp('WebP', 'webp', 'image/webp', '位图，有损压缩，体积更小'),
-  svg('SVG', 'svg', 'image/svg+xml', '矢量，可无限放大，适合排版印刷');
+  png('PNG', 'png', 'image/png'),
+  webp('WebP', 'webp', 'image/webp'),
+  svg('SVG', 'svg', 'image/svg+xml');
 
-  const PlotImageFormat(this.label, this.extension, this.mimeType, this.note);
+  const PlotImageFormat(this.label, this.extension, this.mimeType);
 
   final String label;
   final String extension;
   final String mimeType;
-
-  /// 各格式的一句话说明，用于导出对话框。
-  final String note;
 
   bool get isVector => this == PlotImageFormat.svg;
 }
@@ -67,6 +64,7 @@ class PlotExporter {
     required Size size,
     required PlotImageFormat format,
     String name = 'plot',
+    String title = 'free-clac 函数绘图',
     DateTime? now,
   }) async {
     final safeSize = Size(
@@ -82,6 +80,7 @@ class PlotExporter {
         samples: samples,
         size: safeSize,
         showGrid: controller.showGrid,
+        title: title,
       );
       return PlotExportFile(
         fileName: fileName,

@@ -30,6 +30,8 @@ const MeasureCatalog kLengthCatalog = MeasureCatalog(
       note: '1 千米 = 1000 米，也叫公里',
       notes: <AppLanguage, String>{
         AppLanguage.en: '1 km = 1000 m, also called a kilometre',
+        AppLanguage.ja: '1 km = 1000 m、キロメートルとも呼びます',
+        AppLanguage.es: '1 km = 1000 m, también llamado kilómetro',
       },
     ),
     MeasureUnit(
@@ -139,6 +141,9 @@ const MeasureCatalog kLengthCatalog = MeasureCatalog(
       notes: <AppLanguage, String>{
         AppLanguage.en:
             '1 nautical mile = 1852 m, one arc-minute of the meridian',
+        AppLanguage.ja: '1 海里 = 1852 m、子午線 1 分の長さ',
+        AppLanguage.es:
+            '1 milla náutica = 1852 m, un minuto de arco del meridiano',
       },
     ),
     // 英制
@@ -155,7 +160,11 @@ const MeasureCatalog kLengthCatalog = MeasureCatalog(
       baseNumerator: 254,
       baseDenominator: 10000,
       note: '1 英寸 = 2.54 厘米',
-      notes: <AppLanguage, String>{AppLanguage.en: '1 inch = 2.54 cm'},
+      notes: <AppLanguage, String>{
+        AppLanguage.en: '1 inch = 2.54 cm',
+        AppLanguage.ja: '1 インチ = 2.54 cm',
+        AppLanguage.es: '1 pulgada = 2.54 cm',
+      },
     ),
     MeasureUnit(
       id: 'foot',
@@ -172,6 +181,8 @@ const MeasureCatalog kLengthCatalog = MeasureCatalog(
       note: '1 英尺 = 12 英寸 = 0.3048 米',
       notes: <AppLanguage, String>{
         AppLanguage.en: '1 foot = 12 inches = 0.3048 m',
+        AppLanguage.ja: '1 フィート = 12 インチ = 0.3048 m',
+        AppLanguage.es: '1 pie = 12 pulgadas = 0,3048 m',
       },
     ),
     MeasureUnit(
@@ -189,6 +200,8 @@ const MeasureCatalog kLengthCatalog = MeasureCatalog(
       note: '1 码 = 3 英尺 = 0.9144 米',
       notes: <AppLanguage, String>{
         AppLanguage.en: '1 yard = 3 feet = 0.9144 m',
+        AppLanguage.ja: '1 ヤード = 3 フィート = 0.9144 m',
+        AppLanguage.es: '1 yarda = 3 pies = 0,9144 m',
       },
     ),
     MeasureUnit(
@@ -206,6 +219,8 @@ const MeasureCatalog kLengthCatalog = MeasureCatalog(
       note: '1 英里 = 1760 码 = 1609.344 米',
       notes: <AppLanguage, String>{
         AppLanguage.en: '1 mile = 1760 yards = 1609.344 m',
+        AppLanguage.ja: '1 マイル = 1760 ヤード = 1609.344 m',
+        AppLanguage.es: '1 milla = 1760 yardas = 1609,344 m',
       },
     ),
     MeasureUnit(
@@ -223,6 +238,9 @@ const MeasureCatalog kLengthCatalog = MeasureCatalog(
       note: '1 英寻 = 6 英尺 = 1.8288 米，航海测深常用',
       notes: <AppLanguage, String>{
         AppLanguage.en: '1 fathom = 6 feet = 1.8288 m, used for sea depth',
+        AppLanguage.ja: '1 尋 = 6 フィート = 1.8288 m、海の深さに使います',
+        AppLanguage.es:
+            '1 braza = 6 pies = 1,8288 m, se usa para la profundidad marina',
       },
     ),
     MeasureUnit(
@@ -240,6 +258,8 @@ const MeasureCatalog kLengthCatalog = MeasureCatalog(
       note: '测链，1 链 = 66 英尺 = 20.1168 米',
       notes: <AppLanguage, String>{
         AppLanguage.en: 'Surveying chain: 1 chain = 66 feet = 20.1168 m',
+        AppLanguage.ja: '測量用のチェーン：1 チェーン = 66 フィート = 20.1168 m',
+        AppLanguage.es: 'Cadena de agrimensor: 1 cadena = 66 pies = 20,1168 m',
       },
     ),
     MeasureUnit(
@@ -258,6 +278,9 @@ const MeasureCatalog kLengthCatalog = MeasureCatalog(
       notes: <AppLanguage, String>{
         AppLanguage.en:
             '1 furlong = 10 chains = 201.168 m, used in horse racing',
+        AppLanguage.ja: '1 ハロン = 10 チェーン = 201.168 m、競馬で使います',
+        AppLanguage.es:
+            '1 furlong = 10 cadenas = 201,168 m, se usa en carreras de caballos',
       },
     ),
     // 市制（1 尺 = 1/3 米，故 1 丈 = 10/3 米、1 里 = 500 米）
@@ -274,7 +297,11 @@ const MeasureCatalog kLengthCatalog = MeasureCatalog(
       baseNumerator: 500,
       baseDenominator: 1,
       note: '1 里 = 150 丈 = 500 米',
-      notes: <AppLanguage, String>{AppLanguage.en: '1 li = 150 zhang = 500 m'},
+      notes: <AppLanguage, String>{
+        AppLanguage.en: '1 li = 150 zhang = 500 m',
+        AppLanguage.ja: '1 里 = 150 丈 = 500 m',
+        AppLanguage.es: '1 li = 150 zhang = 500 m',
+      },
     ),
     MeasureUnit(
       id: 'yin',
@@ -291,6 +318,8 @@ const MeasureCatalog kLengthCatalog = MeasureCatalog(
       note: '1 引 = 10 丈 ≈ 33.33 米',
       notes: <AppLanguage, String>{
         AppLanguage.en: '1 yin = 10 zhang ≈ 33.33 m',
+        AppLanguage.ja: '1 引 = 10 丈 ≈ 33.33 m',
+        AppLanguage.es: '1 yin = 10 zhang ≈ 33,33 m',
       },
     ),
     MeasureUnit(
@@ -308,6 +337,8 @@ const MeasureCatalog kLengthCatalog = MeasureCatalog(
       note: '1 丈 = 10 尺 ≈ 3.333 米',
       notes: <AppLanguage, String>{
         AppLanguage.en: '1 zhang = 10 chi ≈ 3.333 m',
+        AppLanguage.ja: '1 丈 = 10 尺 ≈ 3.333 m',
+        AppLanguage.es: '1 zhang = 10 chi ≈ 3,333 m',
       },
     ),
     MeasureUnit(
@@ -323,7 +354,11 @@ const MeasureCatalog kLengthCatalog = MeasureCatalog(
       baseNumerator: 5,
       baseDenominator: 15,
       note: '1 尺 = 1/3 米 ≈ 33.33 厘米',
-      notes: <AppLanguage, String>{AppLanguage.en: '1 chi = 1/3 m ≈ 33.33 cm'},
+      notes: <AppLanguage, String>{
+        AppLanguage.en: '1 chi = 1/3 m ≈ 33.33 cm',
+        AppLanguage.ja: '1 尺 = 1/3 m ≈ 33.33 cm',
+        AppLanguage.es: '1 chi = 1/3 m ≈ 33,33 cm',
+      },
     ),
     MeasureUnit(
       id: 'cun',
@@ -340,6 +375,8 @@ const MeasureCatalog kLengthCatalog = MeasureCatalog(
       note: '1 寸 = 1/10 尺 ≈ 3.333 厘米',
       notes: <AppLanguage, String>{
         AppLanguage.en: '1 cun = 1/10 chi ≈ 3.333 cm',
+        AppLanguage.ja: '1 寸 = 1/10 尺 ≈ 3.333 cm',
+        AppLanguage.es: '1 cun = 1/10 chi ≈ 3,333 cm',
       },
     ),
     MeasureUnit(
@@ -357,6 +394,8 @@ const MeasureCatalog kLengthCatalog = MeasureCatalog(
       note: '1 分 = 1/10 寸 ≈ 3.333 毫米',
       notes: <AppLanguage, String>{
         AppLanguage.en: '1 fen = 1/10 cun ≈ 3.333 mm',
+        AppLanguage.ja: '1 分 = 1/10 寸 ≈ 3.333 mm',
+        AppLanguage.es: '1 fen = 1/10 cun ≈ 3,333 mm',
       },
     ),
     MeasureUnit(
@@ -375,6 +414,8 @@ const MeasureCatalog kLengthCatalog = MeasureCatalog(
       note: '1 厘 = 1/10 分 ≈ 0.333 毫米',
       notes: <AppLanguage, String>{
         AppLanguage.en: '1 li = 1/10 fen ≈ 0.333 mm',
+        AppLanguage.ja: '1 厘 = 1/10 分 ≈ 0.333 mm',
+        AppLanguage.es: '1 li (厘) = 1/10 fen ≈ 0,333 mm',
       },
     ),
     MeasureUnit(
@@ -390,7 +431,11 @@ const MeasureCatalog kLengthCatalog = MeasureCatalog(
       baseNumerator: 5,
       baseDenominator: 150000,
       note: '1 毫 = 1/10 厘 ≈ 33.3 微米',
-      notes: <AppLanguage, String>{AppLanguage.en: '1 hao = 1/10 li ≈ 33.3 µm'},
+      notes: <AppLanguage, String>{
+        AppLanguage.en: '1 hao = 1/10 li ≈ 33.3 µm',
+        AppLanguage.ja: '1 毛 = 1/10 厘 ≈ 33.3 µm',
+        AppLanguage.es: '1 hao = 1/10 li ≈ 33,3 µm',
+      },
     ),
     MeasureUnit(
       id: 'si',
@@ -405,7 +450,11 @@ const MeasureCatalog kLengthCatalog = MeasureCatalog(
       baseNumerator: 5,
       baseDenominator: 1500000,
       note: '1 丝 = 1/10 毫 ≈ 3.33 微米',
-      notes: <AppLanguage, String>{AppLanguage.en: '1 si = 1/10 hao ≈ 3.33 µm'},
+      notes: <AppLanguage, String>{
+        AppLanguage.en: '1 si = 1/10 hao ≈ 3.33 µm',
+        AppLanguage.ja: '1 糸 = 1/10 毛 ≈ 3.33 µm',
+        AppLanguage.es: '1 si = 1/10 hao ≈ 3,33 µm',
+      },
     ),
   ],
   samples: <MeasureSample>[

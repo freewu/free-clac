@@ -323,7 +323,7 @@ Web 端可深链：`?page=settings` 直接打开设置页，`?page=plot` / `?pag
   体系名称统一走 `measureSystemLabel()`
 - **换算数据层也带语言**：`MeasureUnit.names` / `MeasureSample.names` 存 en / ja / es，
   `labelIn(language)` 取不到就回落简体中文（`zhHant` 与 `zhHans` 都用原文）；
-  单位说明 `MeasureUnit.notes` 只翻了英文，`noteIn()` 对中文回落原文、对其他语言用英文
+  单位说明 `MeasureUnit.notes` 存 en / ja / es，`noteIn()` 对中文回落原文、缺翻译时回落英文
 - **计算器与绘图页**同样走 `lib/l10n/`：`calc_strings.dart`（`kCalcStrings`）覆盖键盘提示、
   历史面板、函数库的分类与 48 条函数说明；`plot_strings.dart`（`kPlotStrings`）覆盖顶栏工具提示、
   画布按钮、曲线面板、示例面板与导出对话框。函数说明按内置函数名查表，
@@ -509,8 +509,10 @@ just test
 换算单位名称 / 说明 / 参照物按语言回落、养老金 / 个税 / 退休年龄的简繁文案、
 `?lang=` 深链指定语言且不写回本地、换算页打开着切语言时标题与单位名跟着换、
 计算器与绘图页在英文界面下的提示 / 历史 / 函数库分类与说明 / 曲线类型 / 空状态 / 示例名称全是英文、
-运算错误提示按语言本地化（含位置与占位符参数）等
-Widget 与单元测试（共 222 项）。
+运算错误提示按语言本地化（含位置与占位符参数）、
+换算单位说明的英 / 日 / 西三种语言齐全、
+SVG 导出标题跟随界面语言等
+Widget 与单元测试（共 224 项）。
 
 Android 的相册写入走 `MediaStore`，无法在 Widget 测试里覆盖，另有真机 / 模拟器测试 `integration_test/android_save_test.dart`（`just test-android`，需先 `just emulator` 或插上真机）。
 

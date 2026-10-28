@@ -69,8 +69,8 @@ cmd.exe /c "cd /d $(wslpath -w "$PWD") && flutter test"
   `measureSystemLabel()`（内部走 `t.systemMetric` 等）。换算 catalog 里的数据自带语言：
   单位 / 参照物用 `names: <AppLanguage, String>{...}` + `labelIn()`
   （取不到回落简体原文，`zhHant` 也用原文），单位说明用 `notes` + `noteIn()`
-  （只翻英文，中文回落原文、其他语言回落英文）。新增单位必须补 en / ja / es 三项，
-  `test/tools_test.dart` 会遍历六个 catalog 检查。
+  （en / ja / es 三份，中文回落原文、缺翻译回落英文）。新增单位必须补 en / ja / es 三项，
+  带说明的单位说明也要三份，`test/tools_test.dart` 会遍历六个 catalog 检查。
 - **界面文案一律走多语言**：应用级（导航、设置、工具页标题）用 `t.xxx`（`lib/l10n/app_strings.dart` 里 `AppStrings` 的五个实现都要补），工具卡片名称 / 卖点 / 说明写进 `lib/ui/tools/<tool>/<tool>_lang.dart` 的 `k<Tool>Lang`。注释用中文，界面文案用各语言母语。
 - **计算器页与绘图页的文案单独成表**：`lib/l10n/calc_strings.dart`（`kCalcStrings`）与
   `lib/l10n/plot_strings.dart`（`kPlotStrings`），写法同工具页 `<tool>_strings.dart`。

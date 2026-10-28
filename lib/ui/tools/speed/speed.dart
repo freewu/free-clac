@@ -31,6 +31,9 @@ const MeasureCatalog kSpeedCatalog = MeasureCatalog(
       note: '1 千米/小时 = 5/18 米/秒 ≈ 0.278 米/秒，车速表常用',
       notes: <AppLanguage, String>{
         AppLanguage.en: '1 km/h = 5/18 m/s ≈ 0.278 m/s, used on speedometers',
+        AppLanguage.ja: '1 km/h = 5/18 m/s ≈ 0.278 m/s、速度計で使います',
+        AppLanguage.es:
+            '1 km/h = 5/18 m/s ≈ 0,278 m/s, se usa en los velocímetros',
       },
     ),
     MeasureUnit(
@@ -46,7 +49,11 @@ const MeasureCatalog kSpeedCatalog = MeasureCatalog(
       baseNumerator: 1,
       baseDenominator: 1,
       note: '国际单位制的速度单位',
-      notes: <AppLanguage, String>{AppLanguage.en: 'The SI unit of speed'},
+      notes: <AppLanguage, String>{
+        AppLanguage.en: 'The SI unit of speed',
+        AppLanguage.ja: 'SI の速さの単位です',
+        AppLanguage.es: 'La unidad de velocidad del SI',
+      },
     ),
     MeasureUnit(
       id: 'kms',
@@ -63,6 +70,9 @@ const MeasureCatalog kSpeedCatalog = MeasureCatalog(
       note: '1 千米/秒 = 3600 千米/小时，航天器与天体常用',
       notes: <AppLanguage, String>{
         AppLanguage.en: '1 km/s = 3600 km/h, used for spacecraft and astronomy',
+        AppLanguage.ja: '1 km/s = 3600 km/h、宇宙機や天文学で使います',
+        AppLanguage.es:
+            '1 km/s = 3600 km/h, se usa en astronáutica y astronomía',
       },
     ),
     MeasureUnit(
@@ -81,6 +91,9 @@ const MeasureCatalog kSpeedCatalog = MeasureCatalog(
       notes: <AppLanguage, String>{
         AppLanguage.en:
             '1 knot = 1 nautical mile/hour = 1852/3600 m/s ≈ 1.852 km/h',
+        AppLanguage.ja: '1 ノット = 1 海里/時 = 1852/3600 m/s ≈ 1.852 km/h',
+        AppLanguage.es:
+            '1 nudo = 1 milla náutica/hora = 1852/3600 m/s ≈ 1,852 km/h',
       },
     ),
     MeasureUnit(
@@ -99,6 +112,9 @@ const MeasureCatalog kSpeedCatalog = MeasureCatalog(
       notes: <AppLanguage, String>{
         AppLanguage.en:
             'Based on 340.3 m/s at sea level and 15 °C; varies with temperature',
+        AppLanguage.ja: '海面・15 °C での 340.3 m/s を基準にしています（気温で変わります）',
+        AppLanguage.es:
+            'Basado en 340,3 m/s a nivel del mar y 15 °C; varía con la temperatura',
       },
     ),
     // 英制
@@ -117,6 +133,8 @@ const MeasureCatalog kSpeedCatalog = MeasureCatalog(
       note: '1 英里/小时 = 0.44704 米/秒 ≈ 1.609 千米/小时',
       notes: <AppLanguage, String>{
         AppLanguage.en: '1 mph = 0.44704 m/s ≈ 1.609 km/h',
+        AppLanguage.ja: '1 mph = 0.44704 m/s ≈ 1.609 km/h',
+        AppLanguage.es: '1 mph = 0,44704 m/s ≈ 1,609 km/h',
       },
     ),
     MeasureUnit(
@@ -132,7 +150,11 @@ const MeasureCatalog kSpeedCatalog = MeasureCatalog(
       baseNumerator: 381,
       baseDenominator: 1250,
       note: '1 英尺/秒 = 0.3048 米/秒',
-      notes: <AppLanguage, String>{AppLanguage.en: '1 ft/s = 0.3048 m/s'},
+      notes: <AppLanguage, String>{
+        AppLanguage.en: '1 ft/s = 0.3048 m/s',
+        AppLanguage.ja: '1 ft/s = 0.3048 m/s',
+        AppLanguage.es: '1 ft/s = 0,3048 m/s',
+      },
     ),
     MeasureUnit(
       id: 'miin',
@@ -149,6 +171,8 @@ const MeasureCatalog kSpeedCatalog = MeasureCatalog(
       note: '1 英里/分 = 60 英里/小时 ≈ 26.82 米/秒',
       notes: <AppLanguage, String>{
         AppLanguage.en: '1 mile/min = 60 mph ≈ 26.82 m/s',
+        AppLanguage.ja: '1 マイル/分 = 60 mph ≈ 26.82 m/s',
+        AppLanguage.es: '1 milla/min = 60 mph ≈ 26,82 m/s',
       },
     ),
     // 市制（1 尺 = 1/3 米、1 丈 = 10/3 米、1 里 = 500 米）
@@ -167,6 +191,8 @@ const MeasureCatalog kSpeedCatalog = MeasureCatalog(
       note: '1 里/小时 = 500/3600 米/秒 ≈ 0.139 米/秒',
       notes: <AppLanguage, String>{
         AppLanguage.en: '1 li/h = 500/3600 m/s ≈ 0.139 m/s',
+        AppLanguage.ja: '1 里/時 = 500/3600 m/s ≈ 0.139 m/s',
+        AppLanguage.es: '1 li/h = 500/3600 m/s ≈ 0,139 m/s',
       },
     ),
     MeasureUnit(
@@ -184,6 +210,8 @@ const MeasureCatalog kSpeedCatalog = MeasureCatalog(
       note: '1 丈/秒 = 10/3 米/秒 ≈ 3.33 米/秒',
       notes: <AppLanguage, String>{
         AppLanguage.en: '1 zhang/s = 10/3 m/s ≈ 3.33 m/s',
+        AppLanguage.ja: '1 丈/秒 = 10/3 m/s ≈ 3.33 m/s',
+        AppLanguage.es: '1 zhang/s = 10/3 m/s ≈ 3,33 m/s',
       },
     ),
     MeasureUnit(
@@ -201,6 +229,8 @@ const MeasureCatalog kSpeedCatalog = MeasureCatalog(
       note: '1 尺/秒 = 1/3 米/秒 ≈ 0.333 米/秒',
       notes: <AppLanguage, String>{
         AppLanguage.en: '1 chi/s = 1/3 m/s ≈ 0.333 m/s',
+        AppLanguage.ja: '1 尺/秒 = 1/3 m/s ≈ 0.333 m/s',
+        AppLanguage.es: '1 chi/s = 1/3 m/s ≈ 0,333 m/s',
       },
     ),
   ],

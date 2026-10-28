@@ -9,6 +9,7 @@ import 'app_language.dart';
 class PlotStrings {
   const PlotStrings({
     required this.title,
+    required this.svgTitle,
     required this.angleTooltip,
     required this.hideGrid,
     required this.showGrid,
@@ -84,6 +85,9 @@ class PlotStrings {
   });
 
   final String title;
+
+  /// 导出 SVG 时写进 `<title>` 的文件标题。
+  final String svgTitle;
 
   /// 「角度单位（{0}），点击切换」。
   final String angleTooltip;
@@ -219,6 +223,7 @@ class PlotStrings {
 const Map<AppLanguage, PlotStrings> kPlotStrings = <AppLanguage, PlotStrings>{
   AppLanguage.zhHans: PlotStrings(
     title: '函数绘图',
+    svgTitle: 'free-clac 函数绘图',
     angleTooltip: '角度单位（{0}），点击切换',
     hideGrid: '隐藏网格',
     showGrid: '显示网格',
@@ -294,6 +299,7 @@ const Map<AppLanguage, PlotStrings> kPlotStrings = <AppLanguage, PlotStrings>{
   ),
   AppLanguage.zhHant: PlotStrings(
     title: '函數繪圖',
+    svgTitle: 'free-clac 函式繪圖',
     angleTooltip: '角度單位（{0}），點擊切換',
     hideGrid: '隱藏網格',
     showGrid: '顯示網格',
@@ -369,6 +375,7 @@ const Map<AppLanguage, PlotStrings> kPlotStrings = <AppLanguage, PlotStrings>{
   ),
   AppLanguage.en: PlotStrings(
     title: 'Function plot',
+    svgTitle: 'free-clac function plot',
     angleTooltip: 'Angle unit ({0}) — tap to switch',
     hideGrid: 'Hide grid',
     showGrid: 'Show grid',
@@ -451,6 +458,7 @@ const Map<AppLanguage, PlotStrings> kPlotStrings = <AppLanguage, PlotStrings>{
   ),
   AppLanguage.ja: PlotStrings(
     title: '関数グラフ',
+    svgTitle: 'free-clac 関数グラフ',
     angleTooltip: '角度の単位（{0}）— タップで切り替え',
     hideGrid: 'グリッドを隠す',
     showGrid: 'グリッドを表示',
@@ -531,6 +539,7 @@ const Map<AppLanguage, PlotStrings> kPlotStrings = <AppLanguage, PlotStrings>{
   ),
   AppLanguage.es: PlotStrings(
     title: 'Gráfica de funciones',
+    svgTitle: 'free-clac gráfica de funciones',
     angleTooltip: 'Unidad de ángulo ({0}); toca para cambiar',
     hideGrid: 'Ocultar cuadrícula',
     showGrid: 'Mostrar cuadrícula',

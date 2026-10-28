@@ -100,6 +100,7 @@ class _PlotExportDialogState extends State<PlotExportDialog> {
         controller: widget.controller,
         size: _size,
         format: _format,
+        title: plotStrings.svgTitle,
       );
       final save = widget.saver ?? savePlotExportFile;
       final saved = await save(file);

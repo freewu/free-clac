@@ -88,12 +88,26 @@ void main() {
       expect(foot.labelIn(AppLanguage.zhHant), '英尺');
     });
 
-    test('说明只翻了英文：中文回落原文，其他语言用英文', () {
+    test('说明按语言取，中文回落原文', () {
       final foot = unitOf('foot');
       expect(foot.noteIn(AppLanguage.zhHans), '1 英尺 = 12 英寸 = 0.3048 米');
+      expect(foot.noteIn(AppLanguage.zhHant), '1 英尺 = 12 英寸 = 0.3048 米');
       expect(foot.noteIn(AppLanguage.en), '1 foot = 12 inches = 0.3048 m');
-      expect(foot.noteIn(AppLanguage.ja), '1 foot = 12 inches = 0.3048 m');
-      expect(foot.noteIn(AppLanguage.es), '1 foot = 12 inches = 0.3048 m');
+      expect(foot.noteIn(AppLanguage.ja), '1 フィート = 12 インチ = 0.3048 m');
+      expect(foot.noteIn(AppLanguage.es), '1 pie = 12 pulgadas = 0,3048 m');
+    });
+
+    test('说明缺 en 时回落到中文原文', () {
+      const unit = MeasureUnit(
+        id: 'test',
+        label: '测试',
+        symbol: 't',
+        system: MeasureSystem.metric,
+        baseNumerator: 1,
+        baseDenominator: 1,
+      );
+      expect(unit.noteIn(AppLanguage.en), '');
+      expect(unit.noteIn(AppLanguage.ja), '');
     });
 
     test('参照物名称同样按语言取', () {
@@ -123,6 +137,22 @@ void main() {
               unit.names[language],
               isNotNull,
               reason: '${catalog.id}.${unit.id} 缺少 ${language.code}',
+            );
+          }
+        }
+        // 只有带说明的单位需要三份翻译（大部分单位没有说明）
+        for (final unit in catalog.units.where(
+          (unit) => unit.note.isNotEmpty,
+        )) {
+          for (final language in [
+            AppLanguage.en,
+            AppLanguage.ja,
+            AppLanguage.es,
+          ]) {
+            expect(
+              unit.notes[language],
+              isNotNull,
+              reason: '${catalog.id}.${unit.id} 缺少 ${language.code} 说明',
             );
           }
         }
