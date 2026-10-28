@@ -5,7 +5,7 @@
 /// 1 斗 = 10 升、1 石 = 100 升（市制按市升 = 1 升计）。
 library;
 
-import 'unit_catalog.dart';
+import '../unit_catalog.dart';
 
 /// 容量单位表：以升为基准，公制 6 + 英制 5 + 市制 6 共 17 个单位。
 const MeasureCatalog kVolumeCatalog = MeasureCatalog(

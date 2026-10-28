@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../core/number_format.dart';
 import '../../../theme/app_theme.dart';
-import '../../../tools/compound.dart';
+import 'compound.dart';
 import '../widgets/tool_field.dart';
 
 /// 复利计算页：本金、利率、期限、复利频率与定期追加，输出本息与逐年增长表。

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../theme/app_theme.dart';
-import '../../../tools/bmi.dart';
+import 'bmi.dart';
 
 /// 各 BMI 分级对应的颜色。
 Color bmiCategoryColor(BmiCategory category) => switch (category) {

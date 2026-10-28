@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../core/number_format.dart';
 import '../../../theme/app_theme.dart';
-import '../../../tools/tax.dart';
+import 'tax.dart';
 import '../widgets/tool_bars.dart';
 import '../widgets/tool_field.dart';
 

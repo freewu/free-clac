@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../core/number_format.dart';
 import '../../../theme/app_theme.dart';
-import '../../../tools/interest.dart';
+import 'interest.dart';
 import '../widgets/tool_field.dart';
 
 /// 利率计算页：本金配日付 / 月付 / 年付，双向换算年化率。

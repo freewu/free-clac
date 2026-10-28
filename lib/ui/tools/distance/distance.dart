@@ -4,7 +4,7 @@
 /// 避免 0.3048 之类的十进制字面量在连续换算中累积误差。
 library;
 
-import 'unit_catalog.dart';
+import '../unit_catalog.dart';
 
 /// 长度单位表：以米为基准，公制 9 + 英制 7 + 市制 9 共 25 个单位。
 const MeasureCatalog kLengthCatalog = MeasureCatalog(

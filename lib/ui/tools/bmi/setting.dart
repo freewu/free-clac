@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../l10n/app_i18n.dart';
 import '../../../state/settings_controller.dart';
 import '../../../theme/app_theme.dart';
-import '../../../tools/bmi.dart';
+import 'bmi.dart';
 import '../../widgets/settings_card.dart';
 import '../widgets/tool_select.dart';
 

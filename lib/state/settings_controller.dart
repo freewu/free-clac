@@ -3,7 +3,7 @@ import 'package:flutter/foundation.dart';
 import '../l10n/app_language.dart';
 import '../services/settings_store.dart';
 import '../theme/app_theme.dart';
-import '../tools/bmi.dart';
+import '../ui/tools/bmi/bmi.dart';
 
 /// 当前生效的设置控制器。
 ///

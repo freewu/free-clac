@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../core/number_format.dart';
 import '../../../theme/app_theme.dart';
 import '../../../state/settings_controller.dart';
-import '../../../tools/bmi.dart';
+import 'bmi.dart';
 import '../widgets/tool_field.dart';
 import '../widgets/tool_unit_picker.dart';
 import 'bmi_gauge.dart';
@@ -21,8 +21,7 @@ class BmiPage extends StatefulWidget {
 
 class _BmiPageState extends State<BmiPage> {
   /// 默认值来自设置页（`BmiSetting`），页内仍可随时切换。
-  BmiUnitSystem _unit =
-      currentSettings?.bmiUnit ?? BmiUnitSystem.metric;
+  BmiUnitSystem _unit = currentSettings?.bmiUnit ?? BmiUnitSystem.metric;
 
   /// 英制身高输入框的单位（ft / in），点输入框右侧的按钮切换。
   BmiImperialHeightUnit _heightUnit = BmiImperialHeightUnit.feet;

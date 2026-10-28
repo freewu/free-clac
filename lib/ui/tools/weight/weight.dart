@@ -5,7 +5,7 @@
 /// 1 两 = 1/20 千克（市制按 1 斤 = 10 两计）。
 library;
 
-import 'unit_catalog.dart';
+import '../unit_catalog.dart';
 
 /// 重量单位表：以千克为基准，公制 5 + 英制 6 + 市制 6 共 17 个单位。
 const MeasureCatalog kWeightCatalog = MeasureCatalog(

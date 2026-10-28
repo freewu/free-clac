@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../core/number_format.dart';
 import '../../../theme/app_theme.dart';
-import '../../../tools/loan.dart';
+import 'loan.dart';
 import '../widgets/tool_bars.dart';
 import '../widgets/tool_field.dart';
 import '../widgets/tool_unit_picker.dart';

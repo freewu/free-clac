@@ -5,7 +5,7 @@
 /// 1 亩 = 60 平方丈 = 60 × (10/3)² = 2000/3 米²。
 library;
 
-import 'unit_catalog.dart';
+import '../unit_catalog.dart';
 
 /// 面积单位表：以平方米为基准，公制 7 + 英制 5 + 市制 7 共 19 个单位。
 const MeasureCatalog kAreaCatalog = MeasureCatalog(

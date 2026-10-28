@@ -459,13 +459,13 @@ lib/
 ├── core/       词法、语法、AST、求值器、内置函数、数字格式化、计算引擎、LaTeX 导出
 ├── plot/       视口、曲线采样器、绘图画笔、示例预设、PNG / WebP / SVG 导出
 ├── l10n/       多语言：语言枚举、应用级文案（AppStrings 五个实现）、取文案的全局入口
-├── tools/      小工具算法（BMI、复利、单位换算、利率、贷款、个税、养老金），纯 Dart 无 Flutter 依赖
 ├── models/     曲线、历史记录数据模型
 ├── services/   导出文件保存（Web 下载 / 磁盘写入）与本地设置存储，条件导入隔离平台差异
 ├── state/      计算器 / 绘图 / 设置控制器（ChangeNotifier）
 ├── ui/         页面与组件（键盘、显示屏、历史面板、绘图画布、函数面板、设置页）
-│   └── tools/  工具页与各工具界面（每个工具一个目录，含 defined.dart、界面与 lang/ 语言包；
-│                共用输入框 / 比例条 / 换算页在 widgets/）
+│   └── tools/  工具页与各工具（每个工具一个目录：逻辑 <tool>.dart、界面 <tool>_page.dart、
+│                defined.dart、setting.dart、lang/ 语言包；共用输入框 / 比例条 / 换算页在 widgets/，
+│                单位换算共用的 unit_catalog.dart 在本层）
 └── theme/      深色 / 浅色两套配色与 ThemeData
 test/           引擎、LaTeX、工具算法、绘图、Widget 测试
 integration_test/ 需真机 / 模拟器的测试（Android 导出落盘）

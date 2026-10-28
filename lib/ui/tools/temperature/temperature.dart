@@ -6,7 +6,7 @@
 /// 温度只有公制（摄氏 / 开尔文）与英制（华氏 / 兰氏）两套体系。
 library;
 
-import 'unit_catalog.dart';
+import '../unit_catalog.dart';
 
 /// 温度单位表：以摄氏度为基准，公制 2 + 英制 2 共 4 个单位。
 const MeasureCatalog kTemperatureCatalog = MeasureCatalog(

@@ -5,7 +5,7 @@
 /// 1 节 = 1 海里/小时 = 463/900 米/秒。
 library;
 
-import 'unit_catalog.dart';
+import '../unit_catalog.dart';
 
 /// 速度单位表：以米/秒为基准，公制 5 + 英制 3 + 市制 3 共 11 个单位。
 const MeasureCatalog kSpeedCatalog = MeasureCatalog(

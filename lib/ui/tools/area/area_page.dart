@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../../../tools/area.dart';
+import 'area.dart';
 import '../widgets/unit_convert_page.dart';
 
 /// 面积换算页：数据在 `lib/tools/area.dart`，界面用通用的换算页。
