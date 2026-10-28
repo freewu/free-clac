@@ -8,7 +8,7 @@ import 'weight_page.dart';
 Widget _builder(BuildContext context) => WeightPage();
 
 /// 「重量换算」的工具卡片元数据。
-final ToolInfo weightTool = ToolInfo(
+ToolInfo get weightTool => ToolInfo(
   id: 'weight',
   lang: kWeightLang,
   icon: Icons.scale_outlined,

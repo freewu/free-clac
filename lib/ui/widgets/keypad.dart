@@ -295,7 +295,7 @@ class _KeyButtonState extends State<_KeyButton> {
                       color: widget.active
                           ? AppColors.primary
                           : (widget.kind == _KeyKind.accent
-                                ? const Color(0xFF04101F)
+                                ? AppColors.onPrimary
                                 : foreground),
                     ),
                   ),
@@ -313,13 +313,13 @@ class _KeyButtonState extends State<_KeyButton> {
       case _KeyKind.digit:
         return (AppColors.surfaceHigh, AppColors.textPrimary);
       case _KeyKind.operator:
-        return (const Color(0xFF1D2839), AppColors.primary);
+        return (AppColors.keyOperator, AppColors.primary);
       case _KeyKind.function:
         return (AppColors.surface, AppColors.textSecondary);
       case _KeyKind.action:
         return (AppColors.surfaceHigher, AppColors.textPrimary);
       case _KeyKind.accent:
-        return (AppColors.primary, const Color(0xFF04101F));
+        return (AppColors.primary, AppColors.onPrimary);
       case _KeyKind.toggle:
         return (AppColors.surfaceHigh, AppColors.secondary);
     }

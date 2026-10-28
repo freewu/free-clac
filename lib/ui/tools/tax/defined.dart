@@ -9,7 +9,7 @@ import 'tax_page.dart';
 Widget _builder(BuildContext context) => TaxPage();
 
 /// 「个人所得税」的工具卡片元数据。
-final ToolInfo taxTool = ToolInfo(
+ToolInfo get taxTool => ToolInfo(
   id: 'tax',
   lang: kTaxLang,
   icon: Icons.receipt_long_outlined,

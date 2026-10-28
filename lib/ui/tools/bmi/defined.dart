@@ -8,7 +8,7 @@ import 'bmi_page.dart';
 Widget _builder(BuildContext context) => BmiPage();
 
 /// 「BMI 计算」的工具卡片元数据。
-final ToolInfo bmiTool = ToolInfo(
+ToolInfo get bmiTool => ToolInfo(
   id: 'bmi',
   lang: kBmiLang,
   icon: Icons.monitor_weight_outlined,

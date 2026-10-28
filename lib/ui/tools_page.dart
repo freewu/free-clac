@@ -121,11 +121,7 @@ class _ToolCard extends StatelessWidget {
                       ],
                     ),
                   ),
-                  child: Icon(
-                    tool.icon,
-                    size: 25,
-                    color: const Color(0xFF08111C),
-                  ),
+                  child: Icon(tool.icon, size: 25, color: AppColors.onPrimary),
                 ),
                 const SizedBox(width: 13),
                 Expanded(

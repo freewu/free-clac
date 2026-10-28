@@ -12,6 +12,7 @@ class AppPalette {
     required this.surface,
     required this.surfaceHigh,
     required this.surfaceHigher,
+    required this.keyOperator,
     required this.outline,
     required this.primary,
     required this.onPrimary,
@@ -37,6 +38,9 @@ class AppPalette {
   final Color surface;
   final Color surfaceHigh;
   final Color surfaceHigher;
+
+  /// 运算符键（+ − × ÷）的底色，浅色下用淡蓝与数字键区分。
+  final Color keyOperator;
   final Color outline;
 
   final Color primary;
@@ -70,6 +74,7 @@ const AppPalette kDarkPalette = AppPalette(
   surface: Color(0xFF121821),
   surfaceHigh: Color(0xFF1A2230),
   surfaceHigher: Color(0xFF222C3C),
+  keyOperator: Color(0xFF1D2839),
   outline: Color(0xFF2E3A4C),
   primary: Color(0xFF4F9CFF),
   onPrimary: Color(0xFF04101F),
@@ -104,6 +109,7 @@ const AppPalette kLightPalette = AppPalette(
   surface: Color(0xFFFFFFFF),
   surfaceHigh: Color(0xFFEDF1F7),
   surfaceHigher: Color(0xFFE2E8F1),
+  keyOperator: Color(0xFFD8E6FA),
   outline: Color(0xFFD2DAE5),
   primary: Color(0xFF1F6FEB),
   onPrimary: Color(0xFFFFFFFF),
@@ -150,6 +156,7 @@ abstract final class AppColors {
   static Color get surface => _active.surface;
   static Color get surfaceHigh => _active.surfaceHigh;
   static Color get surfaceHigher => _active.surfaceHigher;
+  static Color get keyOperator => _active.keyOperator;
   static Color get outline => _active.outline;
 
   static Color get primary => _active.primary;

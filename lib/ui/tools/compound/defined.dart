@@ -8,7 +8,7 @@ import 'compound_page.dart';
 Widget _builder(BuildContext context) => CompoundPage();
 
 /// 「复利计算」的工具卡片元数据。
-final ToolInfo compoundTool = ToolInfo(
+ToolInfo get compoundTool => ToolInfo(
   id: 'compound',
   lang: kCompoundLang,
   icon: Icons.savings_outlined,

@@ -99,5 +99,6 @@ shoot loan       1440,900 "index.html?page=tools&tool=loan&method=equalPrincipal
 shoot pension    1440,1000 "index.html?page=tools&tool=pension"
 shoot tax        1440,980 "index.html?page=tools&tool=tax"
 shoot settings   1440,1000 "index.html?page=settings"
+shoot light      1440,900 "index.html?theme=light"
 shoot mobile     414,896  "index.html"
 ls -la "$OUT"

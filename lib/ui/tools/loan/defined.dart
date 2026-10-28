@@ -8,7 +8,7 @@ import 'loan_page.dart';
 Widget _builder(BuildContext context) => LoanPage();
 
 /// 「贷款计算器」的工具卡片元数据。
-final ToolInfo loanTool = ToolInfo(
+ToolInfo get loanTool => ToolInfo(
   id: 'loan',
   lang: kLoanLang,
   icon: Icons.request_quote_outlined,

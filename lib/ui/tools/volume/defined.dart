@@ -8,7 +8,7 @@ import 'volume_page.dart';
 Widget _builder(BuildContext context) => VolumePage();
 
 /// 「容量换算」的工具卡片元数据。
-final ToolInfo volumeTool = ToolInfo(
+ToolInfo get volumeTool => ToolInfo(
   id: 'volume',
   lang: kVolumeLang,
   icon: Icons.water_drop_outlined,

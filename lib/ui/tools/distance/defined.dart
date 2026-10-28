@@ -8,7 +8,7 @@ import 'distance_page.dart';
 Widget _builder(BuildContext context) => DistancePage();
 
 /// 「长度换算」的工具卡片元数据。
-final ToolInfo distanceTool = ToolInfo(
+ToolInfo get distanceTool => ToolInfo(
   id: 'distance',
   lang: kDistanceLang,
   icon: Icons.straighten_rounded,

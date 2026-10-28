@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 
 import '../core/number_format.dart';
 import '../state/plot_controller.dart';
+import '../theme/app_theme.dart';
 import 'plot_viewport.dart';
 
 /// 曲线绘制器：网格、坐标轴、曲线、追踪辅助线。
@@ -23,10 +24,12 @@ class PlotPainter extends CustomPainter {
   final Offset? trace;
   final List<TraceDot> traceDots;
 
-  static const Color _minorGrid = Color(0x11FFFFFF);
-  static const Color _majorGrid = Color(0x1FFFFFFF);
-  static const Color _axisColor = Color(0xFF7C8CA3);
-  static const Color _labelColor = Color(0xFF9AAABF);
+  /// 网格 / 坐标轴 / 刻度文字都跟着主题走：深色下是白线压在深底上，
+  /// 浅色下换成正文色压在白底上。
+  static Color get _minorGrid => AppColors.textPrimary.withValues(alpha: 0.07);
+  static Color get _majorGrid => AppColors.textPrimary.withValues(alpha: 0.13);
+  static Color get _axisColor => AppColors.textSecondary;
+  static Color get _labelColor => AppColors.textSecondary;
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -43,10 +46,10 @@ class PlotPainter extends CustomPainter {
   void _paintBackground(Canvas canvas, Size size) {
     final rect = Offset.zero & size;
     final paint = Paint()
-      ..shader = const LinearGradient(
+      ..shader = LinearGradient(
         begin: Alignment.topLeft,
         end: Alignment.bottomRight,
-        colors: [Color(0xFF0D141D), Color(0xFF0A0E14)],
+        colors: [AppColors.surface, AppColors.background],
       ).createShader(rect);
     canvas.drawRect(rect, paint);
   }
@@ -242,7 +245,7 @@ class PlotPainter extends CustomPainter {
     if (screen.dx < -2 || screen.dx > size.width + 2) return;
 
     final dashed = Paint()
-      ..color = Colors.white.withValues(alpha: 0.32)
+      ..color = AppColors.textPrimary.withValues(alpha: 0.32)
       ..strokeWidth = 1;
     _drawDashedLine(
       canvas,
@@ -270,7 +273,7 @@ class PlotPainter extends CustomPainter {
         Paint()
           ..style = PaintingStyle.stroke
           ..strokeWidth = 1.2
-          ..color = Colors.white.withValues(alpha: 0.85),
+          ..color = AppColors.textPrimary.withValues(alpha: 0.85),
       );
     }
   }
@@ -299,16 +302,17 @@ class PlotPainter extends CustomPainter {
     String text,
     Offset position, {
     Alignment align = Alignment.center,
-    Color color = _labelColor,
+    Color? color,
     double fontSize = 11,
     Size? bounds,
   }) {
     if (text.isEmpty) return;
+    final textColor = color ?? _labelColor;
     final painter = TextPainter(
       text: TextSpan(
         text: text,
         style: TextStyle(
-          color: color,
+          color: textColor,
           fontSize: fontSize,
           fontFeatures: const [ui.FontFeature.tabularFigures()],
         ),

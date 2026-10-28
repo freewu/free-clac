@@ -8,7 +8,7 @@ import 'area_page.dart';
 Widget _builder(BuildContext context) => AreaPage();
 
 /// 「面积换算」的工具卡片元数据。
-final ToolInfo areaTool = ToolInfo(
+ToolInfo get areaTool => ToolInfo(
   id: 'area',
   lang: kAreaLang,
   icon: Icons.crop_square_rounded,

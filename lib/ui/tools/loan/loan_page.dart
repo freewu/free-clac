@@ -8,10 +8,10 @@ import '../widgets/tool_field.dart';
 import '../widgets/tool_unit_picker.dart';
 
 /// 本金条的颜色。
-final Color loanPrincipalColor = AppColors.primary;
+Color get loanPrincipalColor => AppColors.primary;
 
 /// 利息条的颜色。
-final Color loanInterestColor = AppColors.warning;
+Color get loanInterestColor => AppColors.warning;
 
 /// 解析深链里的还款方式（Web 端 `?method=equalPrincipal`），无效值回落到等额本息。
 ///

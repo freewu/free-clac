@@ -8,7 +8,8 @@ void main() {
   // 要在读平台语言之前初始化绑定，否则 Web 上拿不到 platformDispatcher。
   WidgetsFlutterBinding.ensureInitialized();
   // Web 端支持 ?page=plot|tools|settings 直接打开对应页面，
-  // ?preset=0 载入第 1 个示例曲线，?tool=bmi 直接打开 BMI 计算。
+  // ?preset=0 载入第 1 个示例曲线，?tool=bmi 直接打开 BMI 计算，
+  // ?theme=light 用浅色启动（截图与演示用）。
   final query = Uri.base.queryParameters;
   final page = query['page'];
   // 首次启动跟随系统语言，之后以设置页里存的为准。
@@ -17,7 +18,10 @@ void main() {
   );
   runApp(
     FreeCalcApp(
-      settings: SettingsController(language: language),
+      settings: SettingsController(
+        language: language,
+        themeMode: AppThemeMode.fromCode(query['theme']) ?? AppThemeMode.system,
+      ),
       initialTab: switch (page) {
         'plot' => 1,
         'tools' => 2,

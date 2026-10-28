@@ -191,7 +191,7 @@ class _Logo extends StatelessWidget {
           colors: [AppColors.primary, AppColors.secondary],
         ),
       ),
-      child: const Icon(Icons.functions, size: 20, color: Color(0xFF04101F)),
+      child: Icon(Icons.functions, size: 20, color: AppColors.onPrimary),
     );
   }
 }

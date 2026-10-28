@@ -9,10 +9,12 @@ import 'package:free_clac/services/plot_file_saver.dart';
 import 'package:free_clac/services/settings_store.dart';
 import 'package:free_clac/state/plot_controller.dart';
 import 'package:free_clac/state/settings_controller.dart';
+import 'package:free_clac/theme/app_theme.dart';
 import 'package:free_clac/ui/settings_page.dart';
 import 'package:free_clac/ui/tools/tool_catalog.dart';
 import 'package:free_clac/ui/tools/bmi/bmi.dart';
 import 'package:free_clac/ui/tools/loan/loan.dart';
+import 'package:free_clac/ui/widgets/calc_display.dart';
 import 'package:free_clac/ui/widgets/plot_export_dialog.dart';
 import 'package:free_clac/ui/tools/area/area_page.dart';
 import 'package:free_clac/ui/tools/bmi/bmi_page.dart';
@@ -27,7 +29,6 @@ import 'package:free_clac/ui/tools/temperature/temperature_page.dart';
 import 'package:free_clac/ui/tools/volume/volume_page.dart';
 import 'package:free_clac/ui/tools/weight/weight_page.dart';
 import 'package:free_clac/ui/tools/widgets/tool_bars.dart';
-import 'package:free_clac/ui/widgets/calc_display.dart';
 import 'package:free_clac/ui/widgets/keypad.dart';
 import 'package:free_clac/plot/plot_painter.dart';
 import 'package:free_clac/ui/widgets/plot_canvas.dart';
@@ -392,6 +393,56 @@ void main() {
     final themed = tester.widget<MaterialApp>(find.byType(MaterialApp));
     expect(themed.theme?.brightness, Brightness.dark);
     expect(themed.theme?.scaffoldBackgroundColor, const Color(0xFF0A0E14));
+  });
+
+  testWidgets('浅色模式：计算器按键、显示屏与工具卡片都跟着变浅', (tester) async {
+    tester.view.physicalSize = const Size(1200, 1600);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+    final settings = SettingsController(store: _MemoryStore());
+    await tester.pumpWidget(FreeCalcApp(settings: settings, initialTab: 3));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byKey(const Key('settings-theme-light')));
+    await tester.pumpAndSettle();
+
+    // 切回计算器看按键：运算符键、强调键都不该再用深色配色的写死颜色
+    await tester.tap(find.text('计算').last);
+    await tester.pumpAndSettle();
+    expect(AppColors.keyOperator, kLightPalette.keyOperator);
+
+    DecoratedBox decoOf(String label) => tester.widget<DecoratedBox>(
+      find
+          .ancestor(of: find.text(label), matching: find.byType(DecoratedBox))
+          .first,
+    );
+
+    final operatorKey = decoOf('÷').decoration as BoxDecoration;
+    expect(operatorKey.color, kLightPalette.keyOperator);
+    expect(operatorKey.color, isNot(kDarkPalette.keyOperator));
+
+    final accentKey = decoOf('=').decoration as BoxDecoration;
+    expect(accentKey.color, isNull);
+    expect(
+      (accentKey.gradient! as LinearGradient).colors.first,
+      kLightPalette.primary,
+    );
+
+    // 显示屏渐变也不再是写死的深色
+    final display = tester.widget<Container>(
+      find.byKey(const Key('calc-display')),
+    );
+    final gradient = (display.decoration! as BoxDecoration).gradient!;
+    expect((gradient as LinearGradient).colors, [
+      kLightPalette.surface,
+      kLightPalette.background,
+    ]);
+
+    // 工具卡片配色同样按当前主题取
+    await tester.tap(find.text('工具').last);
+    await tester.pumpAndSettle();
+    expect(kTools.first.color, kLightPalette.tertiary);
+    expect(kTools.first.color, isNot(kDarkPalette.tertiary));
   });
 
   testWidgets('设置页：BMI 默认单位改成英制后 BMI 页按英制打开', (tester) async {

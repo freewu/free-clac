@@ -15,7 +15,7 @@ Color insuranceColor(InsuranceItem item) => switch (item) {
 };
 
 /// 个税条的颜色。
-final Color taxBarColor = AppColors.error;
+Color get taxBarColor => AppColors.error;
 
 /// 个人所得税计算：税前月薪 → 五险一金 → 个税 → 到手，按累计预扣法逐月算。
 class TaxPage extends StatefulWidget {

@@ -17,13 +17,14 @@ class CalcDisplay extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
+      key: const Key('calc-display'),
       padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(20),
-        gradient: const LinearGradient(
+        gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [Color(0xFF131B26), Color(0xFF0E141D)],
+          colors: [AppColors.surface, AppColors.background],
         ),
         border: Border.all(color: AppColors.outline.withValues(alpha: 0.7)),
       ),

@@ -8,7 +8,7 @@ import 'interest_page.dart';
 Widget _builder(BuildContext context) => InterestPage();
 
 /// 「利率计算」的工具卡片元数据。
-final ToolInfo interestTool = ToolInfo(
+ToolInfo get interestTool => ToolInfo(
   id: 'interest',
   lang: kInterestLang,
   icon: Icons.percent_rounded,

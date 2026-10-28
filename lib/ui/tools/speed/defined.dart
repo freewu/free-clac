@@ -8,7 +8,7 @@ import 'speed_page.dart';
 Widget _builder(BuildContext context) => SpeedPage();
 
 /// 「速度换算」的工具卡片元数据。
-final ToolInfo speedTool = ToolInfo(
+ToolInfo get speedTool => ToolInfo(
   id: 'speed',
   lang: kSpeedLang,
   icon: Icons.speed_rounded,

@@ -17,7 +17,10 @@ export 'tool_info.dart';
 /// 全部内置工具，顺序即工具页展示顺序。
 ///
 /// 每项元数据都在各自目录的 `defined.dart` 里声明，这里只负责汇总。
-final List<ToolInfo> kTools = List.unmodifiable(<ToolInfo>[
+///
+/// 用 getter 而不是 `final` 变量：卡片配色取自 [AppColors]，而顶层 `final`
+/// 只在首次访问时求值，切到浅色主题后颜色就会停在旧配色上。
+List<ToolInfo> get kTools => List.unmodifiable(<ToolInfo>[
   bmiTool,
   compoundTool,
   distanceTool,
