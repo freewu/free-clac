@@ -54,6 +54,7 @@ cmd.exe /c "cd /d $(wslpath -w "$PWD") && flutter test"
 - 严格通过 `dart format`（80 列）与 `analysis_options.yaml` 的 lint，不要用 `// ignore:` 绕过。
 - 改动计算逻辑或采样算法时，在 `test/` 补单元测试；改动交互时补 Widget 测试。
 - 新增曲线类型 / 视图行为时同步更新 README 的功能列表、示例表格与测试数量。
+- **只在部分语言提供的工具**（如养老金、个税只适用中国口径）在 `ToolInfo.availableIn` 里声明语言集合；工具页与 `toolById` 都只看 `visibleTools`，别直接遍历 `kTools`。
 - **界面文案一律走多语言**：应用级（导航、设置、工具页标题）用 `t.xxx`（`lib/l10n/app_strings.dart` 里 `AppStrings` 的五个实现都要补），工具卡片名称 / 卖点 / 说明写进 `lib/ui/tools/<tool>/lang/<tool>_lang.dart` 的 `k<Tool>Lang`。注释用中文，界面文案用各语言母语。
 - **颜色一律走 `AppColors`**：不要硬编码 `Color(0xFF...)`，也不要在 `const` 表达式里用 `AppColors.xxx`（它不是常量），深色 / 浅色两套配色都要能看。
 - 小工具分两层：纯逻辑放 `lib/tools/`（不依赖 Flutter），界面放 `lib/ui/tools/<tool>/`。共用的输入框与比例条放在 `lib/ui/tools/widgets/`（`tool_field.dart`、`tool_unit_picker.dart`、`tool_select.dart`、`tool_bars.dart`），不要在每个工具里各写一份。每个工具的 `ToolInfo`（名称、卖点、图标、配色、页面构造器）写在**自己目录的 `defined.dart`** 里，`lib/ui/tools/tool_catalog.dart` 只汇总 `kTools`；新增工具 = 新建 `<tool>/defined.dart` + 新建 `<tool>/lang/<tool>_lang.dart`（五种语言）+ 在 `kTools` 追加一行 + `tool/screenshot.sh` 加一条 `shoot`。

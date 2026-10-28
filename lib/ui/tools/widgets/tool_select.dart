@@ -9,15 +9,16 @@ import '../../../theme/app_theme.dart';
 class ToolSelect<T> extends StatelessWidget {
   const ToolSelect({
     super.key,
-    required this.label,
+    this.label,
     required this.value,
     required this.items,
     required this.labelOf,
     required this.onChanged,
   });
 
-  /// 选择器上方的小标题，如「计量体系」。
-  final String label;
+  /// 选择器上方的小标题，如「计量体系」；为空时只显示选择框
+  /// （外层卡片已经有标题时用）。
+  final String? label;
 
   /// 当前选中的值，必须出现在 [items] 里。
   final T value;
@@ -35,11 +36,13 @@ class ToolSelect<T> extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          label,
-          style: TextStyle(color: AppColors.textSecondary, fontSize: 11.5),
-        ),
-        const SizedBox(height: 5),
+        if (label != null) ...[
+          Text(
+            label!,
+            style: TextStyle(color: AppColors.textSecondary, fontSize: 11.5),
+          ),
+          const SizedBox(height: 5),
+        ],
         DropdownButtonFormField<T>(
           // 受控：父级换值后 didUpdateWidget 会同步到 FormField
           initialValue: value,

@@ -1196,11 +1196,11 @@ void main() {
       expect(AppLanguage.fromLocale(const Locale('ja', 'JP')), AppLanguage.ja);
       expect(AppLanguage.fromLocale(const Locale('es', 'ES')), AppLanguage.es);
       expect(AppLanguage.fromLocale(const Locale('en', 'US')), AppLanguage.en);
-      expect(
-        AppLanguage.fromLocale(const Locale('de', 'DE')),
-        AppLanguage.zhHans,
-      );
-      expect(AppLanguage.fromLocale(null), AppLanguage.zhHans);
+      // 认不出或拿不到系统语言时默认英文
+      expect(AppLanguage.fromLocale(const Locale('de', 'DE')), AppLanguage.en);
+      expect(AppLanguage.fromLocale(const Locale('ko')), AppLanguage.en);
+      expect(AppLanguage.fromLocale(const Locale('und')), AppLanguage.en);
+      expect(AppLanguage.fromLocale(null), AppLanguage.en);
     });
   });
 
@@ -1232,6 +1232,37 @@ void main() {
       }
       // 五种语言的「设置」写法互不相同（简繁算两种写法）
       expect(titles.length, greaterThanOrEqualTo(4));
+    });
+
+    test('养老金与个税只在中文界面展示', () {
+      // 简体、繁体都能看到 12 个工具
+      for (final language in [AppLanguage.zhHans, AppLanguage.zhHant]) {
+        applyAppLanguage(language);
+        expect(visibleTools.length, 12, reason: language.code);
+        expect(
+          visibleTools.map((tool) => tool.id),
+          containsAll(<String>['pension', 'tax']),
+        );
+      }
+      for (final language in [AppLanguage.en, AppLanguage.ja, AppLanguage.es]) {
+        applyAppLanguage(language);
+        expect(visibleTools.length, 10, reason: language.code);
+        expect(
+          visibleTools.map((tool) => tool.id),
+          isNot(contains('pension')),
+          reason: language.code,
+        );
+        expect(
+          visibleTools.map((tool) => tool.id),
+          isNot(contains('tax')),
+          reason: language.code,
+        );
+        // 深链也不该打开这两个工具
+        expect(toolById('pension'), isNull, reason: language.code);
+        expect(toolById('bmi'), isNotNull, reason: language.code);
+      }
+      applyAppLanguage(AppLanguage.zhHans);
+      expect(kTools.length, 12);
     });
 
     test('每个工具的语言包都有五种语言，且 id 唯一', () {

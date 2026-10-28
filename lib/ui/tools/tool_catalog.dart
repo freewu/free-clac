@@ -32,9 +32,16 @@ final List<ToolInfo> kTools = List.unmodifiable(<ToolInfo>[
   taxTool,
 ]);
 
-/// 按 id 查找工具，找不到返回 null。
+/// 当前界面语言下应该展示的工具。
+///
+/// 养老金与个税按中国社保 / 税法口径计算，只在简体、繁体中文界面出现，
+/// 换成英 / 日 / 西语时隐藏，避免给出看不懂或不适用的结果。
+List<ToolInfo> get visibleTools =>
+    List.unmodifiable(kTools.where((tool) => tool.isAvailable));
+
+/// 按 id 查找当前语言下可见的工具，找不到返回 null。
 ToolInfo? toolById(String id) {
-  for (final tool in kTools) {
+  for (final tool in visibleTools) {
     if (tool.id == id) return tool;
   }
   return null;

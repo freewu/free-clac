@@ -5,6 +5,7 @@ import '../l10n/app_i18n.dart';
 import '../l10n/app_language.dart';
 import '../state/settings_controller.dart';
 import '../theme/app_theme.dart';
+import 'tools/widgets/tool_select.dart';
 
 /// 仓库地址，设置页「关于」里展示与复制。
 const String kRepositoryUrl = 'https://github.com/freewu/free-clac';
@@ -57,12 +58,14 @@ class SettingsPage extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      for (final language in AppLanguage.values)
-                        _LanguageTile(
-                          language: language,
-                          selected: controller.language == language,
-                          onTap: () => controller.setLanguage(language),
-                        ),
+                      ToolSelect<AppLanguage>(
+                        key: const Key('settings-language'),
+                        value: controller.language,
+                        items: AppLanguage.values,
+                        labelOf: (language) =>
+                            '${language.nativeLabel} · ${language.englishLabel}',
+                        onChanged: controller.setLanguage,
+                      ),
                       const SizedBox(height: 8),
                       Text(
                         t.settingsLanguageHint,
@@ -260,64 +263,6 @@ class _ModeTile extends StatelessWidget {
               ),
             ],
           ),
-        ),
-      ),
-    );
-  }
-}
-
-class _LanguageTile extends StatelessWidget {
-  const _LanguageTile({
-    required this.language,
-    required this.selected,
-    required this.onTap,
-  });
-
-  final AppLanguage language;
-  final bool selected;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return InkWell(
-      key: Key('settings-language-${language.code}'),
-      borderRadius: BorderRadius.circular(10),
-      onTap: onTap,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
-        child: Row(
-          children: [
-            Icon(
-              selected
-                  ? Icons.radio_button_checked_rounded
-                  : Icons.radio_button_unchecked_rounded,
-              size: 16,
-              color: selected ? AppColors.primary : AppColors.textSecondary,
-            ),
-            const SizedBox(width: 8),
-            Text(
-              language.nativeLabel,
-              style: TextStyle(
-                fontSize: 12.5,
-                fontWeight: selected ? FontWeight.w600 : FontWeight.w400,
-              ),
-            ),
-            const SizedBox(width: 8),
-            Expanded(
-              child: Text(
-                language.englishLabel,
-                overflow: TextOverflow.ellipsis,
-                style: TextStyle(
-                  color: AppColors.textSecondary,
-                  fontSize: 10.5,
-                ),
-              ),
-            ),
-            Text(
-              language.code,
-              style: TextStyle(color: AppColors.outline, fontSize: 10),
-            ),
-          ],
         ),
       ),
     );

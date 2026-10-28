@@ -23,8 +23,9 @@ class ToolsPage extends StatelessWidget {
               crossAxisSpacing: 12,
               mainAxisSpacing: 12,
             ),
-            itemCount: kTools.length,
-            itemBuilder: (context, index) => _ToolCard(tool: kTools[index]),
+            itemCount: visibleTools.length,
+            itemBuilder: (context, index) =>
+                _ToolCard(tool: visibleTools[index]),
           ),
         ),
       ],
@@ -50,7 +51,7 @@ class ToolsPage extends StatelessWidget {
               borderRadius: BorderRadius.circular(8),
             ),
             child: Text(
-              t.toolsCount(kTools.length),
+              t.toolsCount(visibleTools.length),
               style: TextStyle(
                 color: AppColors.secondary,
                 fontSize: 11,

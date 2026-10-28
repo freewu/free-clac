@@ -375,12 +375,9 @@ void main() {
     expect(find.text('外观'), findsOneWidget);
     expect(find.text('语言'), findsOneWidget);
     expect(find.text('跟随系统'), findsOneWidget);
-    for (final language in AppLanguage.values) {
-      expect(
-        find.byKey(Key('settings-language-${language.code}')),
-        findsOneWidget,
-      );
-    }
+    // 语言是一个下拉框，默认显示当前语言
+    expect(find.byKey(const Key('settings-language')), findsOneWidget);
+    expect(find.text('简体中文 · Chinese (Simplified)'), findsOneWidget);
     // 默认跟随系统（测试里系统是浅色）
     expect(
       tester.widget<MaterialApp>(find.byType(MaterialApp)).theme?.brightness,
@@ -405,7 +402,9 @@ void main() {
     await tester.pumpWidget(FreeCalcApp(settings: settings, initialTab: 3));
     await tester.pumpAndSettle();
 
-    await tester.tap(find.byKey(const Key('settings-language-ja')));
+    await tester.tap(find.byKey(const Key('settings-language')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('日本語 · Japanese').last);
     await tester.pumpAndSettle();
     expect(settings.language, AppLanguage.ja);
     expect(store.values['language'], 'ja');
@@ -420,6 +419,40 @@ void main() {
     expect(find.text('複利計算'), findsOneWidget);
     expect(find.text('ローン計算'), findsOneWidget);
     expect(find.text('复利计算'), findsNothing);
+    // 养老金与个税只服务中国社保 / 税法，日语界面不展示
+    expect(find.text('年金計算'), findsNothing);
+    expect(find.text('所得税'), findsNothing);
+    expect(find.text('10 個のアプリ'), findsOneWidget);
+  });
+
+  testWidgets('工具页：切回简体中文后养老金与个税又出现了', (tester) async {
+    tester.view.physicalSize = const Size(1440, 1600);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+    final settings = SettingsController(
+      store: _MemoryStore(),
+      language: AppLanguage.en,
+    );
+    await tester.pumpWidget(FreeCalcApp(settings: settings, initialTab: 2));
+    await tester.pumpAndSettle();
+    // 英文界面只有 10 个工具
+    expect(find.text('10 apps'), findsOneWidget);
+    expect(find.text('Pension calculator'), findsNothing);
+    expect(find.text('Income tax'), findsNothing);
+
+    // 切到设置页改成简体中文
+    await tester.tap(find.text('Settings').last);
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('settings-language')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('简体中文 · Chinese (Simplified)').last);
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('工具').last);
+    await tester.pumpAndSettle();
+    expect(find.text('12 个应用'), findsOneWidget);
+    expect(find.text('养老金计算器'), findsOneWidget);
+    expect(find.text('个人所得税'), findsOneWidget);
   });
 
   testWidgets('设置页：切换语言后工具卡片的深链 id 不变', (tester) async {

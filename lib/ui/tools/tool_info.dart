@@ -31,6 +31,7 @@ class ToolInfo {
     required this.icon,
     required this.color,
     required this.builder,
+    this.availableIn,
   });
 
   /// 深链参数（`?tool=bmi`），同时是语言包与测试的稳定标识。
@@ -44,6 +45,14 @@ class ToolInfo {
 
   /// 打开工具页面的构造器。
   final WidgetBuilder builder;
+
+  /// 只在部分语言下提供的工具（如养老金、个税只适用于中国税制与社保）。
+  ///
+  /// 为空表示所有语言都展示；否则只在这些语言的界面里出现。
+  final Set<AppLanguage>? availableIn;
+
+  /// 当前语言下是否展示这个工具。
+  bool get isAvailable => availableIn?.contains(appLanguage) ?? true;
 
   /// 当前语言下的文案。
   ToolText get text => toolText(lang);

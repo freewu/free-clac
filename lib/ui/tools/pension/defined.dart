@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../l10n/app_language.dart';
 import '../../../theme/app_theme.dart';
 import '../tool_info.dart';
 import 'lang/pension_lang.dart';
@@ -14,4 +15,6 @@ final ToolInfo pensionTool = ToolInfo(
   icon: Icons.elderly_rounded,
   color: AppColors.tertiary,
   builder: _builder,
+  // 中国社保 / 税法口径，只在中文界面展示。
+  availableIn: const {AppLanguage.zhHans, AppLanguage.zhHant},
 );

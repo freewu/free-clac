@@ -33,10 +33,11 @@ enum AppLanguage {
 
   Locale get locale => Locale(languageCode, countryCode);
 
-  /// 按系统语言挑一个最接近的；认不出时用简体中文。
+  /// 按系统语言挑一个最接近的；拿不到或认不出时用英文。
   static AppLanguage fromLocale(Locale? locale) {
-    if (locale == null) return AppLanguage.zhHans;
+    if (locale == null) return AppLanguage.en;
     final code = locale.toLanguageTag().toLowerCase();
+    if (code.isEmpty) return AppLanguage.en;
     if (code.startsWith('zh')) {
       return code.contains('tw') ||
               code.contains('hk') ||
@@ -48,7 +49,7 @@ enum AppLanguage {
     if (code.startsWith('ja')) return AppLanguage.ja;
     if (code.startsWith('es')) return AppLanguage.es;
     if (code.startsWith('en')) return AppLanguage.en;
-    return AppLanguage.zhHans;
+    return AppLanguage.en;
   }
 
   /// 解析持久化的语言标识，无法识别时返回 null。
