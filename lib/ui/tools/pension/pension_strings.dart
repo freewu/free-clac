@@ -17,7 +17,6 @@ class PensionStrings {
     required this.yearsSuffix,
     required this.sectionMoney,
     required this.wage,
-    required this.yuan,
     required this.socialWage,
     required this.socialWageSuffix,
     required this.balance,
@@ -57,7 +56,6 @@ class PensionStrings {
   final String yearsSuffix;
   final String sectionMoney;
   final String wage;
-  final String yuan;
   final String socialWage;
   final String socialWageSuffix;
   final String balance;
@@ -72,7 +70,7 @@ class PensionStrings {
   final String emptyHint;
   final String expectedMonthly;
 
-  /// 「替代率 {0}% · 退休时社平工资 ¥ {1}/月」。
+  /// 「替代率 {0}% · 退休时社平工资 {1}/月」。
   final String replacement;
   final String basePension;
   final String accountPension;
@@ -83,7 +81,7 @@ class PensionStrings {
   final String avgIndex;
   final String accountAtRetire;
 
-  /// 「¥ {0}（其中利息 ¥ {1}）」。
+  /// 「{0}（其中利息 {1}）」，金额含符号。
   final String accountAtRetireValue;
   final String payoutMonths;
 
@@ -107,7 +105,6 @@ const Map<AppLanguage, PensionStrings> kPensionStrings =
         yearsSuffix: '年',
         sectionMoney: '缴费与账户',
         wage: '月缴费工资',
-        yuan: '元',
         socialWage: '当地社平工资',
         socialWageSuffix: '元/月',
         balance: '个人账户余额',
@@ -119,14 +116,14 @@ const Map<AppLanguage, PensionStrings> kPensionStrings =
         accountNote: '个人账户按本人缴费基数的 {0}% 记入，缴费基数随社平工资同步增长。',
         emptyHint: '填入年龄、缴费工资与账户余额后自动测算',
         expectedMonthly: '预计每月养老金',
-        replacement: '替代率 {0}% · 退休时社平工资 ¥ {1}/月',
+        replacement: '替代率 {0}% · 退休时社平工资 {1}/月',
         basePension: '基础养老金',
         accountPension: '个人账户',
         paidYearsRow: '缴费年限',
         paidYearsValue: '已缴 {0} 年 + 续缴 {1} 年 = {2} 年',
         avgIndex: '平均缴费指数',
         accountAtRetire: '退休时个人账户',
-        accountAtRetireValue: '¥ {0}（其中利息 ¥ {1}）',
+        accountAtRetireValue: '{0}（其中利息 {1}）',
         payoutMonths: '计发月数',
         payoutMonthsValue: '{0} 个月',
         wageAtRetire: '退休前月工资',
@@ -146,7 +143,6 @@ const Map<AppLanguage, PensionStrings> kPensionStrings =
         yearsSuffix: '年',
         sectionMoney: '繳費與賬戶',
         wage: '月繳費工資',
-        yuan: '元',
         socialWage: '當地社平工資',
         socialWageSuffix: '元/月',
         balance: '個人賬戶餘額',
@@ -158,14 +154,14 @@ const Map<AppLanguage, PensionStrings> kPensionStrings =
         accountNote: '個人賬戶按本人繳費基數的 {0}% 記入，繳費基數隨社平工資同步增長。',
         emptyHint: '填入年齡、繳費工資與賬戶餘額後自動測算',
         expectedMonthly: '預計每月養老金',
-        replacement: '替代率 {0}% · 退休時社平工資 ¥ {1}/月',
+        replacement: '替代率 {0}% · 退休時社平工資 {1}/月',
         basePension: '基礎養老金',
         accountPension: '個人賬戶',
         paidYearsRow: '繳費年限',
         paidYearsValue: '已繳 {0} 年 + 續繳 {1} 年 = {2} 年',
         avgIndex: '平均繳費指數',
         accountAtRetire: '退休時個人賬戶',
-        accountAtRetireValue: '¥ {0}（其中利息 ¥ {1}）',
+        accountAtRetireValue: '{0}（其中利息 {1}）',
         payoutMonths: '計發月數',
         payoutMonthsValue: '{0} 個月',
         wageAtRetire: '退休前月工資',

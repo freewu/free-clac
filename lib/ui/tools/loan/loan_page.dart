@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 
-import '../../../core/number_format.dart';
 import '../../../theme/app_theme.dart';
 import '../../../l10n/app_i18n.dart';
+import '../../../l10n/money.dart';
 import 'loan.dart';
 import 'loan_strings.dart';
 import '../widgets/tool_bars.dart';
@@ -108,7 +108,7 @@ class _LoanPageState extends State<LoanPage> {
                         builder: (context, constraints) {
                           final amount = ToolNumberField(
                             label: loanStrings.amount,
-                            suffix: loanStrings.currency,
+                            suffix: currencySymbol,
                             controller: _amount,
                             onChanged: (_) => setState(() {}),
                           );
@@ -302,7 +302,7 @@ class _Summary extends StatelessWidget {
         ),
         const SizedBox(height: 4),
         Text(
-          '¥ ${formatMoney(result.firstPayment)}',
+          money(result.firstPayment),
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
           style: const TextStyle(
@@ -322,7 +322,7 @@ class _Summary extends StatelessWidget {
               : fill(loanStrings.summaryDecreasing, [
                   loanStrings.methodLabel(result.method),
                   months,
-                  formatMoney(decrease),
+                  money(decrease),
                 ]),
           style: TextStyle(color: AppColors.textSecondary, fontSize: 11),
         ),
@@ -332,7 +332,7 @@ class _Summary extends StatelessWidget {
         AmountBar(
           key: const ValueKey('loan-bar-贷款总额'),
           label: loanStrings.loanTotal,
-          value: '¥ ${formatMoney(result.amount, decimals: 0)}',
+          value: money(result.amount, decimals: 0),
           ratio: result.amount / result.totalPayment,
           segments: [RatioSegment(value: 1, color: loanPrincipalColor)],
         ),
@@ -340,7 +340,7 @@ class _Summary extends StatelessWidget {
         AmountBar(
           key: const ValueKey('loan-bar-总利息'),
           label: loanStrings.totalInterest,
-          value: '¥ ${formatMoney(result.totalInterest, decimals: 0)}',
+          value: money(result.totalInterest, decimals: 0),
           ratio: result.interestRatio,
           segments: [RatioSegment(value: 1, color: loanInterestColor)],
         ),
@@ -348,7 +348,7 @@ class _Summary extends StatelessWidget {
         AmountBar(
           key: const ValueKey('loan-bar-总还款'),
           label: loanStrings.totalPayment,
-          value: '¥ ${formatMoney(result.totalPayment, decimals: 0)}',
+          value: money(result.totalPayment, decimals: 0),
           ratio: 1,
           segments: [
             RatioSegment(
@@ -469,7 +469,7 @@ class _PeriodRow extends StatelessWidget {
             ),
             const Spacer(),
             Text(
-              '¥ ${formatMoney(period.payment)}',
+              money(period.payment),
               style: TextStyle(
                 color: AppColors.textPrimary,
                 fontSize: 11.5,
@@ -505,14 +505,14 @@ class _PeriodRow extends StatelessWidget {
           children: [
             Text(
               fill(loanStrings.principalRow, [
-                formatMoney(period.principal, decimals: 0),
+                money(period.principal, decimals: 0),
               ]),
               style: TextStyle(color: loanPrincipalColor, fontSize: 10.5),
             ),
             const Spacer(),
             Text(
               fill(loanStrings.interestRow, [
-                formatMoney(period.interest, decimals: 0),
+                money(period.interest, decimals: 0),
               ]),
               style: TextStyle(color: loanInterestColor, fontSize: 10.5),
             ),

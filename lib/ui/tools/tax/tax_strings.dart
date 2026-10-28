@@ -11,7 +11,6 @@ class TaxStrings {
     required this.title,
     required this.sectionIncome,
     required this.gross,
-    required this.yuan,
     required this.base,
     required this.baseHint,
     required this.special,
@@ -41,7 +40,6 @@ class TaxStrings {
   final String title;
   final String sectionIncome;
   final String gross;
-  final String yuan;
   final String base;
   final String baseHint;
   final String special;
@@ -54,12 +52,12 @@ class TaxStrings {
   final String total;
   final String sectionMonths;
 
-  /// 「按基数 ¥ {0} 计算，每月个人缴纳 ¥ {1}」。
+  /// 「按基数 {0} 计算，每月个人缴纳 {1}」。
   final String baseCalc;
   final String emptyHint;
   final String firstMonthNet;
 
-  /// 「税前 ¥ {0} − 五险一金 ¥ {1} − 个税 ¥ {2}」。
+  /// 「税前 {0} − 五险一金 {1} − 个税 {2}」。
   final String deduction;
   final String yearlyTax;
   final String yearlyNet;
@@ -92,7 +90,6 @@ const Map<AppLanguage, TaxStrings> kTaxStrings = <AppLanguage, TaxStrings>{
     title: '个人所得税',
     sectionIncome: '收入',
     gross: '税前月薪',
-    yuan: '元',
     base: '缴费基数',
     baseHint: '默认等于月薪',
     special: '专项附加扣除',
@@ -100,10 +97,10 @@ const Map<AppLanguage, TaxStrings> kTaxStrings = <AppLanguage, TaxStrings>{
     sectionInsurance: '五险一金（个人缴纳比例）',
     total: '合计 {0}%',
     sectionMonths: '月度明细',
-    baseCalc: '按基数 ¥ {0} 计算，每月个人缴纳 ¥ {1}',
+    baseCalc: '按基数 {0} 计算，每月个人缴纳 {1}',
     emptyHint: '填写税前月薪与缴纳比例后自动计算',
     firstMonthNet: '首月到手',
-    deduction: '税前 ¥ {0} − 五险一金 ¥ {1} − 个税 ¥ {2}',
+    deduction: '税前 {0} − 五险一金 {1} − 个税 {2}',
     yearlyTax: '全年个税',
     yearlyNet: '全年到手',
     marginalRate: '适用税率',
@@ -122,7 +119,6 @@ const Map<AppLanguage, TaxStrings> kTaxStrings = <AppLanguage, TaxStrings>{
     title: '個人所得稅',
     sectionIncome: '收入',
     gross: '稅前月薪',
-    yuan: '元',
     base: '繳費基數',
     baseHint: '預設等於月薪',
     special: '專項附加扣除',
@@ -130,10 +126,10 @@ const Map<AppLanguage, TaxStrings> kTaxStrings = <AppLanguage, TaxStrings>{
     sectionInsurance: '五險一金（個人繳納比例）',
     total: '合計 {0}%',
     sectionMonths: '月度明細',
-    baseCalc: '按基數 ¥ {0} 計算，每月個人繳納 ¥ {1}',
+    baseCalc: '按基數 {0} 計算，每月個人繳納 {1}',
     emptyHint: '填寫稅前月薪與繳納比例後自動計算',
     firstMonthNet: '首月到手',
-    deduction: '稅前 ¥ {0} − 五險一金 ¥ {1} − 個稅 ¥ {2}',
+    deduction: '稅前 {0} − 五險一金 {1} − 個稅 {2}',
     yearlyTax: '全年個稅',
     yearlyNet: '全年到手',
     marginalRate: '適用稅率',

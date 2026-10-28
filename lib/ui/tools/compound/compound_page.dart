@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../core/number_format.dart';
 import '../../../theme/app_theme.dart';
 import '../../../l10n/app_i18n.dart';
+import '../../../l10n/money.dart';
 import 'compound.dart';
 import 'compound_strings.dart';
 import '../widgets/tool_field.dart';
@@ -78,7 +79,7 @@ class _CompoundPageState extends State<CompoundPage> {
                         builder: (context, constraints) {
                           final principal = ToolNumberField(
                             label: compoundStrings.principal,
-                            suffix: compoundStrings.currency,
+                            suffix: currencySymbol,
                             controller: _principal,
                             onChanged: (_) => setState(() {}),
                           );
@@ -241,7 +242,7 @@ class _Summary extends StatelessWidget {
           children: [
             Flexible(
               child: Text(
-                '¥ ${formatMoney(result.futureValue)}',
+                money(result.futureValue),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: const TextStyle(
@@ -269,14 +270,14 @@ class _Summary extends StatelessWidget {
             Expanded(
               child: _Stat(
                 label: compoundStrings.totalInvested,
-                value: '¥ ${formatMoney(result.totalInvested)}',
+                value: money(result.totalInvested),
                 color: AppColors.textPrimary,
               ),
             ),
             Expanded(
               child: _Stat(
                 label: compoundStrings.totalGain,
-                value: '¥ ${formatMoney(result.totalGain)}',
+                value: money(result.totalGain),
                 color: gainColor,
               ),
             ),
@@ -364,9 +365,9 @@ class _YearTable extends StatelessWidget {
               final point = result.yearly[index];
               return _TableRow(
                 year: fill(compoundStrings.yearRow, [point.year]),
-                invested: '¥ ${formatMoney(point.contributions, decimals: 0)}',
-                balance: '¥ ${formatMoney(point.balance, decimals: 0)}',
-                gain: '¥ ${formatMoney(point.gain, decimals: 0)}',
+                invested: money(point.contributions, decimals: 0),
+                balance: money(point.balance, decimals: 0),
+                gain: money(point.gain, decimals: 0),
                 highlight: index == result.yearly.length - 1,
               );
             },

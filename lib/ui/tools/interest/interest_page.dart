@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 
-import '../../../core/number_format.dart';
 import '../../../theme/app_theme.dart';
 import '../../../l10n/app_i18n.dart';
+import '../../../l10n/money.dart';
 import 'interest.dart';
 import 'interest_strings.dart';
 import '../widgets/tool_field.dart';
@@ -129,7 +129,7 @@ class _InterestPageState extends State<InterestPage> {
                     children: [
                       ToolNumberField(
                         label: interestStrings.principal,
-                        suffix: interestStrings.currency,
+                        suffix: currencySymbol,
                         controller: _principal,
                         onChanged: (_) => setState(() {}),
                       ),
@@ -286,17 +286,17 @@ class _QuoteResult extends StatelessWidget {
     final fromPayment = mode == _Mode.fromPayment;
     final headline = fromPayment
         ? formatRatePercent(quote.annualRatePercent)
-        : '¥ ${formatMoney(quote.paymentFor(period))}';
+        : money(quote.paymentFor(period));
     final caption = fromPayment
         ? fill(interestStrings.annualCaption, [
-            formatMoney(quote.principal, decimals: 0),
+            money(quote.principal, decimals: 0),
             interestStrings.periodLabel(period),
-            formatMoney(quote.paymentFor(period)),
+            money(quote.paymentFor(period)),
           ])
         : fill(interestStrings.paymentCaption, [
             interestStrings.everyLabel(period),
             formatRatePercent(quote.annualRatePercent),
-            formatMoney(quote.principal, decimals: 0),
+            money(quote.principal, decimals: 0),
           ]);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -334,7 +334,7 @@ class _QuoteResult extends StatelessWidget {
               Expanded(
                 child: _Stat(
                   label: interestStrings.periodLabel(item),
-                  value: '¥ ${formatMoney(quote.paymentFor(item))}',
+                  value: money(quote.paymentFor(item)),
                   color: item == period
                       ? AppColors.textPrimary
                       : AppColors.textSecondary,
@@ -359,7 +359,7 @@ class _QuoteResult extends StatelessWidget {
             _FootNote(
               fill(interestStrings.perTenThousand, [
                 interestStrings.periodLabel(period),
-                formatMoney(quote.paymentPerTenThousand(period)),
+                money(quote.paymentPerTenThousand(period)),
               ]),
             ),
             _FootNote(

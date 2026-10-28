@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../core/number_format.dart';
 import '../../../l10n/app_i18n.dart';
+import '../../../l10n/money.dart';
 import '../../../theme/app_theme.dart';
 import 'tax.dart';
 import 'tax_strings.dart';
@@ -102,13 +103,13 @@ class _TaxPageState extends State<TaxPage> {
                     builder: (context, constraints) {
                       final salary = ToolNumberField(
                         label: s.gross,
-                        suffix: s.yuan,
+                        suffix: currencySymbol,
                         controller: _salary,
                         onChanged: (_) => setState(() {}),
                       );
                       final base = ToolNumberField(
                         label: s.base,
-                        suffix: s.yuan,
+                        suffix: currencySymbol,
                         hint: s.baseHint,
                         controller: _base,
                         onChanged: (_) => setState(() {}),
@@ -253,10 +254,7 @@ class _BaseHint extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Text(
-      fill(taxStrings.baseCalc, [
-        formatMoney(base, decimals: 0),
-        formatMoney(total),
-      ]),
+      fill(taxStrings.baseCalc, [money(base, decimals: 0), money(total)]),
       style: TextStyle(color: AppColors.textSecondary, fontSize: 10.5),
     );
   }
@@ -302,7 +300,7 @@ class _ResultBody extends StatelessWidget {
         ),
         const SizedBox(height: 4),
         Text(
-          '¥ ${formatMoney(result.firstMonthNet)}',
+          money(result.firstMonthNet),
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
           style: const TextStyle(
@@ -315,9 +313,9 @@ class _ResultBody extends StatelessWidget {
         const SizedBox(height: 6),
         Text(
           fill(s.deduction, [
-            formatMoney(result.grossMonthly, decimals: 0),
-            formatMoney(result.contributionMonthly, decimals: 0),
-            formatMoney(result.firstMonthTax),
+            money(result.grossMonthly, decimals: 0),
+            money(result.contributionMonthly, decimals: 0),
+            money(result.firstMonthTax),
           ]),
           style: TextStyle(color: AppColors.textSecondary, fontSize: 11),
         ),
@@ -327,14 +325,14 @@ class _ResultBody extends StatelessWidget {
             Expanded(
               child: _Stat(
                 label: s.yearlyTax,
-                value: '¥ ${formatMoney(result.yearlyTax, decimals: 0)}',
+                value: money(result.yearlyTax, decimals: 0),
                 color: taxBarColor,
               ),
             ),
             Expanded(
               child: _Stat(
                 label: s.yearlyNet,
-                value: '¥ ${formatMoney(result.yearlyNet, decimals: 0)}',
+                value: money(result.yearlyNet, decimals: 0),
                 color: AppColors.textPrimary,
               ),
             ),
@@ -375,7 +373,7 @@ class _ResultBody extends StatelessWidget {
                 _Legend(
                   color: insuranceColor(item),
                   label: s.itemLabel(item),
-                  value: '¥ ${formatMoney(result.byItem[item]!)}',
+                  value: money(result.byItem[item]!),
                 ),
             ],
           ),

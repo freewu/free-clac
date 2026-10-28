@@ -5,6 +5,8 @@ import 'package:free_clac/app.dart';
 import 'package:free_clac/core/math_engine.dart';
 import 'package:free_clac/plot/plot_export.dart';
 import 'package:free_clac/l10n/app_language.dart';
+import 'package:free_clac/l10n/app_strings.dart';
+import 'package:free_clac/l10n/currency.dart';
 import 'package:free_clac/services/plot_file_saver.dart';
 import 'package:free_clac/services/settings_store.dart';
 import 'package:free_clac/state/plot_controller.dart';
@@ -750,6 +752,56 @@ void main() {
     expect(find.text('Loan amount'), findsOneWidget);
     expect(find.text('Equal principal'), findsOneWidget);
     expect(find.text('还款方式'), findsNothing);
+    // 金额符号跟随语言：英文界面用 $，不再出现 ¥
+    expect(find.textContaining(r'$ '), findsWidgets);
+    expect(find.textContaining('¥ '), findsNothing);
+  });
+
+  testWidgets('设置页：金额符号卡片能切成日元并写回本地', (tester) async {
+    tester.view.physicalSize = const Size(1440, 1600);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+    final store = _MemoryStore();
+    final settings = SettingsController(store: store);
+    await tester.pumpWidget(FreeCalcApp(settings: settings, initialTab: 3));
+    await tester.pumpAndSettle();
+
+    expect(
+      find.text(AppStrings.of(AppLanguage.zhHans).settingsCurrency),
+      findsWidgets,
+    );
+    // 默认「跟随语言」
+    expect(settings.currency, CurrencyStyle.followLanguage);
+
+    await tester.tap(find.byKey(const Key('settings-currency')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('￥ 日元').last);
+    await tester.pumpAndSettle();
+
+    expect(settings.currency, CurrencyStyle.yen);
+    expect(store.values['currency_style'], 'jpy');
+  });
+
+  testWidgets('设置：金额符号固定成欧元后，贷款结果与输入后缀都用 €', (tester) async {
+    tester.view.physicalSize = const Size(1440, 1600);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+    final store = _MemoryStore();
+    final settings = SettingsController(
+      store: store,
+      currency: CurrencyStyle.euro,
+    );
+    await tester.pumpWidget(
+      FreeCalcApp(settings: settings, initialTab: 2, initialTool: 'loan'),
+    );
+    await tester.pumpAndSettle();
+
+    // 设置页里选中的是「€ 欧元」
+    expect(settings.currency, CurrencyStyle.euro);
+    expect(find.textContaining('€ '), findsWidgets);
+    expect(find.textContaining('¥ '), findsNothing);
+    // 输入框后缀也跟着用符号，不再写「元」
+    expect(find.text('元'), findsNothing);
   });
 
   testWidgets('工具页内部文案：繁体中文下中文专属工具也显示繁体', (tester) async {

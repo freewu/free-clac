@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:free_clac/l10n/app_i18n.dart';
 import 'package:free_clac/l10n/app_language.dart';
 import 'package:free_clac/l10n/app_strings.dart';
+import 'package:free_clac/l10n/money.dart';
 import 'package:free_clac/services/settings_store.dart';
 import 'package:free_clac/state/settings_controller.dart';
 import 'package:free_clac/theme/app_theme.dart';
@@ -1349,6 +1350,70 @@ void main() {
       expect(calculatePension(input()), isNotNull);
     });
   });
+  group('金额符号', () {
+    test('跟随语言：简中 ¥、繁中与英语 \$、日语 ￥、西语 €', () {
+      expect(
+        currencySymbolFor(CurrencyStyle.followLanguage, AppLanguage.zhHans),
+        '¥',
+      );
+      expect(
+        currencySymbolFor(CurrencyStyle.followLanguage, AppLanguage.zhHant),
+        r'$',
+      );
+      expect(
+        currencySymbolFor(CurrencyStyle.followLanguage, AppLanguage.en),
+        r'$',
+      );
+      expect(
+        currencySymbolFor(CurrencyStyle.followLanguage, AppLanguage.ja),
+        '￥',
+      );
+      expect(
+        currencySymbolFor(CurrencyStyle.followLanguage, AppLanguage.es),
+        '€',
+      );
+      // 固定符号时不看语言
+      expect(currencySymbolFor(CurrencyStyle.euro, AppLanguage.zhHans), '€');
+      expect(currencySymbolFor(CurrencyStyle.yen, AppLanguage.en), '￥');
+      expect(CurrencyStyle.fromCode('jpy'), CurrencyStyle.yen);
+      expect(CurrencyStyle.fromCode('gold'), isNull);
+    });
+
+    test('金额展示随设置与语言变化，缺设置时按语言', () async {
+      final store = _MemoryStore();
+      final settings = SettingsController(store: store);
+      final previousSettings = currentSettings;
+      final previousLanguage = appLanguage;
+      currentSettings = settings;
+      addTearDown(() {
+        currentSettings = previousSettings;
+        applyAppLanguage(previousLanguage);
+      });
+
+      applyAppLanguage(AppLanguage.zhHans);
+      expect(money(1234.5), '¥ 1,234.50');
+      applyAppLanguage(AppLanguage.en);
+      expect(money(1234.5), r'$ 1,234.50');
+      applyAppLanguage(AppLanguage.ja);
+      expect(money(1234.5, decimals: 0), '￥ 1,235');
+
+      // 固定成欧元后不再随语言
+      await settings.setCurrency(CurrencyStyle.euro);
+      expect(store.values['currency_style'], 'eur');
+      applyAppLanguage(AppLanguage.zhHans);
+      expect(money(1234.5), '€ 1,234.50');
+
+      final reloaded = SettingsController(store: store);
+      await reloaded.load();
+      expect(reloaded.currency, CurrencyStyle.euro);
+
+      // 读不到设置时回落「跟随语言」
+      currentSettings = null;
+      applyAppLanguage(AppLanguage.es);
+      expect(money(10), '€ 10.00');
+    });
+  });
+
   group('设置：主题模式与本地存储', () {
     test('默认跟随系统：按系统明暗给深色或浅色配色', () {
       final settings = SettingsController(store: _MemoryStore());

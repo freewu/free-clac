@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../core/number_format.dart';
 import '../../../l10n/app_i18n.dart';
+import '../../../l10n/money.dart';
 import '../../../theme/app_theme.dart';
 import 'pension.dart';
 import 'pension_strings.dart';
@@ -149,7 +150,7 @@ class _PensionPageState extends State<PensionPage> {
                     builder: (context, constraints) {
                       final wage = ToolNumberField(
                         label: s.wage,
-                        suffix: s.yuan,
+                        suffix: currencySymbol,
                         controller: _wage,
                         onChanged: (_) => setState(() {}),
                       );
@@ -161,7 +162,7 @@ class _PensionPageState extends State<PensionPage> {
                       );
                       final balance = ToolNumberField(
                         label: s.balance,
-                        suffix: s.yuan,
+                        suffix: currencySymbol,
                         controller: _balance,
                         onChanged: (_) => setState(() {}),
                       );
@@ -320,7 +321,7 @@ class _ResultBody extends StatelessWidget {
         ),
         const SizedBox(height: 4),
         Text(
-          '¥ ${formatMoney(total)}',
+          money(total),
           style: TextStyle(
             fontSize: 26,
             height: 1.15,
@@ -333,7 +334,7 @@ class _ResultBody extends StatelessWidget {
         Text(
           fill(s.replacement, [
             (result.replacementRate * 100).toStringAsFixed(1),
-            formatMoney(result.socialWageAtRetire, decimals: 0),
+            money(result.socialWageAtRetire, decimals: 0),
           ]),
           style: TextStyle(color: AppColors.textSecondary, fontSize: 10.5),
         ),
@@ -341,7 +342,7 @@ class _ResultBody extends StatelessWidget {
         AmountBar(
           key: const Key('pension-base'),
           label: s.basePension,
-          value: '¥ ${formatMoney(result.basePension)}',
+          value: money(result.basePension),
           ratio: baseRatio,
           labelWidth: 64,
           valueWidth: 96,
@@ -351,7 +352,7 @@ class _ResultBody extends StatelessWidget {
         AmountBar(
           key: const Key('pension-account'),
           label: s.accountPension,
-          value: '¥ ${formatMoney(result.accountPension)}',
+          value: money(result.accountPension),
           ratio: accountRatio,
           labelWidth: 64,
           valueWidth: 96,
@@ -375,8 +376,8 @@ class _ResultBody extends StatelessWidget {
         _DetailRow(
           label: s.accountAtRetire,
           value: fill(s.accountAtRetireValue, [
-            formatMoney(result.accountAtRetire, decimals: 0),
-            formatMoney(result.accountInterest, decimals: 0),
+            money(result.accountAtRetire, decimals: 0),
+            money(result.accountInterest, decimals: 0),
           ]),
         ),
         _DetailRow(
@@ -385,7 +386,7 @@ class _ResultBody extends StatelessWidget {
         ),
         _DetailRow(
           label: s.wageAtRetire,
-          value: '¥ ${formatMoney(result.wageAtRetire, decimals: 0)}',
+          value: money(result.wageAtRetire, decimals: 0),
         ),
         const SizedBox(height: 8),
         Text(

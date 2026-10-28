@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 
 import '../l10n/app_language.dart';
+import '../l10n/currency.dart';
 import '../services/settings_store.dart';
 import '../theme/app_theme.dart';
 import '../ui/tools/bmi/bmi.dart';
@@ -39,11 +40,13 @@ class SettingsController extends ChangeNotifier {
     this.themeMode = AppThemeMode.system,
     this.language = AppLanguage.zhHans,
     this.bmiUnit = BmiUnitSystem.metric,
+    this.currency = CurrencyStyle.followLanguage,
   }) : _store = store ?? const SettingsStore();
 
   static const String _themeKey = 'theme_mode';
   static const String _languageKey = 'language';
   static const String _bmiUnitKey = 'bmi_unit';
+  static const String _currencyKey = 'currency_style';
 
   /// 换算工具设置键的前缀，完整键如 `convert.distance.system`。
   static const String _convertPrefix = 'convert.';
@@ -55,6 +58,9 @@ class SettingsController extends ChangeNotifier {
 
   /// BMI 工具默认使用的计量单位。
   BmiUnitSystem bmiUnit;
+
+  /// 金额符号偏好：跟随语言（默认）或固定某种货币符号。
+  CurrencyStyle currency;
 
   /// 各换算工具默认的计量体系（换算工具 id → 体系），没存过时为公制。
   final Map<String, MeasureSystem> convertSystems = <String, MeasureSystem>{};
@@ -79,6 +85,11 @@ class SettingsController extends ChangeNotifier {
     final storedBmiUnit = BmiUnitSystem.fromCode(values[_bmiUnitKey]);
     if (storedBmiUnit != null && storedBmiUnit != bmiUnit) {
       bmiUnit = storedBmiUnit;
+      changed = true;
+    }
+    final storedCurrency = CurrencyStyle.fromCode(values[_currencyKey]);
+    if (storedCurrency != null && storedCurrency != currency) {
+      currency = storedCurrency;
       changed = true;
     }
     for (final entry in values.entries) {
@@ -133,6 +144,14 @@ class SettingsController extends ChangeNotifier {
     bmiUnit = unit;
     notifyListeners();
     await _store.write(_bmiUnitKey, unit.code);
+  }
+
+  /// 切换金额符号偏好。
+  Future<void> setCurrency(CurrencyStyle value) async {
+    if (value == currency) return;
+    currency = value;
+    notifyListeners();
+    await _store.write(_currencyKey, value.code);
   }
 
   /// 某个换算工具默认的计量体系。

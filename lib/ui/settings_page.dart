@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 
 import '../l10n/app_i18n.dart';
 import '../l10n/app_language.dart';
+import '../l10n/currency.dart';
 import '../state/settings_controller.dart';
 import '../theme/app_theme.dart';
 import 'tools/area/setting.dart';
@@ -77,6 +78,32 @@ class SettingsPage extends StatelessWidget {
                       const SizedBox(height: 8),
                       Text(
                         t.settingsLanguageHint,
+                        style: TextStyle(
+                          color: AppColors.textSecondary,
+                          fontSize: 10.5,
+                          height: 1.5,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 12),
+                SettingsCard(
+                  icon: Icons.payments_outlined,
+                  title: t.settingsCurrency,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      ToolSelect<CurrencyStyle>(
+                        key: const Key('settings-currency'),
+                        value: controller.currency,
+                        items: CurrencyStyle.values,
+                        labelOf: _currencyLabel,
+                        onChanged: controller.setCurrency,
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        t.settingsCurrencyHint,
                         style: TextStyle(
                           color: AppColors.textSecondary,
                           fontSize: 10.5,
@@ -169,6 +196,15 @@ class SettingsPage extends StatelessWidget {
     );
   }
 }
+
+/// 金额符号选项的显示名（符号从数据层取，名称走多语言）。
+String _currencyLabel(CurrencyStyle style) => switch (style) {
+  CurrencyStyle.followLanguage => t.currencyFollowLanguage,
+  CurrencyStyle.yuan => t.currencyYuan,
+  CurrencyStyle.dollar => t.currencyDollar,
+  CurrencyStyle.yen => t.currencyYen,
+  CurrencyStyle.euro => t.currencyEuro,
+};
 
 class _Header extends StatelessWidget {
   @override

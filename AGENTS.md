@@ -88,6 +88,12 @@ cmd.exe /c "cd /d $(wslpath -w "$PWD") && flutter test"
   界面显示用 `calcErrorMessage()`（自动追加「位置」后缀）；`EngineResult` 同时带
   `error`（中文兜底）与 `exception`，历史记录存 `exception`，切语言后能重新本地化。
   `fill()` 已挪到 `lib/core/template.dart`，`app_i18n.dart` 再导出，两个方向都能用。
+- **金额符号不要写死**：涉及金额的工具（贷款、复利、利率换算、养老金、个税）一律用
+  `lib/l10n/money.dart` 的 `money(value, decimals:)` 显示金额、`currencySymbol` 当输入框后缀，
+  不要在页面或话术里写 `¥` / `元` / `CNY`。偏好存在设置的 `currency_style`
+  （`CurrencyStyle`，默认「跟随语言」：简中 `¥`、繁中与英语 `$`、日语 `￥`、西语 `€`）。
+  话术模板里把整个金额当一个 `{n}` 参数传入，而不是「模板写符号 + 传数字」——
+  否则固定成欧元等其它符号时模板里的符号不会跟着变。
 - **数据层不要重复存界面文案**：`BmiResult` 之前自带一份中文 `advice`，和 `bmiStrings.adviceOf()` 重复且不跟语言走，已删除；同类「数据层 getter 返回中文句子」的写法不要再加，改由页面调 `<tool>Strings`。
 - **页面构建函数不要返回 `const` 组件**：`ToolInfo.builder` 返回 `const` 实例时，重建拿到的还是同一个对象，Flutter 判定无需更新，切主题 / 语言后已打开的页面不会跟着变。换算页的标题也从 `<tool>_lang.dart` 取（`toolText(kXxxLang).name`）。
 - **颜色一律走 `AppColors`**：不要硬编码 `Color(0xFF...)`，也不要在 `const` 表达式里用 `AppColors.xxx`（它不是常量），深色 / 浅色两套配色都要能看。

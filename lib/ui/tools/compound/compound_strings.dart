@@ -8,7 +8,6 @@ class CompoundStrings {
     required this.title,
     required this.sectionInput,
     required this.principal,
-    required this.currency,
     required this.yearsSuffix,
     required this.annualRate,
     required this.years,
@@ -41,7 +40,6 @@ class CompoundStrings {
   final String principal;
 
   /// 金额后缀（复利工具固定用人民币口径）。
-  final String currency;
 
   /// 年限输入框的后缀。
   final String yearsSuffix;
@@ -97,7 +95,6 @@ const Map<AppLanguage, CompoundStrings> kCompoundStrings =
         title: '复利计算',
         sectionInput: '输入',
         principal: '期初本金',
-        currency: '元',
         yearsSuffix: '年',
         annualRate: '年利率',
         years: '年限',
@@ -128,7 +125,6 @@ const Map<AppLanguage, CompoundStrings> kCompoundStrings =
         title: '複利計算',
         sectionInput: '輸入',
         principal: '期初本金',
-        currency: '元',
         yearsSuffix: '年',
         annualRate: '年利率',
         years: '年限',
@@ -159,7 +155,6 @@ const Map<AppLanguage, CompoundStrings> kCompoundStrings =
         title: 'Compound interest',
         sectionInput: 'Input',
         principal: 'Starting principal',
-        currency: 'CNY',
         yearsSuffix: 'yrs',
         annualRate: 'Annual rate',
         years: 'Years',
@@ -190,7 +185,6 @@ const Map<AppLanguage, CompoundStrings> kCompoundStrings =
         title: '複利計算',
         sectionInput: '入力',
         principal: '元本',
-        currency: '元',
         yearsSuffix: '年',
         annualRate: '年利率',
         years: '年数',
@@ -221,7 +215,6 @@ const Map<AppLanguage, CompoundStrings> kCompoundStrings =
         title: 'Interés compuesto',
         sectionInput: 'Datos',
         principal: 'Capital inicial',
-        currency: 'CNY',
         yearsSuffix: 'años',
         annualRate: 'Tipo anual',
         years: 'Años',
