@@ -110,6 +110,15 @@ class SettingsController extends ChangeNotifier {
     await _store.write(_themeKey, mode.code);
   }
 
+  /// 用深链 / 截图参数指定的语言临时覆盖本地设置。
+  ///
+  /// 只改内存不写回本地：分享出去的 `?lang=en` 链接不该改掉对方存的偏好。
+  void overrideLanguage(AppLanguage value) {
+    if (value == language) return;
+    language = value;
+    notifyListeners();
+  }
+
   /// 切换界面语言。
   Future<void> setLanguage(AppLanguage value) async {
     if (value == language) return;

@@ -296,7 +296,13 @@ Web 端可深链：`?page=tools` 打开工具页（`?page=settings` 打开设置
 ![浅色模式](docs/screenshots/light.png)
 
 Web 端可深链：`?page=settings` 直接打开设置页，`?page=plot` / `?page=tools` 同理；
-`?theme=light` / `?theme=dark` 用指定配色启动（截图与演示用）。
+`?theme=light` / `?theme=dark` 用指定配色启动，`?lang=zh-Hant`（或 `zh-Hans` / `en` / `ja` / `es`）
+用指定语言启动——两者都只对当前这次打开生效，不会改掉本机存的偏好（截图与分享链接用）。
+
+同一批页面在英文与繁体中文下的样子：
+
+![英文界面](docs/screenshots/english.png)
+![繁体界面](docs/screenshots/zh-hant.png)
 
 ### 多语言的组织方式
 
@@ -490,8 +496,9 @@ just test
 设置页主题切换（含配色与本地写入）、浅色模式下按键 / 显示屏 / 工具卡片配色、语言下拉框切换后导航与工具卡片文案、
 非中文界面隐藏养老金与个税、五种语言文案表完整性、BMI 默认单位改英制后 BMI 页按英制打开、
 换算工具默认体系与结果 tab 各工具独立、退休年龄计算器按出生年月与人员类别测算（含「还需奋斗」倒计时）、
-换算单位名称 / 说明 / 参照物按语言回落、养老金 / 个税 / 退休年龄的简繁文案等
-Widget 与单元测试（共 204 项）。
+换算单位名称 / 说明 / 参照物按语言回落、养老金 / 个税 / 退休年龄的简繁文案、
+`?lang=` 深链指定语言且不写回本地、换算页打开着切语言时标题与单位名跟着换等
+Widget 与单元测试（共 206 项）。
 
 Android 的相册写入走 `MediaStore`，无法在 Widget 测试里覆盖，另有真机 / 模拟器测试 `integration_test/android_save_test.dart`（`just test-android`，需先 `just emulator` 或插上真机）。
 

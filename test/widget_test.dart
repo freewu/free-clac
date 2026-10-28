@@ -796,6 +796,53 @@ void main() {
     expect(find.text('个人所得税'), findsNothing);
   });
 
+  testWidgets('换算页打开着切语言：标题、字段与单位名一起换', (tester) async {
+    tester.view.physicalSize = const Size(1440, 1600);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+    final settings = SettingsController(store: _MemoryStore());
+    await tester.pumpWidget(FreeCalcApp(settings: settings, initialTab: 2));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('长度换算'));
+    await tester.pumpAndSettle();
+    expect(find.text('计量体系'), findsOneWidget);
+
+    // 页面开着的时候切到英文：已压栈的页面也要跟着重建
+    await settings.setLanguage(AppLanguage.en);
+    await tester.pumpAndSettle();
+    expect(find.text('计量体系'), findsNothing);
+    expect(find.text('Unit system'), findsOneWidget);
+    expect(find.text('Length'), findsOneWidget);
+    expect(find.text('metre'), findsOneWidget);
+    expect(find.text('米'), findsNothing);
+  });
+
+  testWidgets('深链 ?lang=en 覆盖本地设置，但不写回本地', (tester) async {
+    tester.view.physicalSize = const Size(1440, 1600);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+    // 本机存的是简体，链接要能盖过它
+    final store = _MemoryStore()..values['language'] = 'zh-Hans';
+    final settings = SettingsController(
+      store: store,
+      language: AppLanguage.zhHans,
+    );
+    await tester.pumpWidget(
+      FreeCalcApp(
+        settings: settings,
+        initialTab: 2,
+        initialTool: 'distance',
+        deepLinkLanguage: AppLanguage.en,
+      ),
+    );
+    await tester.pumpAndSettle();
+    // 链接里的语言生效
+    expect(settings.language, AppLanguage.en);
+    expect(find.text('Unit system'), findsOneWidget);
+    // 没有写回本地，下次正常打开仍是简体
+    expect(store.values['language'], 'zh-Hans');
+  });
+
   testWidgets('设置页：切换语言后工具卡片的深链 id 不变', (tester) async {
     tester.view.physicalSize = const Size(1440, 1600);
     tester.view.devicePixelRatio = 1;

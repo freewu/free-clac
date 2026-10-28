@@ -6,7 +6,9 @@ import '../tool_info.dart';
 import 'retirement_lang.dart';
 import 'retirement_page.dart';
 
-Widget _builder(BuildContext context) => const RetirementPage();
+/// 不能写 `const`：重建时若返回同一个实例，Flutter 会跳过更新，
+/// 切主题 / 语言后已打开的页面就不跟着变了。
+Widget _builder(BuildContext context) => RetirementPage();
 
 /// 「退休年龄计算器」的工具卡片元数据。
 ToolInfo get retirementTool => ToolInfo(

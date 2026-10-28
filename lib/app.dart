@@ -14,6 +14,7 @@ class FreeCalcApp extends StatefulWidget {
     this.initialPreset,
     this.initialTool,
     this.settings,
+    this.deepLinkLanguage,
   });
 
   /// 启动时展示的页面（Web 端可通过 ?page=plot 直达绘图页）。
@@ -25,6 +26,10 @@ class FreeCalcApp extends StatefulWidget {
   /// 启动时直接打开的工具 id（Web 端 ?tool=bmi），由工具页内嵌的
   /// Navigator 打开，外层导航菜单仍然保留。
   final String? initialTool;
+
+  /// Web 深链指定的界面语言（`?lang=zh-Hant`），读完本地设置后再覆盖，
+  /// 这样分享出去的链接在任何浏览器里都按链接的语言显示，且不写回本地。
+  final AppLanguage? deepLinkLanguage;
 
   /// 测试可注入自定义设置（内存存储、固定主题）；为空时自建并读本地配置。
   final SettingsController? settings;
@@ -49,7 +54,10 @@ class _FreeCalcAppState extends State<FreeCalcApp> with WidgetsBindingObserver {
     currentSettings = _settings;
     _settings.addListener(_onSettingsChanged);
     // 本地设置是异步读的：读完再重建一次即可，首帧用默认值。
-    _settings.load();
+    _settings.load().then((_) {
+      final deepLink = widget.deepLinkLanguage;
+      if (deepLink != null) _settings.overrideLanguage(deepLink);
+    });
     _syncGlobals();
   }
 
