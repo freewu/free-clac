@@ -454,13 +454,23 @@ void main() {
     await tester.pumpWidget(FreeCalcApp(settings: settings, initialTab: 3));
     await tester.pumpAndSettle();
 
-    // 设置页里六个换算工具各有两项
+    // 六个换算工具各有独立的一张卡片，各两项设置
     expect(find.text('单位换算默认值'), findsOneWidget);
-    for (final id in ['distance', 'area', 'volume', 'weight']) {
+    for (final id in [
+      'distance',
+      'area',
+      'volume',
+      'weight',
+      'temperature',
+      'speed',
+    ]) {
       expect(find.byKey(Key('settings-convert-$id-system')), findsOneWidget);
       expect(find.byKey(Key('settings-convert-$id-tab')), findsOneWidget);
     }
     expect(find.text('默认体系'), findsNWidgets(6));
+    expect(find.text('长度换算'), findsOneWidget);
+    expect(find.text('容量换算'), findsOneWidget);
+    expect(find.text('温度换算'), findsOneWidget);
 
     // 长度换算：默认体系切市制、结果 tab 切英制
     await tester.tap(find.byKey(const Key('settings-convert-distance-system')));

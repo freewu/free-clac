@@ -5,8 +5,13 @@ import '../l10n/app_i18n.dart';
 import '../l10n/app_language.dart';
 import '../state/settings_controller.dart';
 import '../theme/app_theme.dart';
+import 'tools/area/setting.dart';
 import 'tools/bmi/setting.dart';
-import 'tools/conversion_setting.dart';
+import 'tools/distance/setting.dart';
+import 'tools/speed/setting.dart';
+import 'tools/temperature/setting.dart';
+import 'tools/volume/setting.dart';
+import 'tools/weight/setting.dart';
 import 'tools/widgets/tool_select.dart';
 import 'widgets/settings_card.dart';
 
@@ -83,8 +88,23 @@ class SettingsPage extends StatelessWidget {
                 ),
                 const SizedBox(height: 12),
                 BmiSetting(controller: controller),
+                const SizedBox(height: 18),
+                SettingsSectionHeader(
+                  title: t.settingsConversion,
+                  hint: t.settingsConversionHint,
+                ),
+                const SizedBox(height: 10),
+                LengthSetting(controller: controller),
                 const SizedBox(height: 12),
-                ConversionSetting(controller: controller),
+                AreaSetting(controller: controller),
+                const SizedBox(height: 12),
+                VolumeSetting(controller: controller),
+                const SizedBox(height: 12),
+                WeightSetting(controller: controller),
+                const SizedBox(height: 12),
+                TemperatureSetting(controller: controller),
+                const SizedBox(height: 12),
+                SpeedSetting(controller: controller),
                 const SizedBox(height: 12),
                 SettingsCard(
                   icon: Icons.info_outline_rounded,
