@@ -324,7 +324,13 @@ Web 端可深链：`?page=settings` 直接打开设置页，`?page=plot` / `?pag
 - **换算数据层也带语言**：`MeasureUnit.names` / `MeasureSample.names` 存 en / ja / es，
   `labelIn(language)` 取不到就回落简体中文（`zhHant` 与 `zhHans` 都用原文）；
   单位说明 `MeasureUnit.notes` 只翻了英文，`noteIn()` 对中文回落原文、对其他语言用英文
-- 已接入：BMI、长度 / 面积 / 容量 / 重量 / 温度 / 速度、复利、利率换算、贷款
+- **计算器与绘图页**同样走 `lib/l10n/`：`calc_strings.dart`（`kCalcStrings`）覆盖键盘提示、
+  历史面板、函数库的分类与 48 条函数说明；`plot_strings.dart`（`kPlotStrings`）覆盖顶栏工具提示、
+  画布按钮、曲线面板、示例面板与导出对话框。函数说明按内置函数名查表，
+  简体直接复用 `lib/core/builtins.dart` 的中文，其余四种语言必须翻全（测试会逐条检查）
+- **示例曲线也带语言**：`PlotPreset.names` / `descriptions` 存四种语言的名称与说明，
+  `nameIn()` / `descriptionIn()` 取不到时回落简体原文
+- 已接入：BMI、长度 / 面积 / 容量 / 重量 / 温度 / 速度、复利、利率换算、贷款、计算器、绘图
 - **养老金 / 个税 / 退休年龄**按中国政策设计，`ToolInfo.availableIn` 只放简繁中文，
   两份文案都在 `<tool>_strings.dart` 里（`kPensionStrings` / `kTaxStrings` /
   `kRetirementStrings` 只含 `zhHans` 与 `zhHant` 两项，缺项时 `toolText` 回落简体）
@@ -497,8 +503,9 @@ just test
 非中文界面隐藏养老金与个税、五种语言文案表完整性、BMI 默认单位改英制后 BMI 页按英制打开、
 换算工具默认体系与结果 tab 各工具独立、退休年龄计算器按出生年月与人员类别测算（含「还需奋斗」倒计时）、
 换算单位名称 / 说明 / 参照物按语言回落、养老金 / 个税 / 退休年龄的简繁文案、
-`?lang=` 深链指定语言且不写回本地、换算页打开着切语言时标题与单位名跟着换等
-Widget 与单元测试（共 206 项）。
+`?lang=` 深链指定语言且不写回本地、换算页打开着切语言时标题与单位名跟着换、
+计算器与绘图页在英文界面下的提示 / 历史 / 函数库分类与说明 / 曲线类型 / 空状态 / 示例名称全是英文等
+Widget 与单元测试（共 217 项）。
 
 Android 的相册写入走 `MediaStore`，无法在 Widget 测试里覆盖，另有真机 / 模拟器测试 `integration_test/android_save_test.dart`（`just test-android`，需先 `just emulator` 或插上真机）。
 
@@ -508,7 +515,8 @@ Android 的相册写入走 `MediaStore`，无法在 Widget 测试里覆盖，另
 lib/
 ├── core/       词法、语法、AST、求值器、内置函数、数字格式化、计算引擎、LaTeX 导出
 ├── plot/       视口、曲线采样器、绘图画笔、示例预设、PNG / WebP / SVG 导出
-├── l10n/       多语言：语言枚举、应用级文案（AppStrings 五个实现）、取文案的全局入口
+├── l10n/       多语言：语言枚举、应用级文案（AppStrings 五个实现）、计算器与绘图页文案、
+│                取文案的全局入口
 ├── models/     曲线、历史记录数据模型
 ├── services/   导出文件保存（Web 下载 / 磁盘写入）与本地设置存储，条件导入隔离平台差异
 ├── state/      计算器 / 绘图 / 设置控制器（ChangeNotifier）

@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../../core/number_format.dart';
+import '../../l10n/plot_strings.dart';
 import '../../plot/plot_painter.dart';
 import '../../plot/plot_viewport.dart';
 import '../../state/plot_controller.dart';
@@ -207,7 +208,7 @@ class _PlotCanvasState extends State<PlotCanvas> {
                       if (controller.functions.isEmpty)
                         Center(
                           child: Text(
-                            '还没有函数，点击右上角“+”添加一条曲线',
+                            plotStrings.emptyCanvas,
                             style: TextStyle(
                               color: AppColors.textSecondary,
                               fontSize: 13,
@@ -311,7 +312,7 @@ class _PlotCanvasState extends State<PlotCanvas> {
       children: [
         _RoundIconButton(
           icon: Icons.keyboard_arrow_up,
-          tooltip: '上移视图（↑）',
+          tooltip: plotStrings.moveUp,
           onTap: () => _pan(0, _panStep, size),
         ),
         Row(
@@ -319,26 +320,26 @@ class _PlotCanvasState extends State<PlotCanvas> {
           children: [
             _RoundIconButton(
               icon: Icons.keyboard_arrow_left,
-              tooltip: '左移视图（←）',
+              tooltip: plotStrings.moveLeft,
               onTap: () => _pan(_panStep, 0, size),
             ),
             const SizedBox(width: 5),
             _RoundIconButton(
               icon: Icons.restart_alt,
-              tooltip: '重置视图（0）',
+              tooltip: plotStrings.resetView,
               onTap: () => controller.resetView(size),
             ),
             const SizedBox(width: 5),
             _RoundIconButton(
               icon: Icons.keyboard_arrow_right,
-              tooltip: '右移视图（→）',
+              tooltip: plotStrings.moveRight,
               onTap: () => _pan(-_panStep, 0, size),
             ),
           ],
         ),
         _RoundIconButton(
           icon: Icons.keyboard_arrow_down,
-          tooltip: '下移视图（↓）',
+          tooltip: plotStrings.moveDown,
           onTap: () => _pan(0, -_panStep, size),
         ),
         const SizedBox(height: 6),
@@ -347,13 +348,13 @@ class _PlotCanvasState extends State<PlotCanvas> {
           children: [
             _RoundIconButton(
               icon: Icons.add,
-              tooltip: '放大（+）',
+              tooltip: plotStrings.zoomIn,
               onTap: () => controller.zoom(1.4, size),
             ),
             const SizedBox(width: 5),
             _RoundIconButton(
               icon: Icons.remove,
-              tooltip: '缩小（-）',
+              tooltip: plotStrings.zoomOut,
               onTap: () => controller.zoom(1 / 1.4, size),
             ),
           ],
@@ -361,13 +362,13 @@ class _PlotCanvasState extends State<PlotCanvas> {
         const SizedBox(height: 6),
         _RoundIconButton(
           icon: Icons.height,
-          tooltip: '纵向自适应',
+          tooltip: plotStrings.fitVertical,
           onTap: () => controller.fitY(size),
         ),
         const SizedBox(height: 6),
         _RoundIconButton(
           icon: Icons.center_focus_strong,
-          tooltip: '显示全部',
+          tooltip: plotStrings.showAll,
           onTap: () => controller.fitAll(size),
         ),
       ],

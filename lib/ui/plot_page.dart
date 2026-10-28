@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 
+import '../l10n/app_i18n.dart';
+import '../l10n/calc_strings.dart';
+import '../l10n/plot_strings.dart';
 import '../state/plot_controller.dart';
 import '../theme/app_theme.dart';
 import 'widgets/plot_canvas.dart';
@@ -87,21 +90,25 @@ class PlotPage extends StatelessWidget {
         children: [
           Icon(Icons.insights_rounded, size: 19, color: AppColors.primary),
           const SizedBox(width: 8),
-          const Text(
-            '函数绘图',
-            style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
+          Text(
+            plotStrings.title,
+            style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
           ),
           const SizedBox(width: 10),
           _HeaderChip(
             label: mode.shortLabel,
             color: AppColors.secondary,
-            tooltip: '角度单位（${mode.label}），点击切换',
+            tooltip: fill(plotStrings.angleTooltip, [
+              calcStrings.angleLabel(mode),
+            ]),
             onTap: () => controller.engine.angleMode = mode.toggled,
           ),
           const Spacer(),
           _HeaderAction(
             icon: controller.showGrid ? Icons.grid_on : Icons.grid_off,
-            tooltip: controller.showGrid ? '隐藏网格' : '显示网格',
+            tooltip: controller.showGrid
+                ? plotStrings.hideGrid
+                : plotStrings.showGrid,
             active: controller.showGrid,
             onTap: () => controller.setShowGrid(!controller.showGrid),
           ),
@@ -109,13 +116,15 @@ class PlotPage extends StatelessWidget {
             icon: controller.traceEnabled
                 ? Icons.gps_fixed
                 : Icons.gps_not_fixed,
-            tooltip: controller.traceEnabled ? '关闭触摸追踪' : '开启触摸追踪（拖动查看数值）',
+            tooltip: controller.traceEnabled
+                ? plotStrings.traceOff
+                : plotStrings.traceOn,
             active: controller.traceEnabled,
             onTap: () => controller.setTraceEnabled(!controller.traceEnabled),
           ),
           _HeaderAction(
             icon: Icons.image_outlined,
-            tooltip: '导出图片（PNG / SVG / WebP）',
+            tooltip: plotStrings.exportTooltip,
             onTap: () => showPlotExportDialog(context, controller),
           ),
         ],

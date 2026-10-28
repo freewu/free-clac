@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 
 import '../../core/latex.dart';
 import '../../core/number_format.dart';
+import '../../l10n/calc_strings.dart';
 import '../../models/history_entry.dart';
 import '../../state/calculator_controller.dart';
 import '../../theme/app_theme.dart';
@@ -39,9 +40,9 @@ class HistoryPanel extends StatelessWidget {
                       color: AppColors.textSecondary,
                     ),
                     const SizedBox(width: 8),
-                    const Text(
-                      '历史记录',
-                      style: TextStyle(
+                    Text(
+                      calcStrings.historyTitle,
+                      style: const TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.w600,
                         letterSpacing: 0.4,
@@ -52,7 +53,10 @@ class HistoryPanel extends StatelessWidget {
                       TextButton.icon(
                         onPressed: controller.clearHistory,
                         icon: const Icon(Icons.delete_outline, size: 16),
-                        label: const Text('清空', style: TextStyle(fontSize: 12)),
+                        label: Text(
+                          calcStrings.clear,
+                          style: const TextStyle(fontSize: 12),
+                        ),
                         style: TextButton.styleFrom(
                           foregroundColor: AppColors.textSecondary,
                           visualDensity: VisualDensity.compact,
@@ -68,7 +72,7 @@ class HistoryPanel extends StatelessWidget {
                         child: Padding(
                           padding: EdgeInsets.all(24),
                           child: Text(
-                            '还没有记录\n按 = 或回车保存计算结果',
+                            calcStrings.historyEmpty,
                             textAlign: TextAlign.center,
                             style: TextStyle(
                               color: AppColors.textSecondary,
@@ -145,7 +149,7 @@ class _HistoryTile extends StatelessWidget {
               ),
             ),
             PopupMenuButton<_EntryAction>(
-              tooltip: '复制这条记录',
+              tooltip: calcStrings.copyEntryTooltip,
               icon: const Icon(Icons.copy_rounded, size: 16),
               color: AppColors.surface,
               iconColor: AppColors.textSecondary,
@@ -156,12 +160,12 @@ class _HistoryTile extends StatelessWidget {
                 PopupMenuItem(
                   value: _EntryAction.latex,
                   enabled: tryExpressionToLatex(entry.expression) != null,
-                  child: const Text('复制公式（LaTeX）'),
+                  child: Text(calcStrings.copyLatex),
                 ),
                 PopupMenuItem(
                   value: _EntryAction.value,
                   enabled: !entry.isError,
-                  child: const Text('复制结果'),
+                  child: Text(calcStrings.copyResult),
                 ),
               ],
             ),
@@ -177,18 +181,18 @@ class _HistoryTile extends StatelessWidget {
     switch (action) {
       case _EntryAction.latex:
         text = tryExpressionToLatex(entry.expression);
-        message = 'LaTeX 已复制';
+        message = calcStrings.latexCopied;
       case _EntryAction.value:
         final value = entry.value;
         text = value == null
             ? null
             : formatNumber(value, significantDigits: 15);
-        message = '结果已复制';
+        message = calcStrings.resultCopied;
     }
     if (text == null) {
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(const SnackBar(content: Text('这条记录无法转换为 LaTeX')));
+      ).showSnackBar(SnackBar(content: Text(calcStrings.latexFailed)));
       return;
     }
 

@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:flutter/services.dart';
 
+import '../l10n/plot_strings.dart';
 import '../plot/plot_export.dart';
 import 'saved_plot_file.dart';
 
@@ -15,10 +16,8 @@ const MethodChannel _mediaStoreChannel = MethodChannel('free_clac/media_store');
 /// 必须和实际落盘位置一致：Android 走 MediaStore（相册 / 下载），
 /// 桌面端写 [defaultPlotDirectory] 解析出来的真实目录。
 String plotSaveLocationNote() {
-  if (Platform.isAndroid) {
-    return '系统相册「Pictures/free-clac」（SVG 存到「Download/free-clac」）';
-  }
-  if (Platform.isIOS) return '应用沙盒临时目录';
+  if (Platform.isAndroid) return plotStrings.saveLocationAndroid;
+  if (Platform.isIOS) return plotStrings.saveLocationIos;
   return defaultPlotDirectory();
 }
 
@@ -83,8 +82,9 @@ String defaultPlotDirectory() {
   if (home.isEmpty) return Directory.systemTemp.path;
   final candidates = <String>[
     joinPath(home, 'Pictures'),
-    joinPath(home, 'Downloads'),
+    // 中文 Windows 是「下载」，英文系统是 Downloads，两个都试
     joinPath(home, '下载'),
+    joinPath(home, 'Downloads'),
     home,
   ];
   for (final candidate in candidates) {

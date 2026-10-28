@@ -151,7 +151,7 @@ class _CompoundPageState extends State<CompoundPage> {
                           for (final frequency in CompoundFrequency.values)
                             ChoiceChip(
                               label: Text(
-                                frequency.label,
+                                compoundStrings.frequencyLabel(frequency),
                                 style: const TextStyle(fontSize: 11.5),
                               ),
                               selected: _frequency == frequency,

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import '../l10n/calc_strings.dart';
 import '../state/calculator_controller.dart';
 import '../theme/app_theme.dart';
 import 'widgets/calc_display.dart';
@@ -99,7 +100,7 @@ class CalculatorPage extends StatelessWidget {
         children: [
           Expanded(
             child: Text(
-              '支持键盘输入：回车计算，↑↓ 翻历史',
+              calcStrings.keyboardHint,
               style: TextStyle(
                 color: AppColors.textSecondary.withValues(alpha: 0.8),
                 fontSize: 11,
@@ -109,7 +110,10 @@ class CalculatorPage extends StatelessWidget {
           TextButton.icon(
             onPressed: () => _showHistory(context),
             icon: const Icon(Icons.history_rounded, size: 16),
-            label: const Text('历史', style: TextStyle(fontSize: 12)),
+            label: Text(
+              calcStrings.historyShort,
+              style: const TextStyle(fontSize: 12),
+            ),
             style: TextButton.styleFrom(
               foregroundColor: AppColors.textSecondary,
               visualDensity: VisualDensity.compact,
@@ -118,7 +122,10 @@ class CalculatorPage extends StatelessWidget {
           TextButton.icon(
             onPressed: controller.clearHistory,
             icon: const Icon(Icons.delete_outline, size: 16),
-            label: const Text('清空', style: TextStyle(fontSize: 12)),
+            label: Text(
+              calcStrings.clear,
+              style: const TextStyle(fontSize: 12),
+            ),
             style: TextButton.styleFrom(
               foregroundColor: AppColors.textSecondary,
               visualDensity: VisualDensity.compact,

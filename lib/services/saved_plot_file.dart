@@ -1,3 +1,5 @@
+import '../l10n/plot_strings.dart';
+
 /// 一次图片保存的结果：保存位置、文件名、是否走浏览器下载。
 class SavedPlotFile {
   const SavedPlotFile({
@@ -25,7 +27,8 @@ class SavedPlotFile {
   final bool canReveal;
 
   /// 展示用的位置描述。
-  String get displayLocation => inBrowser ? '浏览器默认下载目录' : fullPath;
+  String get displayLocation =>
+      inBrowser ? plotStrings.saveLocationBrowser : fullPath;
 
   /// 完整文件路径（浏览器环境只有文件名）。
   String get fullPath => inBrowser ? fileName : (displayPath ?? location);

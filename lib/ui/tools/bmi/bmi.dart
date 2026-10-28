@@ -115,13 +115,6 @@ class BmiResult {
   /// 距离正常区间中心（BMI 21）还差多少公斤，负数表示偏轻。
   double get weightToHealthyCenter => 21 * _heightM2 - weightKg;
 
-  String get advice => switch (category) {
-    BmiCategory.underweight => '体重偏低，注意均衡饮食并适当增加力量训练。',
-    BmiCategory.normal => '体重处于正常范围，保持现有作息与运动习惯即可。',
-    BmiCategory.overweight => '体重偏高，建议控制精制碳水摄入并增加有氧运动。',
-    BmiCategory.obese => '已进入肥胖区间，建议咨询医生或营养师制定减重方案。',
-  };
-
   /// 身高换算成英寸。
   double get heightInches => heightCm / cmPerInch;
 

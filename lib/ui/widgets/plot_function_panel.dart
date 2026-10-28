@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import '../../l10n/plot_strings.dart';
 import '../../models/plot_function.dart';
 import '../../state/plot_controller.dart';
 import '../../theme/app_theme.dart';
@@ -33,9 +34,9 @@ class PlotFunctionPanel extends StatelessWidget {
                   color: AppColors.textSecondary,
                 ),
                 const SizedBox(width: 8),
-                const Text(
-                  '曲线',
-                  style: TextStyle(
+                Text(
+                  plotStrings.panelTitle,
+                  style: const TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w600,
                     letterSpacing: 0.3,
@@ -51,7 +52,7 @@ class PlotFunctionPanel extends StatelessWidget {
                 ),
                 const Spacer(),
                 IconButton(
-                  tooltip: '示例曲线',
+                  tooltip: plotStrings.presets,
                   visualDensity: VisualDensity.compact,
                   iconSize: 19,
                   color: AppColors.secondary,
@@ -60,7 +61,7 @@ class PlotFunctionPanel extends StatelessWidget {
                 ),
                 if (controller.functions.isNotEmpty)
                   IconButton(
-                    tooltip: '清空全部',
+                    tooltip: plotStrings.clearAll,
                     visualDensity: VisualDensity.compact,
                     iconSize: 18,
                     color: AppColors.textSecondary,
@@ -68,7 +69,7 @@ class PlotFunctionPanel extends StatelessWidget {
                     icon: const Icon(Icons.delete_sweep_outlined),
                   ),
                 PopupMenuButton<PlotMode>(
-                  tooltip: '添加曲线',
+                  tooltip: plotStrings.addCurve,
                   icon: Icon(
                     Icons.add_circle_outline,
                     size: 20,
@@ -85,12 +86,7 @@ class PlotFunctionPanel extends StatelessWidget {
                             const SizedBox(width: 8),
                             Flexible(
                               child: Text(
-                                switch (mode) {
-                                  PlotMode.cartesian => '直角坐标 y = f(x)',
-                                  PlotMode.polar => '极坐标 r = f(t)',
-                                  PlotMode.parametric => '参数方程',
-                                  PlotMode.implicit => '隐式方程 f(x, y) = 0',
-                                },
+                                plotStrings.modeMenu(mode),
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
                               ),
@@ -110,7 +106,7 @@ class PlotFunctionPanel extends StatelessWidget {
                     child: Padding(
                       padding: EdgeInsets.all(20),
                       child: Text(
-                        '点击 + 添加曲线\n例如 sin(x)、x^2/4、1/x\n隐式方程：x^2 + y^2 - 1',
+                        plotStrings.emptyCurves,
                         textAlign: TextAlign.center,
                         style: TextStyle(
                           color: AppColors.textSecondary,
@@ -138,7 +134,7 @@ class PlotFunctionPanel extends StatelessWidget {
           Padding(
             padding: const EdgeInsets.fromLTRB(12, 6, 12, 8),
             child: Text(
-              '提示：滚轮 / 双指缩放，拖拽平移，悬停或长按查看数值',
+              plotStrings.gestureHint,
               style: TextStyle(
                 color: AppColors.textSecondary.withValues(alpha: 0.75),
                 fontSize: 10.5,
@@ -198,13 +194,11 @@ class _FunctionTileState extends State<_FunctionTile> {
     final latex = function.toLatex();
     final messenger = ScaffoldMessenger.of(context);
     if (latex == null) {
-      messenger.showSnackBar(
-        const SnackBar(content: Text('表达式不完整，无法转换为 LaTeX')),
-      );
+      messenger.showSnackBar(SnackBar(content: Text(plotStrings.latexFailed)));
       return;
     }
     Clipboard.setData(ClipboardData(text: latex));
-    messenger.showSnackBar(const SnackBar(content: Text('LaTeX 已复制')));
+    messenger.showSnackBar(SnackBar(content: Text(plotStrings.latexCopied)));
   }
 
   @override
@@ -219,7 +213,7 @@ class _FunctionTileState extends State<_FunctionTile> {
           Row(
             children: [
               Tooltip(
-                message: '点击切换颜色',
+                message: plotStrings.tapToChangeColor,
                 child: InkWell(
                   onTap: () => widget.controller.cycleColor(function.id),
                   borderRadius: BorderRadius.circular(10),
@@ -244,7 +238,7 @@ class _FunctionTileState extends State<_FunctionTile> {
               ),
               const SizedBox(width: 6),
               PopupMenuButton<PlotMode>(
-                tooltip: '切换曲线类型',
+                tooltip: plotStrings.switchMode,
                 padding: EdgeInsets.zero,
                 onSelected: (mode) =>
                     widget.controller.updateExpression(function.id, mode: mode),
@@ -252,14 +246,14 @@ class _FunctionTileState extends State<_FunctionTile> {
                   for (final mode in PlotMode.values)
                     PopupMenuItem<PlotMode>(
                       value: mode,
-                      child: Text(mode.label),
+                      child: Text(plotStrings.modeLabel(mode)),
                     ),
                 ],
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Text(
-                      function.mode.label,
+                      plotStrings.modeLabel(function.mode),
                       style: TextStyle(
                         color: AppColors.textSecondary,
                         fontSize: 10.5,
@@ -275,7 +269,9 @@ class _FunctionTileState extends State<_FunctionTile> {
               ),
               const Spacer(),
               IconButton(
-                tooltip: function.visible ? '隐藏曲线' : '显示曲线',
+                tooltip: function.visible
+                    ? plotStrings.hideCurve
+                    : plotStrings.showCurve,
                 visualDensity: VisualDensity.compact,
                 iconSize: 17,
                 color: function.visible
@@ -290,7 +286,7 @@ class _FunctionTileState extends State<_FunctionTile> {
                 ),
               ),
               IconButton(
-                tooltip: '复制 LaTeX',
+                tooltip: plotStrings.copyLatex,
                 visualDensity: VisualDensity.compact,
                 iconSize: 17,
                 color: AppColors.textSecondary,
@@ -298,7 +294,7 @@ class _FunctionTileState extends State<_FunctionTile> {
                 icon: const Icon(Icons.copy_rounded),
               ),
               IconButton(
-                tooltip: '删除',
+                tooltip: plotStrings.delete,
                 visualDensity: VisualDensity.compact,
                 iconSize: 17,
                 color: AppColors.textSecondary,
@@ -316,7 +312,7 @@ class _FunctionTileState extends State<_FunctionTile> {
               PlotMode.parametric => 'x =',
               PlotMode.implicit => '0 =',
             },
-            hint: function.mode.hint,
+            hint: plotStrings.modeHint(function.mode),
             onChanged: (value) => widget.controller.updateExpression(
               function.id,
               expression: value,

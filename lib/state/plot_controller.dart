@@ -6,6 +6,7 @@ import 'package:flutter/foundation.dart';
 import '../core/angle_mode.dart';
 import '../core/math_engine.dart';
 import '../core/number_format.dart';
+import '../l10n/plot_strings.dart';
 import '../plot/curve_sampler.dart';
 import '../plot/plot_presets.dart';
 import '../plot/plot_viewport.dart';
@@ -398,7 +399,12 @@ class PlotController extends ChangeNotifier {
             final compiled = _compile(function.expression, 'x');
             final y = compiled(x);
             if (!y.isFinite) {
-              values.add(TraceValue(function: function, text: '未定义'));
+              values.add(
+                TraceValue(
+                  function: function,
+                  text: plotStrings.traceUndefined,
+                ),
+              );
             } else {
               values.add(
                 TraceValue(
@@ -413,7 +419,12 @@ class PlotController extends ChangeNotifier {
             final compiled = _compile(function.expression, 't');
             final radius = compiled(x);
             if (!radius.isFinite) {
-              values.add(TraceValue(function: function, text: '未定义'));
+              values.add(
+                TraceValue(
+                  function: function,
+                  text: plotStrings.traceUndefined,
+                ),
+              );
             } else {
               final radians = angleMode.toRadians(x);
               values.add(
@@ -434,7 +445,12 @@ class PlotController extends ChangeNotifier {
             final px = fx(x);
             final py = fy(x);
             if (!px.isFinite || !py.isFinite) {
-              values.add(TraceValue(function: function, text: '未定义'));
+              values.add(
+                TraceValue(
+                  function: function,
+                  text: plotStrings.traceUndefined,
+                ),
+              );
             } else {
               values.add(
                 TraceValue(
@@ -454,13 +470,15 @@ class PlotController extends ChangeNotifier {
                 function: function,
                 text: value.isFinite
                     ? 'f = ${formatNumber(value, significantDigits: 4)}'
-                    : '未定义',
+                    : plotStrings.traceUndefined,
               ),
             );
             break;
         }
       } catch (_) {
-        values.add(TraceValue(function: function, text: '表达式错误'));
+        values.add(
+          TraceValue(function: function, text: plotStrings.traceError),
+        );
       }
     }
     return values;

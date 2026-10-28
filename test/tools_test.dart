@@ -176,11 +176,9 @@ void main() {
       expect(result.healthyMinKg, closeTo(53.5, 0.1));
       expect(result.healthyMaxKg, closeTo(69.1, 0.1));
       expect(result.weightToHealthyCenter, closeTo(-4.3, 0.1));
-      expect(result.advice, contains('正常范围'));
 
       final thin = calculateBmi(heightCm: 170, weightKg: 45)!;
       expect(thin.weightToHealthyCenter, greaterThan(0));
-      expect(thin.advice, contains('偏低'));
     });
 
     test('非法输入返回 null', () {

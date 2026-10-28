@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../theme/app_theme.dart';
+import 'bmi_strings.dart';
 import 'bmi.dart';
 
 /// 各 BMI 分级对应的颜色。
@@ -141,7 +142,7 @@ class BmiGauge extends StatelessWidget {
                         const SizedBox(width: 4),
                         Flexible(
                           child: Text(
-                            category.label,
+                            bmiStrings.categoryLabel(category),
                             overflow: TextOverflow.ellipsis,
                             style: TextStyle(
                               color: AppColors.textSecondary,

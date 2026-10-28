@@ -796,6 +796,87 @@ void main() {
     expect(find.text('个人所得税'), findsNothing);
   });
 
+  testWidgets('计算器页：英文界面下提示、历史与函数库都是英文', (tester) async {
+    // 窄屏才显示底部提示条与「历史」按钮，宽屏是右侧历史面板
+    tester.view.physicalSize = const Size(900, 1600);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+    final settings = SettingsController(
+      store: _MemoryStore(),
+      language: AppLanguage.en,
+    );
+    await tester.pumpWidget(
+      FreeCalcApp(key: UniqueKey(), settings: settings, initialTab: 0),
+    );
+    await tester.pumpAndSettle();
+
+    expect(
+      find.text('Keyboard works too: Enter evaluates, ↑↓ browse history'),
+      findsOneWidget,
+    );
+    expect(find.text('History'), findsWidgets);
+    expect(find.text('Clear'), findsWidgets);
+    expect(find.textContaining('支持键盘输入'), findsNothing);
+    expect(find.text('清空'), findsNothing);
+
+    // 函数库：分类标题与函数说明（数据层只有中文，靠 functionDescriptions 覆盖）
+    await tester.tap(find.byTooltip('Function library'));
+    await tester.pumpAndSettle();
+    expect(find.text('Trigonometry'), findsOneWidget);
+    expect(find.text('Powers & roots'), findsOneWidget);
+    // 函数说明是 chip 的 tooltip，不是可见文本
+    expect(find.byTooltip('sin(x) — sine'), findsOneWidget);
+    expect(find.byTooltip('cos(x) — cosine'), findsOneWidget);
+    expect(find.text('三角'), findsNothing);
+    expect(find.byTooltip('sin(x) — 正弦'), findsNothing);
+  });
+
+  testWidgets('绘图页：英文界面下标题、面板、空状态与示例都是英文', (tester) async {
+    tester.view.physicalSize = const Size(1440, 1600);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+    final settings = SettingsController(
+      store: _MemoryStore(),
+      language: AppLanguage.en,
+    );
+    await tester.pumpWidget(
+      FreeCalcApp(key: UniqueKey(), settings: settings, initialTab: 1),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('Function plot'), findsOneWidget);
+    expect(find.text('Curves'), findsOneWidget);
+    expect(find.text('Cartesian'), findsWidgets);
+    expect(
+      find.text(
+        'Tip: wheel / pinch to zoom, drag to pan, hover or long-press for values',
+      ),
+      findsOneWidget,
+    );
+    expect(find.text('函数绘图'), findsNothing);
+    expect(find.text('曲线'), findsNothing);
+    expect(find.text('直角坐标'), findsNothing);
+
+    // 清空后画布的空状态提示
+    await tester.tap(find.byTooltip('Clear all'));
+    await tester.pumpAndSettle();
+    expect(
+      find.text('No functions yet — tap “+” in the top right to add one'),
+      findsOneWidget,
+    );
+    expect(find.textContaining('Tap + to add a curve'), findsOneWidget);
+
+    // 示例曲线：名称与说明走 PlotPreset.names / descriptions
+    await tester.tap(find.byTooltip('Sample curves'));
+    await tester.pumpAndSettle();
+    expect(find.text('Heart · polar'), findsOneWidget);
+    expect(find.text('Rose curve'), findsOneWidget);
+    expect(find.text('心形 · 极坐标'), findsNothing);
+    expect(find.text('玫瑰线'), findsNothing);
+    expect(find.textContaining('Source: Zhihu'), findsOneWidget);
+    expect(find.textContaining('来源：知乎'), findsNothing);
+  });
+
   testWidgets('换算页打开着切语言：标题、字段与单位名一起换', (tester) async {
     tester.view.physicalSize = const Size(1440, 1600);
     tester.view.devicePixelRatio = 1;

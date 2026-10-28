@@ -72,6 +72,16 @@ cmd.exe /c "cd /d $(wslpath -w "$PWD") && flutter test"
   （只翻英文，中文回落原文、其他语言回落英文）。新增单位必须补 en / ja / es 三项，
   `test/tools_test.dart` 会遍历六个 catalog 检查。
 - **界面文案一律走多语言**：应用级（导航、设置、工具页标题）用 `t.xxx`（`lib/l10n/app_strings.dart` 里 `AppStrings` 的五个实现都要补），工具卡片名称 / 卖点 / 说明写进 `lib/ui/tools/<tool>/<tool>_lang.dart` 的 `k<Tool>Lang`。注释用中文，界面文案用各语言母语。
+- **计算器页与绘图页的文案单独成表**：`lib/l10n/calc_strings.dart`（`kCalcStrings`）与
+  `lib/l10n/plot_strings.dart`（`kPlotStrings`），写法同工具页 `<tool>_strings.dart`。
+  内置函数的说明按函数名查表（`CalcStrings.functionDescriptions` + `functionDescription()`）：
+  **简体直接用 `lib/core/builtins.dart` 的中文，其余四种语言必须翻全**
+  （`test/l10n_test.dart` 会逐条检查 48 个函数）。曲线类型名用
+  `PlotStrings.modeLabel()` / `modeMenu()` / `modeHint()`；角度单位名用 `CalcStrings.angleLabel()`。
+  示例曲线的名称与说明放在 `PlotPreset.names` / `descriptions`，用 `nameIn()` / `descriptionIn()` 取。
+  平台相关的「保存位置」文案（`plotSaveLocationNote()`、`SavedPlotFile.displayLocation`）
+  由服务层直接读 `plotStrings`，不要在 `lib/services/` 里写中文字面量。
+- **数据层不要重复存界面文案**：`BmiResult` 之前自带一份中文 `advice`，和 `bmiStrings.adviceOf()` 重复且不跟语言走，已删除；同类「数据层 getter 返回中文句子」的写法不要再加，改由页面调 `<tool>Strings`。
 - **页面构建函数不要返回 `const` 组件**：`ToolInfo.builder` 返回 `const` 实例时，重建拿到的还是同一个对象，Flutter 判定无需更新，切主题 / 语言后已打开的页面不会跟着变。换算页的标题也从 `<tool>_lang.dart` 取（`toolText(kXxxLang).name`）。
 - **颜色一律走 `AppColors`**：不要硬编码 `Color(0xFF...)`，也不要在 `const` 表达式里用 `AppColors.xxx`（它不是常量），深色 / 浅色两套配色都要能看。
 - 每个小工具的东西都放在自己目录 `lib/ui/tools/<tool>/`：纯逻辑（如 `bmi.dart`、`loan.dart`，仍不依赖 Flutter）、界面（`<tool>_page.dart`）、语言包（`<tool>_lang.dart`）、`defined.dart` 与 `setting.dart` 并列放，不再有 `lib/tools/` 与 `lang/` 子目录。共用的输入框与比例条放在 `lib/ui/tools/widgets/`（`tool_field.dart`、`tool_unit_picker.dart`、`tool_select.dart`、`tool_bars.dart`），不要在每个工具里各写一份。每个工具的 `ToolInfo`（名称、卖点、图标、配色、页面构造器）写在**自己目录的 `defined.dart`** 里，`lib/ui/tools/tool_catalog.dart` 只汇总 `kTools`；新增工具 = 新建 `<tool>/<tool>.dart`（逻辑）+ `<tool>/<tool>_page.dart` + `<tool>/defined.dart` + `<tool>/<tool>_lang.dart`（五种语言）+ 在 `kTools` 追加一行 + `tool/screenshot.sh` 加一条 `shoot`。单位换算类工具共用的 `unit_catalog.dart` 放在 `lib/ui/tools/`。

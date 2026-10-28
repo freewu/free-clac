@@ -208,11 +208,11 @@ Uint8List utf8Encode(String text) {
 }
 
 /// 把曲线列表转成便于展示的说明（供 SVG 标题 / 对话框使用）。
-String describeSamples(List<PlotSample> samples) {
+String describeSamples(List<PlotSample> samples, {String empty = '暂无可见曲线'}) {
   final visible = samples
       .where((sample) => sample.function.visible && !sample.curve.isEmpty)
       .toList();
-  if (visible.isEmpty) return '暂无可见曲线';
+  if (visible.isEmpty) return empty;
   return visible
       .map((sample) => sample.function.expression)
       .where((expression) => expression.isNotEmpty)

@@ -4,6 +4,8 @@ import 'package:flutter/services.dart';
 import '../../core/builtins.dart';
 import '../../core/latex.dart';
 import '../../core/number_format.dart';
+import '../../l10n/app_i18n.dart';
+import '../../l10n/calc_strings.dart';
 import '../../state/calculator_controller.dart';
 import '../../theme/app_theme.dart';
 
@@ -49,7 +51,9 @@ class CalcDisplay extends StatelessWidget {
       children: [
         _Chip(
           label: mode.shortLabel,
-          tooltip: '切换角度单位（当前：${mode.label}）',
+          tooltip: fill(calcStrings.angleTooltip, [
+            calcStrings.angleLabel(mode),
+          ]),
           color: AppColors.secondary,
           onTap: controller.toggleAngleMode,
         ),
@@ -57,7 +61,7 @@ class CalcDisplay extends StatelessWidget {
         if (controller.memoryActive)
           _Chip(
             label: 'M ${formatNumber(controller.memory, significantDigits: 6)}',
-            tooltip: '清除内存（M+ / M− 可在函数库中调用）',
+            tooltip: calcStrings.memoryClearTooltip,
             color: AppColors.warning,
             onTap: controller.memoryClear,
           ),
@@ -68,18 +72,18 @@ class CalcDisplay extends StatelessWidget {
                 'ans ${formatNumber(controller.answer!, significantDigits: 6)}',
             color: AppColors.tertiary,
             onTap: () => controller.insert('ans'),
-            tooltip: '插入上一次结果',
+            tooltip: calcStrings.insertAnsTooltip,
           ),
         const Spacer(),
         IconButton(
           onPressed: () => _showFunctionSheet(context),
           icon: const Icon(Icons.functions, size: 20),
-          tooltip: '函数库',
+          tooltip: calcStrings.functionLibrary,
           visualDensity: VisualDensity.compact,
           color: AppColors.textSecondary,
         ),
         PopupMenuButton<_CopyAction>(
-          tooltip: '复制',
+          tooltip: calcStrings.copyTooltip,
           icon: const Icon(Icons.copy_rounded, size: 19),
           color: AppColors.surface,
           position: PopupMenuPosition.under,
@@ -89,25 +93,25 @@ class CalcDisplay extends StatelessWidget {
             PopupMenuItem(
               value: _CopyAction.value,
               enabled: value != null,
-              child: const _CopyMenuItem(
+              child: _CopyMenuItem(
                 icon: Icons.numbers_rounded,
-                label: '复制结果',
+                label: calcStrings.copyResult,
               ),
             ),
             PopupMenuItem(
               value: _CopyAction.latex,
               enabled: latex != null,
-              child: const _CopyMenuItem(
+              child: _CopyMenuItem(
                 icon: Icons.functions,
-                label: '复制公式（LaTeX）',
+                label: calcStrings.copyLatex,
               ),
             ),
             PopupMenuItem(
               value: _CopyAction.latexWithResult,
               enabled: latex != null && value != null,
-              child: const _CopyMenuItem(
+              child: _CopyMenuItem(
                 icon: Icons.drag_handle_rounded,
-                label: '复制公式与结果（LaTeX）',
+                label: calcStrings.copyLatexWithResult,
               ),
             ),
           ],
@@ -116,7 +120,7 @@ class CalcDisplay extends StatelessWidget {
           IconButton(
             onPressed: onOpenHistory,
             icon: const Icon(Icons.history_rounded, size: 20),
-            tooltip: '历史记录',
+            tooltip: calcStrings.historyTitle,
             visualDensity: VisualDensity.compact,
             color: AppColors.textSecondary,
           ),
@@ -136,13 +140,13 @@ class CalcDisplay extends StatelessWidget {
     switch (action) {
       case _CopyAction.value:
         text = result;
-        message = '结果已复制';
+        message = calcStrings.resultCopied;
       case _CopyAction.latex:
         text = latex;
-        message = 'LaTeX 已复制';
+        message = calcStrings.latexCopied;
       case _CopyAction.latexWithResult:
         text = latex == null || result == null ? null : '$latex = $result';
-        message = 'LaTeX 与结果已复制';
+        message = calcStrings.latexWithResultCopied;
     }
     if (text == null) return;
 
@@ -186,7 +190,7 @@ class CalcDisplay extends StatelessWidget {
           enabledBorder: InputBorder.none,
           focusedBorder: InputBorder.none,
           contentPadding: EdgeInsets.zero,
-          hintText: '输入表达式，例如 sin(30) + 2^3',
+          hintText: calcStrings.inputHint,
           hintStyle: TextStyle(
             color: AppColors.textSecondary,
             fontSize: 18,
@@ -221,7 +225,7 @@ class CalcDisplay extends StatelessWidget {
 
     if (value == null) {
       return Text(
-        '实时预览结果会显示在这里，按 = 记录到历史',
+        calcStrings.previewHint,
         style: TextStyle(color: AppColors.textSecondary, fontSize: 13),
       );
     }
@@ -338,16 +342,20 @@ class FunctionsSheet extends StatelessWidget {
 
   final CalculatorController controller;
 
-  static const Map<String, String> _categories = {
-    '三角': 'sin cos tan csc sec cot asin acos atan atan2',
-    '双曲': 'sinh cosh tanh asinh acosh atanh',
-    '指数对数': 'exp ln log lg log2 expm1',
-    '幂与根': 'sqrt cbrt root hypot',
-    '取整符号': 'abs sign floor ceil round trunc frac mod',
-    '组合统计': 'fact gamma ncr npr gcd lcm min max avg',
-    '微积分': 'sum prod integrate diff',
-    '其它': 'deg rad sinc rand randint',
-  };
+  /// 分类标题跟语言走，函数名本身不用翻译。
+  static List<(String, List<String>)> _categories(CalcStrings s) => [
+    (s.categoryTrig, 'sin cos tan csc sec cot asin acos atan atan2'.split(' ')),
+    (s.categoryHyperbolic, 'sinh cosh tanh asinh acosh atanh'.split(' ')),
+    (s.categoryExpLog, 'exp ln log lg log2 expm1'.split(' ')),
+    (s.categoryPowerRoot, 'sqrt cbrt root hypot'.split(' ')),
+    (s.categoryRounding, 'abs sign floor ceil round trunc frac mod'.split(' ')),
+    (
+      s.categoryCombinatorics,
+      'fact gamma ncr npr gcd lcm min max avg'.split(' '),
+    ),
+    (s.categoryCalculus, 'sum prod integrate diff'.split(' ')),
+    (s.categoryMisc, 'deg rad sinc rand randint'.split(' ')),
+  ];
 
   static const Map<String, String> _templates = {
     'sum': 'sum(, k, 1, 10)',
@@ -368,13 +376,13 @@ class FunctionsSheet extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            const Text(
-              '函数库',
-              style: TextStyle(fontSize: 17, fontWeight: FontWeight.w600),
+            Text(
+              calcStrings.functionLibrary,
+              style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w600),
             ),
             const SizedBox(height: 4),
             Text(
-              '点击即可插入，支持隐式乘法（2x、3sin(x)）与 ans / mem 变量',
+              calcStrings.functionsIntro,
               style: TextStyle(color: AppColors.textSecondary, fontSize: 12),
             ),
             const SizedBox(height: 12),
@@ -382,8 +390,8 @@ class FunctionsSheet extends StatelessWidget {
               child: ListView(
                 shrinkWrap: true,
                 children: [
-                  for (final entry in _categories.entries)
-                    _buildCategory(context, entry.key, entry.value.split(' ')),
+                  for (final (title, names) in _categories(calcStrings))
+                    _buildCategory(context, title, names),
                 ],
               ),
             ),
@@ -454,17 +462,14 @@ bool _exists(String name) =>
 String _description(String name) {
   final function = builtinFunctions[name];
   if (function != null) {
-    return '${function.signature} — ${function.description}';
+    final text = calcStrings.functionDescription(name, function.description);
+    return '${function.signature} — $text';
   }
-  switch (name) {
-    case 'sum':
-      return 'sum(f(k), k, a, b) — 求和 Σ';
-    case 'prod':
-      return 'prod(f(k), k, a, b) — 连乘 Π';
-    case 'integrate':
-      return 'integrate(f(x), x, a, b) — 自适应 Simpson 数值积分';
-    case 'diff':
-      return 'diff(f(x), x, a) — 数值导数';
-  }
-  return name;
+  return switch (name) {
+    'sum' => calcStrings.sumDescription,
+    'prod' => calcStrings.prodDescription,
+    'integrate' => calcStrings.integrateDescription,
+    'diff' => calcStrings.diffDescription,
+    _ => name,
+  };
 }

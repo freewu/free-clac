@@ -2,13 +2,14 @@ import 'dart:js_interop';
 
 import 'package:web/web.dart' as web;
 
+import '../l10n/plot_strings.dart';
 import '../plot/plot_export.dart';
 import 'saved_plot_file.dart';
 
 export 'saved_plot_file.dart';
 
 /// 界面「保存位置」一行的文案：浏览器下载目录由浏览器设置决定。
-String plotSaveLocationNote() => '浏览器下载目录';
+String plotSaveLocationNote() => plotStrings.saveLocationWeb;
 
 /// Web：交给浏览器下载（Blob + a[download]），落盘位置由浏览器设置决定。
 Future<SavedPlotFile> savePlotExportFile(
