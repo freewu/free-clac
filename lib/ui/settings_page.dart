@@ -94,10 +94,13 @@ class SettingsPage extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      ToolSelect<CurrencyStyle>(
+                      ToolSelect<String>(
                         key: const Key('settings-currency'),
-                        value: controller.currency,
-                        items: CurrencyStyle.values,
+                        value: controller.currencyCode,
+                        items: [
+                          kFollowLanguageCurrency,
+                          for (final currency in kCurrencies) currency.code,
+                        ],
                         labelOf: _currencyLabel,
                         onChanged: controller.setCurrency,
                       ),
@@ -197,14 +200,13 @@ class SettingsPage extends StatelessWidget {
   }
 }
 
-/// 金额符号选项的显示名（符号从数据层取，名称走多语言）。
-String _currencyLabel(CurrencyStyle style) => switch (style) {
-  CurrencyStyle.followLanguage => t.currencyFollowLanguage,
-  CurrencyStyle.yuan => t.currencyYuan,
-  CurrencyStyle.dollar => t.currencyDollar,
-  CurrencyStyle.yen => t.currencyYen,
-  CurrencyStyle.euro => t.currencyEuro,
-};
+/// 金额符号选项的显示名：`¥ 人民币`，名称取数据层当前语言的写法。
+String _currencyLabel(String code) {
+  if (code == kFollowLanguageCurrency) return t.currencyFollowLanguage;
+  final currency = currencyByCode(code);
+  if (currency == null) return t.currencyFollowLanguage;
+  return '${currency.symbol} ${currency.nameIn(appLanguage)}';
+}
 
 class _Header extends StatelessWidget {
   @override

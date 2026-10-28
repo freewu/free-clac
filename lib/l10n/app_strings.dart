@@ -40,10 +40,6 @@ abstract class AppStrings {
   String get settingsCurrency;
   String get settingsCurrencyHint;
   String get currencyFollowLanguage;
-  String get currencyYuan;
-  String get currencyDollar;
-  String get currencyYen;
-  String get currencyEuro;
   String get unitMetricDetail;
   String get unitImperialDetail;
   String get settingsConversion;
@@ -105,17 +101,10 @@ class _ZhHansStrings extends AppStrings {
   String get settingsCurrency => '金额符号';
   @override
   String get settingsCurrencyHint =>
-      '涉及金额的工具（贷款、复利、利息、养老金、个税）用它显示；选「跟随语言」时随界面语言切换。';
+      '涉及金额的工具（贷款、复利、利息、养老金、个税）用它显示；选「跟随语言」时随界面语言切换，'
+      '也可以固定成人民币、美元、欧元、英镑等具体货币。';
   @override
   String get currencyFollowLanguage => '跟随语言';
-  @override
-  String get currencyYuan => '¥ 人民币';
-  @override
-  String get currencyDollar => r'$ 美元';
-  @override
-  String get currencyYen => '￥ 日元';
-  @override
-  String get currencyEuro => '€ 欧元';
   @override
   String get unitMetricDetail => '公制（cm / kg）';
   @override
@@ -193,17 +182,10 @@ class _ZhHantStrings extends AppStrings {
   String get settingsCurrency => '金額符號';
   @override
   String get settingsCurrencyHint =>
-      '涉及金額的工具（貸款、複利、利息、退休金、所得稅）用它顯示；選「跟隨語言」時隨介面語言切換。';
+      '涉及金額的工具（貸款、複利、利息、退休金、所得稅）用它顯示；選「跟隨語言」時隨介面語言切換，'
+      '也可以固定成人民幣、美元、歐元、英鎊等具體貨幣。';
   @override
   String get currencyFollowLanguage => '跟隨語言';
-  @override
-  String get currencyYuan => '¥ 人民幣';
-  @override
-  String get currencyDollar => r'$ 美元';
-  @override
-  String get currencyYen => '￥ 日圓';
-  @override
-  String get currencyEuro => '€ 歐元';
   @override
   String get unitMetricDetail => '公制（cm / kg）';
   @override
@@ -285,17 +267,10 @@ class _EnStrings extends AppStrings {
   @override
   String get settingsCurrencyHint =>
       'Used by money tools (loan, compound, interest, pension, tax). With '
-      "'Follow language' it changes with the interface language.";
+      "'Follow language' it follows the interface language; you can also pin a "
+      'specific currency such as yuan, dollar, euro or pound.';
   @override
   String get currencyFollowLanguage => 'Follow language';
-  @override
-  String get currencyYuan => '¥ Chinese yuan';
-  @override
-  String get currencyDollar => r'$ US dollar';
-  @override
-  String get currencyYen => '￥ Japanese yen';
-  @override
-  String get currencyEuro => '€ Euro';
   @override
   String get unitMetricDetail => 'Metric (cm / kg)';
   @override
@@ -375,17 +350,9 @@ class _JaStrings extends AppStrings {
   String get settingsCurrency => '金額の記号';
   @override
   String get settingsCurrencyHint =>
-      '金額を扱うツール（ローン・複利・利息・年金・所得税）で使います。「言語に合わせる」なら画面の言語に追従します。';
+      '金額を扱うツール（ローン・複利・利息・年金・所得税）で使います。「言語に合わせる」なら画面の言語に追従し、人民元・米ドル・ユーロ・英ポンドなども選べます。';
   @override
   String get currencyFollowLanguage => '言語に合わせる';
-  @override
-  String get currencyYuan => '¥ 人民元';
-  @override
-  String get currencyDollar => r'$ 米ドル';
-  @override
-  String get currencyYen => '￥ 日本円';
-  @override
-  String get currencyEuro => '€ ユーロ';
   @override
   String get unitMetricDetail => 'メートル法（cm / kg）';
   @override
@@ -466,17 +433,9 @@ class _EsStrings extends AppStrings {
   String get settingsCurrency => 'Símbolo de moneda';
   @override
   String get settingsCurrencyHint =>
-      'Lo usan las herramientas de dinero (préstamo, interés compuesto, interés, pensión, IRPF). Con «Seguir el idioma» cambia con la interfaz.';
+      'Lo usan las herramientas de dinero (préstamo, interés compuesto, interés, pensión, IRPF). Con «Seguir el idioma» cambia con la interfaz; también puedes fijar yuan, dólar, euro o libra.';
   @override
   String get currencyFollowLanguage => 'Seguir el idioma';
-  @override
-  String get currencyYuan => '¥ Yuan chino';
-  @override
-  String get currencyDollar => r'$ Dólar';
-  @override
-  String get currencyYen => '￥ Yen japonés';
-  @override
-  String get currencyEuro => '€ Euro';
   @override
   String get unitMetricDetail => 'Métrico (cm / kg)';
   @override

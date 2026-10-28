@@ -1352,31 +1352,54 @@ void main() {
   });
   group('金额符号', () {
     test('跟随语言：简中 ¥、繁中与英语 \$、日语 ￥、西语 €', () {
-      expect(
-        currencySymbolFor(CurrencyStyle.followLanguage, AppLanguage.zhHans),
-        '¥',
-      );
-      expect(
-        currencySymbolFor(CurrencyStyle.followLanguage, AppLanguage.zhHant),
-        r'$',
-      );
-      expect(
-        currencySymbolFor(CurrencyStyle.followLanguage, AppLanguage.en),
-        r'$',
-      );
-      expect(
-        currencySymbolFor(CurrencyStyle.followLanguage, AppLanguage.ja),
-        '￥',
-      );
-      expect(
-        currencySymbolFor(CurrencyStyle.followLanguage, AppLanguage.es),
-        '€',
-      );
-      // 固定符号时不看语言
-      expect(currencySymbolFor(CurrencyStyle.euro, AppLanguage.zhHans), '€');
-      expect(currencySymbolFor(CurrencyStyle.yen, AppLanguage.en), '￥');
-      expect(CurrencyStyle.fromCode('jpy'), CurrencyStyle.yen);
-      expect(CurrencyStyle.fromCode('gold'), isNull);
+      const auto = kFollowLanguageCurrency;
+      expect(currencySymbolFor(auto, AppLanguage.zhHans), '¥');
+      expect(currencySymbolFor(auto, AppLanguage.zhHant), r'$');
+      expect(currencySymbolFor(auto, AppLanguage.en), r'$');
+      expect(currencySymbolFor(auto, AppLanguage.ja), '￥');
+      expect(currencySymbolFor(auto, AppLanguage.es), '€');
+    });
+
+    test('选定货币后不看语言，未知代码回落跟随语言', () {
+      expect(currencySymbolFor('eur', AppLanguage.zhHans), '€');
+      expect(currencySymbolFor('jpy', AppLanguage.en), '￥');
+      expect(currencySymbolFor('gbp', AppLanguage.es), '£');
+      expect(currencySymbolFor('inr', AppLanguage.en), '₹');
+      expect(currencySymbolFor('rub', AppLanguage.en), '₽');
+      expect(currencySymbolFor('krw', AppLanguage.en), '₩');
+      expect(currencySymbolFor('xxx', AppLanguage.en), '¤');
+      // 不认识的代码当成「跟随语言」
+      expect(currencySymbolFor('gold', AppLanguage.en), r'$');
+      expect(currencyByCode('gold'), isNull);
+      expect(currencyByCode(null), isNull);
+    });
+
+    test('货币表：代码唯一、符号非空、五种语言名称齐全', () {
+      final codes = kCurrencies.map((currency) => currency.code).toList();
+      expect(codes.toSet().length, codes.length);
+      for (final currency in kCurrencies) {
+        expect(currency.symbol, isNotEmpty, reason: currency.code);
+        expect(currency.code, isNot(kFollowLanguageCurrency));
+        for (final language in AppLanguage.values) {
+          expect(
+            currency.names[language],
+            isNotNull,
+            reason: '\${currency.code} 缺 \${language.code}',
+          );
+          expect(currency.names[language], isNotEmpty);
+        }
+      }
+      // 常见货币都在表里
+      for (final code in ['cny', 'usd', 'eur', 'jpy', 'gbp', 'inr', 'krw']) {
+        expect(currencyByCode(code), isNotNull, reason: code);
+      }
+      // 名称取不到时回落英文，再回落代码
+      const onlyEnglish = CurrencyInfo('tst', 'T', {
+        AppLanguage.en: 'Test unit',
+      });
+      expect(onlyEnglish.nameIn(AppLanguage.ja), 'Test unit');
+      const empty = CurrencyInfo('non', 'N', {});
+      expect(empty.nameIn(AppLanguage.ja), 'NON');
     });
 
     test('金额展示随设置与语言变化，缺设置时按语言', () async {
@@ -1397,15 +1420,15 @@ void main() {
       applyAppLanguage(AppLanguage.ja);
       expect(money(1234.5, decimals: 0), '￥ 1,235');
 
-      // 固定成欧元后不再随语言
-      await settings.setCurrency(CurrencyStyle.euro);
-      expect(store.values['currency_style'], 'eur');
+      // 固定成英镑后不再随语言
+      await settings.setCurrency('gbp');
+      expect(store.values['currency_style'], 'gbp');
       applyAppLanguage(AppLanguage.zhHans);
-      expect(money(1234.5), '€ 1,234.50');
+      expect(money(1234.5), '£ 1,234.50');
 
       final reloaded = SettingsController(store: store);
       await reloaded.load();
-      expect(reloaded.currency, CurrencyStyle.euro);
+      expect(reloaded.currencyCode, 'gbp');
 
       // 读不到设置时回落「跟随语言」
       currentSettings = null;

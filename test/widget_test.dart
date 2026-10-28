@@ -771,14 +771,14 @@ void main() {
       findsWidgets,
     );
     // 默认「跟随语言」
-    expect(settings.currency, CurrencyStyle.followLanguage);
+    expect(settings.currencyCode, kFollowLanguageCurrency);
 
     await tester.tap(find.byKey(const Key('settings-currency')));
     await tester.pumpAndSettle();
     await tester.tap(find.text('￥ 日元').last);
     await tester.pumpAndSettle();
 
-    expect(settings.currency, CurrencyStyle.yen);
+    expect(settings.currencyCode, 'jpy');
     expect(store.values['currency_style'], 'jpy');
   });
 
@@ -787,17 +787,14 @@ void main() {
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.reset);
     final store = _MemoryStore();
-    final settings = SettingsController(
-      store: store,
-      currency: CurrencyStyle.euro,
-    );
+    final settings = SettingsController(store: store, currencyCode: 'eur');
     await tester.pumpWidget(
       FreeCalcApp(settings: settings, initialTab: 2, initialTool: 'loan'),
     );
     await tester.pumpAndSettle();
 
-    // 设置页里选中的是「€ 欧元」
-    expect(settings.currency, CurrencyStyle.euro);
+    // 固定成欧元
+    expect(settings.currencyCode, 'eur');
     expect(find.textContaining('€ '), findsWidgets);
     expect(find.textContaining('¥ '), findsNothing);
     // 输入框后缀也跟着用符号，不再写「元」

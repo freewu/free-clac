@@ -93,7 +93,10 @@ cmd.exe /c "cd /d $(wslpath -w "$PWD") && flutter test"
   不要在页面或话术里写 `¥` / `元` / `CNY`。偏好存在设置的 `currency_style`
   （`CurrencyStyle`，默认「跟随语言」：简中 `¥`、繁中与英语 `$`、日语 `￥`、西语 `€`）。
   话术模板里把整个金额当一个 `{n}` 参数传入，而不是「模板写符号 + 传数字」——
-  否则固定成欧元等其它符号时模板里的符号不会跟着变。
+  否则固定成其它符号时模板里的符号不会跟着变。
+  可选货币表在 `lib/l10n/currency.dart` 的 `kCurrencies`（ISO 代码 + 符号 + 五种语言名称），
+  新增货币只需追加一行并把五种语言名称补齐（`test/tools_test.dart` 会检查）；
+  设置里存的是 ISO 代码字符串，`auto` 表示跟随语言，未知代码按跟随语言处理。
 - **数据层不要重复存界面文案**：`BmiResult` 之前自带一份中文 `advice`，和 `bmiStrings.adviceOf()` 重复且不跟语言走，已删除；同类「数据层 getter 返回中文句子」的写法不要再加，改由页面调 `<tool>Strings`。
 - **页面构建函数不要返回 `const` 组件**：`ToolInfo.builder` 返回 `const` 实例时，重建拿到的还是同一个对象，Flutter 判定无需更新，切主题 / 语言后已打开的页面不会跟着变。换算页的标题也从 `<tool>_lang.dart` 取（`toolText(kXxxLang).name`）。
 - **颜色一律走 `AppColors`**：不要硬编码 `Color(0xFF...)`，也不要在 `const` 表达式里用 `AppColors.xxx`（它不是常量），深色 / 浅色两套配色都要能看。

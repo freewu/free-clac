@@ -40,7 +40,7 @@ class SettingsController extends ChangeNotifier {
     this.themeMode = AppThemeMode.system,
     this.language = AppLanguage.zhHans,
     this.bmiUnit = BmiUnitSystem.metric,
-    this.currency = CurrencyStyle.followLanguage,
+    this.currencyCode = kFollowLanguageCurrency,
   }) : _store = store ?? const SettingsStore();
 
   static const String _themeKey = 'theme_mode';
@@ -59,8 +59,8 @@ class SettingsController extends ChangeNotifier {
   /// BMI 工具默认使用的计量单位。
   BmiUnitSystem bmiUnit;
 
-  /// 金额符号偏好：跟随语言（默认）或固定某种货币符号。
-  CurrencyStyle currency;
+  /// 金额符号偏好：`auto` 跟随语言（默认），否则是货币的 ISO 代码。
+  String currencyCode;
 
   /// 各换算工具默认的计量体系（换算工具 id → 体系），没存过时为公制。
   final Map<String, MeasureSystem> convertSystems = <String, MeasureSystem>{};
@@ -87,9 +87,9 @@ class SettingsController extends ChangeNotifier {
       bmiUnit = storedBmiUnit;
       changed = true;
     }
-    final storedCurrency = CurrencyStyle.fromCode(values[_currencyKey]);
-    if (storedCurrency != null && storedCurrency != currency) {
-      currency = storedCurrency;
+    final storedCurrency = values[_currencyKey];
+    if (storedCurrency != null && storedCurrency != currencyCode) {
+      currencyCode = storedCurrency;
       changed = true;
     }
     for (final entry in values.entries) {
@@ -146,12 +146,12 @@ class SettingsController extends ChangeNotifier {
     await _store.write(_bmiUnitKey, unit.code);
   }
 
-  /// 切换金额符号偏好。
-  Future<void> setCurrency(CurrencyStyle value) async {
-    if (value == currency) return;
-    currency = value;
+  /// 切换金额符号偏好（`auto` 或货币代码）。
+  Future<void> setCurrency(String code) async {
+    if (code == currencyCode) return;
+    currencyCode = code;
     notifyListeners();
-    await _store.write(_currencyKey, value.code);
+    await _store.write(_currencyKey, code);
   }
 
   /// 某个换算工具默认的计量体系。
