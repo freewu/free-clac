@@ -1,5 +1,7 @@
 import 'area/area.dart';
 import 'distance/distance.dart';
+import 'energy/energy.dart';
+import 'pressure/pressure.dart';
 import 'speed/speed.dart';
 import 'temperature/temperature.dart';
 import 'unit_catalog.dart';
@@ -16,5 +18,7 @@ List<MeasureCatalog> get kConversionCatalogs => <MeasureCatalog>[
   kVolumeCatalog,
   kWeightCatalog,
   kTemperatureCatalog,
+  kEnergyCatalog,
+  kPressureCatalog,
   kSpeedCatalog,
 ];

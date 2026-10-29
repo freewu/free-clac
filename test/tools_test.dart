@@ -11,9 +11,11 @@ import 'package:free_clac/ui/tools/area/area.dart';
 import 'package:free_clac/ui/tools/bmi/bmi.dart';
 import 'package:free_clac/ui/tools/compound/compound.dart';
 import 'package:free_clac/ui/tools/distance/distance.dart';
+import 'package:free_clac/ui/tools/energy/energy.dart';
 import 'package:free_clac/ui/tools/interest/interest.dart';
 import 'package:free_clac/ui/tools/loan/loan.dart';
 import 'package:free_clac/ui/tools/pension/pension.dart';
+import 'package:free_clac/ui/tools/pressure/pressure.dart';
 import 'package:free_clac/ui/tools/retirement/retirement.dart';
 import 'package:free_clac/ui/tools/speed/speed.dart';
 import 'package:free_clac/ui/tools/tax/tax.dart';
@@ -1526,11 +1528,13 @@ void main() {
       expect(reloaded.convertTabFor('temperature'), MeasureSystem.metric);
     });
 
-    test('只有温度不分体系，其余换算工具仍按公制 / 英制 / 市制分组', () {
+    test('温度 / 热量 / 压力不分体系，其余换算工具仍按公制 / 英制 / 市制分组', () {
+      // 这三种是「一种量、几套并列单位」，套公制 / 英制反而多一层点击
+      const ungrouped = <String>{'temperature', 'energy', 'pressure'};
       for (final catalog in kConversionCatalogs) {
-        if (catalog.id == 'temperature') {
-          expect(catalog.groupedBySystem, isFalse);
-          expect(catalog.splitsBySystem, isFalse);
+        if (ungrouped.contains(catalog.id)) {
+          expect(catalog.groupedBySystem, isFalse, reason: catalog.id);
+          expect(catalog.splitsBySystem, isFalse, reason: catalog.id);
         } else {
           expect(catalog.splitsBySystem, isTrue, reason: catalog.id);
         }
@@ -1542,17 +1546,128 @@ void main() {
       );
     });
 
-    test('温度不分体系：默认单位单独存一份', () async {
+    test('热量：瓦时 / 焦耳 / 卡路里都换算到焦耳', () {
+      expect(kEnergyCatalog.units.map((unit) => unit.id).toList(), <String>[
+        'milliwh',
+        'wh',
+        'kwh',
+        'mwh',
+        'j',
+        'kj',
+        'cal',
+        'kcal',
+      ]);
+      EnergyUnit unit(String id) => energyUnitById(id)!;
+      expect(convertEnergy(1, from: unit('wh'), to: unit('j')), 3600);
+      expect(convertEnergy(1, from: unit('kwh'), to: unit('j')), 3600000);
+      expect(convertEnergy(1, from: unit('mwh'), to: unit('kwh')), 1000);
+      expect(convertEnergy(1, from: unit('milliwh'), to: unit('j')), 3.6);
+      expect(convertEnergy(1, from: unit('kj'), to: unit('j')), 1000);
+      // 1 卡 = 4.184 焦，1 千卡 = 4184 焦，都是精确分数
+      expect(convertEnergy(1, from: unit('cal'), to: unit('j')), 4.184);
+      expect(convertEnergy(1, from: unit('kcal'), to: unit('j')), 4184);
+      expect(convertEnergy(1, from: unit('kcal'), to: unit('cal')), 1000);
+      // 来回换算可逆
+      final back = convertEnergy(
+        convertEnergy(123.456, from: unit('kcal'), to: unit('kwh'))!,
+        from: unit('kwh'),
+        to: unit('kcal'),
+      );
+      expect(back, closeTo(123.456, 1e-9));
+      // 每单位都有中文说明与三种外语说明
+      for (final u in kEnergyUnits) {
+        expect(u.note, isNotEmpty, reason: u.id);
+        for (final language in [
+          AppLanguage.en,
+          AppLanguage.ja,
+          AppLanguage.es,
+        ]) {
+          expect(
+            u.noteIn(language),
+            isNotEmpty,
+            reason: '${u.id} ${language.code}',
+          );
+          expect(u.label, isNotEmpty);
+          expect(
+            u.labelIn(language),
+            isNotEmpty,
+            reason: '${u.id} ${language.code}',
+          );
+        }
+      }
+      expect(kEnergySamples, isNotEmpty);
+    });
+
+    test('压力：帕 / 巴 / 托 / psi 都换算到帕斯卡', () {
+      expect(kPressureCatalog.units.map((unit) => unit.id).toList(), <String>[
+        'pa',
+        'hpa',
+        'kpa',
+        'mpa',
+        'bar',
+        'torr',
+        'psi',
+      ]);
+      PressureUnit unit(String id) => pressureUnitById(id)!;
+      expect(convertPressure(1, from: unit('hpa'), to: unit('pa')), 100);
+      expect(convertPressure(1, from: unit('kpa'), to: unit('pa')), 1000);
+      expect(convertPressure(1, from: unit('mpa'), to: unit('kpa')), 1000);
+      expect(convertPressure(1, from: unit('bar'), to: unit('kpa')), 100);
+      // 1 托 = 101325/760 帕（即 1 毫米汞柱）
+      expect(
+        convertPressure(1, from: unit('torr'), to: unit('pa')),
+        closeTo(101325 / 760, 1e-9),
+      );
+      expect(
+        convertPressure(760, from: unit('torr'), to: unit('pa')),
+        closeTo(101325, 1e-6),
+      );
+      // 1 psi ≈ 6894.757 帕（1 lbf = 4.4482216152605 N 精确值推出）
+      expect(
+        convertPressure(1, from: unit('psi'), to: unit('pa')),
+        closeTo(6894.757293168, 1e-6),
+      );
+      expect(
+        convertPressure(14.6959, from: unit('psi'), to: unit('kpa')),
+        closeTo(101.325, 0.01),
+      );
+      for (final u in kPressureUnits) {
+        expect(u.note, isNotEmpty, reason: u.id);
+        for (final language in [
+          AppLanguage.en,
+          AppLanguage.ja,
+          AppLanguage.es,
+        ]) {
+          expect(
+            u.noteIn(language),
+            isNotEmpty,
+            reason: '${u.id} ${language.code}',
+          );
+          expect(
+            u.labelIn(language),
+            isNotEmpty,
+            reason: '${u.id} ${language.code}',
+          );
+        }
+      }
+      expect(kPressureSamples, isNotEmpty);
+    });
+
+    test('温度 / 热量 / 压力不分体系：默认单位单独存一份', () async {
       final store = _MemoryStore();
       final settings = SettingsController(store: store);
       expect(settings.convertUnitFor('temperature'), isNull);
 
       await settings.setConvertUnit('temperature', 'f');
       expect(store.values['convert.temperature.unit'], 'f');
+      await settings.setConvertUnit('energy', 'kcal');
+      await settings.setConvertUnit('pressure', 'bar');
 
       final reloaded = SettingsController(store: store);
       await reloaded.load();
       expect(reloaded.convertUnitFor('temperature'), 'f');
+      expect(reloaded.convertUnitFor('energy'), 'kcal');
+      expect(reloaded.convertUnitFor('pressure'), 'bar');
       // 别的工具没有默认单位
       expect(reloaded.convertUnitFor('distance'), isNull);
     });
@@ -1612,10 +1727,10 @@ void main() {
     });
 
     test('养老金、个税与退休年龄只在中文界面展示', () {
-      // 简体、繁体都能看到 13 个工具
+      // 简体、繁体都能看到 15 个工具
       for (final language in [AppLanguage.zhHans, AppLanguage.zhHant]) {
         applyAppLanguage(language);
-        expect(visibleTools.length, 13, reason: language.code);
+        expect(visibleTools.length, 15, reason: language.code);
         expect(
           visibleTools.map((tool) => tool.id),
           containsAll(<String>['pension', 'tax', 'retirement']),
@@ -1623,7 +1738,7 @@ void main() {
       }
       for (final language in [AppLanguage.en, AppLanguage.ja, AppLanguage.es]) {
         applyAppLanguage(language);
-        expect(visibleTools.length, 10, reason: language.code);
+        expect(visibleTools.length, 12, reason: language.code);
         expect(
           visibleTools.map((tool) => tool.id),
           isNot(contains('pension')),
@@ -1645,7 +1760,7 @@ void main() {
         expect(toolById('bmi'), isNotNull, reason: language.code);
       }
       applyAppLanguage(AppLanguage.zhHans);
-      expect(kTools.length, 13);
+      expect(kTools.length, 15);
     });
 
     test('每个工具的语言包都有五种语言，且 id 唯一', () {
@@ -1660,7 +1775,7 @@ void main() {
           expect(text.description, isNotEmpty);
         }
       }
-      expect(kTools.length, 13);
+      expect(kTools.length, 15);
     });
 
     test('工具名称随语言变化，缺翻译时回落简体中文', () {

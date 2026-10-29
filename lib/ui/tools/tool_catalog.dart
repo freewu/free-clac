@@ -2,9 +2,11 @@ import 'area/defined.dart';
 import 'bmi/defined.dart';
 import 'compound/defined.dart';
 import 'distance/defined.dart';
+import 'energy/defined.dart';
 import 'interest/defined.dart';
 import 'loan/defined.dart';
 import 'pension/defined.dart';
+import 'pressure/defined.dart';
 import 'retirement/defined.dart';
 import 'speed/defined.dart';
 import 'tax/defined.dart';
@@ -29,6 +31,8 @@ List<ToolInfo> get kTools => List.unmodifiable(<ToolInfo>[
   volumeTool,
   weightTool,
   temperatureTool,
+  energyTool,
+  pressureTool,
   speedTool,
   interestTool,
   loanTool,

@@ -22,9 +22,11 @@ import 'package:free_clac/ui/tools/area/area_page.dart';
 import 'package:free_clac/ui/tools/bmi/bmi_page.dart';
 import 'package:free_clac/ui/tools/compound/compound_page.dart';
 import 'package:free_clac/ui/tools/distance/distance_page.dart';
+import 'package:free_clac/ui/tools/energy/energy_page.dart';
 import 'package:free_clac/ui/tools/interest/interest_page.dart';
 import 'package:free_clac/ui/tools/loan/loan_page.dart';
 import 'package:free_clac/ui/tools/pension/pension_page.dart';
+import 'package:free_clac/ui/tools/pressure/pressure_page.dart';
 import 'package:free_clac/ui/tools/retirement/retirement_page.dart';
 import 'package:free_clac/ui/tools/speed/speed_page.dart';
 import 'package:free_clac/ui/tools/tax/tax_page.dart';
@@ -539,7 +541,7 @@ void main() {
     await tester.pumpAndSettle();
 
     // 设置卡片里只有一项「默认单位」，没有体系 / 结果 tab
-    expect(find.text('默认单位'), findsOneWidget);
+    expect(find.text('默认单位'), findsNWidgets(3));
     await tester.tap(
       find.byKey(const Key('settings-convert-temperature-unit')),
     );
@@ -578,22 +580,22 @@ void main() {
       expect(find.byKey(Key('settings-convert-$id-system')), findsOneWidget);
       expect(find.byKey(Key('settings-convert-$id-tab')), findsOneWidget);
     }
-    expect(
-      find.byKey(const Key('settings-convert-temperature-system')),
-      findsNothing,
-    );
-    expect(
-      find.byKey(const Key('settings-convert-temperature-tab')),
-      findsNothing,
-    );
-    expect(
-      find.byKey(const Key('settings-convert-temperature-unit')),
-      findsOneWidget,
-    );
+    // 温度 / 热量 / 压力不分体系，只有「默认单位」
+    for (final id in ['temperature', 'energy', 'pressure']) {
+      expect(
+        find.byKey(Key('settings-convert-$id-system')),
+        findsNothing,
+        reason: id,
+      );
+      expect(find.byKey(Key('settings-convert-$id-tab')), findsNothing);
+      expect(find.byKey(Key('settings-convert-$id-unit')), findsOneWidget);
+    }
     expect(find.text('默认体系'), findsNWidgets(5));
     expect(find.text('长度换算'), findsOneWidget);
     expect(find.text('容量换算'), findsOneWidget);
     expect(find.text('温度换算'), findsOneWidget);
+    expect(find.text('热量换算'), findsOneWidget);
+    expect(find.text('压力换算'), findsOneWidget);
 
     // 长度换算：默认体系切市制、结果 tab 切英制
     await tester.tap(find.byKey(const Key('settings-convert-distance-system')));
@@ -702,7 +704,7 @@ void main() {
     // 养老金与个税只服务中国社保 / 税法，日语界面不展示
     expect(find.text('年金計算'), findsNothing);
     expect(find.text('所得税'), findsNothing);
-    expect(find.text('10 個のアプリ'), findsOneWidget);
+    expect(find.text('12 個のアプリ'), findsOneWidget);
   });
 
   testWidgets('工具页：切回简体中文后养老金、个税与退休年龄又出现了', (tester) async {
@@ -715,8 +717,8 @@ void main() {
     );
     await tester.pumpWidget(FreeCalcApp(settings: settings, initialTab: 2));
     await tester.pumpAndSettle();
-    // 英文界面只有 10 个工具
-    expect(find.text('10 apps'), findsOneWidget);
+    // 英文界面只有 12 个工具
+    expect(find.text('12 apps'), findsOneWidget);
     expect(find.text('Pension calculator'), findsNothing);
     expect(find.text('Income tax'), findsNothing);
 
@@ -730,7 +732,7 @@ void main() {
 
     await tester.tap(find.text('工具').last);
     await tester.pumpAndSettle();
-    expect(find.text('13 个应用'), findsOneWidget);
+    expect(find.text('15 个应用'), findsOneWidget);
     expect(find.text('养老金计算器'), findsOneWidget);
     expect(find.text('退休年龄计算器'), findsOneWidget);
     expect(find.text('个人所得税'), findsOneWidget);
@@ -1497,6 +1499,85 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
+  testWidgets('热量换算：不分体系，瓦时与焦耳卡路里一次全列出来', (tester) async {
+    tester.view.physicalSize = const Size(1440, 1600);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+    await tester.pumpWidget(
+      const FreeCalcApp(initialTab: 2, initialTool: 'energy'),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.byType(EnergyPage), findsOneWidget);
+    // 没有「计量体系」下拉与结果 tab
+    expect(find.byKey(const Key('energy-system')), findsNothing);
+    expect(find.byType(Tab), findsNothing);
+    // 默认 1 瓦时 = 3600 焦 = 3.6 千焦 = 1000 毫瓦时
+    expect(find.text('1 瓦时'), findsOneWidget);
+    expect(find.text('1000'), findsOneWidget);
+    expect(find.text('3600'), findsOneWidget);
+    expect(find.text('3.6'), findsOneWidget);
+
+    // 单位下拉一次列全八种，没有公制 / 英制 / 市制分组
+    await tester.tap(find.byKey(const Key('energy-unit')));
+    await tester.pumpAndSettle();
+    for (final label in ['毫瓦时（mWh）', '瓦时（Wh）', '千瓦时（kWh）', '焦耳（J）']) {
+      expect(find.text(label), findsWidgets, reason: label);
+    }
+    expect(find.text('公制'), findsNothing);
+
+    // 换成千卡输入：1 千卡 = 4184 焦 = 4.184 千焦
+    await tester.scrollUntilVisible(
+      find.text('千卡（kcal）'),
+      60,
+      scrollable: find.byType(Scrollable).last,
+    );
+    await tester.pumpAndSettle();
+    expect(find.text('兆瓦时（MWh）'), findsWidgets);
+    expect(find.text('千卡（kcal）'), findsWidgets);
+    await tester.tap(find.text('千卡（kcal）').last);
+    await tester.pumpAndSettle();
+    await tester.enterText(find.byType(TextField).first, '1');
+    await tester.pumpAndSettle();
+    expect(find.text('1 千卡'), findsOneWidget);
+    expect(find.text('4184'), findsOneWidget);
+    expect(find.text('4.184'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('压力换算：不分体系，帕与巴 psi 一次全列出来', (tester) async {
+    tester.view.physicalSize = const Size(1440, 1600);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+    await tester.pumpWidget(
+      const FreeCalcApp(initialTab: 2, initialTool: 'pressure'),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.byType(PressurePage), findsOneWidget);
+    expect(find.byKey(const Key('pressure-system')), findsNothing);
+    expect(find.byType(Tab), findsNothing);
+    // 默认 1 帕 = 0.01 百帕 = 0.001 千帕
+    expect(find.text('1 帕'), findsOneWidget);
+    expect(find.text('0.01'), findsOneWidget);
+    expect(find.text('0.001'), findsOneWidget);
+
+    await tester.tap(find.byKey(const Key('pressure-unit')));
+    await tester.pumpAndSettle();
+    expect(find.text('磅力/平方英寸（psi）'), findsOneWidget);
+    expect(find.text('托（torr）'), findsOneWidget);
+
+    // 换成巴输入：1 巴 = 100 千帕 = 1000 百帕
+    await tester.tap(find.text('巴（bar）').last);
+    await tester.pumpAndSettle();
+    await tester.enterText(find.byType(TextField).first, '1');
+    await tester.pumpAndSettle();
+    expect(find.text('1 巴'), findsOneWidget);
+    expect(find.text('100'), findsOneWidget);
+    expect(find.text('1000'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
   testWidgets('速度换算：千米每小时与米每秒互转', (tester) async {
     tester.view.physicalSize = const Size(1440, 1600);
     tester.view.devicePixelRatio = 1;
@@ -1525,6 +1606,8 @@ void main() {
       'volume',
       'weight',
       'temperature',
+      'energy',
+      'pressure',
       'speed',
     ]) {
       tester.view.physicalSize = const Size(390, 844);
@@ -1537,8 +1620,8 @@ void main() {
       );
       await tester.pumpAndSettle();
       expect(find.byType(NavigationBar), findsOneWidget, reason: id);
-      if (id == 'temperature') {
-        // 温度不分体系，页面里没有 tab
+      if (const <String>{'temperature', 'energy', 'pressure'}.contains(id)) {
+        // 温度 / 热量 / 压力不分体系，页面里没有 tab
         expect(find.byType(Tab), findsNothing, reason: id);
       } else {
         expect(find.widgetWithText(Tab, '公制'), findsOneWidget, reason: id);

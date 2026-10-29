@@ -9,6 +9,8 @@ import '../theme/app_theme.dart';
 import 'tools/area/setting.dart';
 import 'tools/bmi/setting.dart';
 import 'tools/distance/setting.dart';
+import 'tools/energy/setting.dart';
+import 'tools/pressure/setting.dart';
 import 'tools/speed/setting.dart';
 import 'tools/temperature/setting.dart';
 import 'tools/volume/setting.dart';
@@ -133,6 +135,10 @@ class SettingsPage extends StatelessWidget {
                 WeightSetting(controller: controller),
                 const SizedBox(height: 12),
                 TemperatureSetting(controller: controller),
+                const SizedBox(height: 12),
+                EnergySetting(controller: controller),
+                const SizedBox(height: 12),
+                PressureSetting(controller: controller),
                 const SizedBox(height: 12),
                 SpeedSetting(controller: controller),
                 const SizedBox(height: 12),
