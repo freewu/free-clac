@@ -14,8 +14,10 @@ import 'unit_convert_strings.dart';
 /// 通用单位换算页：长度 / 面积 / 重量 / 容量 / 温度 / 速度共用一套界面。
 ///
 /// 顶部是可折叠的「常见 XX」参照物，下面「计量体系 / 单位 / 数值」输入；
-/// 结果按体系分成 tab（温度只有公制与英制两个），切 tab 不改变输入，
-/// 点任意一行即可复制。
+/// 结果按体系分成 tab，切 tab 不改变输入，点任意一行即可复制。
+///
+/// 温度不做公制 / 英制分组（`MeasureCatalog.splitsBySystem` 为 false）：
+/// 不显示体系下拉与 tab，摄氏度、华氏度、开尔文一次全列出来。
 class UnitConvertPage extends StatefulWidget {
   const UnitConvertPage({
     super.key,
@@ -49,7 +51,7 @@ class _UnitConvertPageState extends State<UnitConvertPage>
 
   /// 结果 tab，跟输入单位所在体系联动；初始 tab 由设置决定。
   late final TabController _tabs = TabController(
-    length: widget.catalog.systems.length,
+    length: widget.catalog.systems.isEmpty ? 1 : widget.catalog.systems.length,
     initialIndex: _initialTabIndex,
     vsync: this,
   )..addListener(_onTabChanged);
@@ -60,12 +62,20 @@ class _UnitConvertPageState extends State<UnitConvertPage>
   /// 而不是列表里的第一个单位），换了体系才取该体系的第一个单位。
   MeasureUnit get _initialUnit {
     final catalog = widget.catalog;
-    final preferred = currentSettings?.convertSystemFor(catalog.id);
+    final settings = currentSettings;
+    // 不分体系的工具（温度）直接记默认单位，没有体系可挑
+    final storedUnit = catalog.unitById(
+      settings?.convertUnitFor(catalog.id) ?? '',
+    );
+    if (!catalog.splitsBySystem) return storedUnit ?? catalog.defaultUnit;
+    final preferred = settings?.convertSystemFor(catalog.id);
     if (preferred == null || preferred == catalog.defaultUnit.system) {
-      return catalog.defaultUnit;
+      return storedUnit ?? catalog.defaultUnit;
     }
     final units = catalog.unitsOf(preferred);
-    return units.isEmpty ? catalog.defaultUnit : units.first;
+    if (units.isEmpty) return storedUnit ?? catalog.defaultUnit;
+    // 存过单位且确实属于该体系时优先用它
+    return units.contains(storedUnit) ? storedUnit! : units.first;
   }
 
   /// 设置里为该工具选的结果 tab；体系不可用时落到第一个 tab。
@@ -98,8 +108,23 @@ class _UnitConvertPageState extends State<UnitConvertPage>
   /// 当前单位所在体系。
   MeasureSystem get _system => _from.system;
 
-  /// 当前展示的结果体系（由 tab 决定）。
-  MeasureSystem get _tabSystem => _catalog.systems[_tabs.index];
+  /// 单位下拉：按体系分组时只列当前体系的单位，温度这类不分组就全列。
+  Widget get _unitSelect => ToolSelect<MeasureUnit>(
+    key: Key('${_catalog.id}-unit'),
+    label: unitConvertStrings.unit,
+    value: _from,
+    items: _catalog.splitsBySystem ? _catalog.unitsOf(_system) : _catalog.units,
+    labelOf: unitOptionLabel,
+    onChanged: _selectUnit,
+  );
+
+  /// 结果列表：分组时只列当前 tab 体系，不分组时一次列出全部单位。
+  List<MeasureUnit> get _resultUnits =>
+      _catalog.splitsBySystem ? _catalog.unitsOf(_tabSystem) : _catalog.units;
+
+  /// 当前展示的结果体系（由 tab 决定）；不分体系时跟着输入单位走。
+  MeasureSystem get _tabSystem =>
+      _catalog.systems.isEmpty ? _from.system : _catalog.systems[_tabs.index];
 
   /// 把体系切到 [system] 对应的 tab。
   int _tabIndexOf(MeasureSystem system) {
@@ -190,28 +215,21 @@ class _UnitConvertPageState extends State<UnitConvertPage>
                       Row(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Expanded(
-                            child: ToolSelect<MeasureSystem>(
-                              key: Key('${_catalog.id}-system'),
-                              label: unitConvertStrings.system,
-                              value: _system,
-                              items: systems,
-                              labelOf: measureSystemLabel,
-                              onChanged: _switchSystem,
+                          if (_catalog.splitsBySystem) ...[
+                            Expanded(
+                              child: ToolSelect<MeasureSystem>(
+                                key: Key('${_catalog.id}-system'),
+                                label: unitConvertStrings.system,
+                                value: _system,
+                                items: systems,
+                                labelOf: measureSystemLabel,
+                                onChanged: _switchSystem,
+                              ),
                             ),
-                          ),
-                          const SizedBox(width: 10),
-                          Expanded(
-                            flex: 2,
-                            child: ToolSelect<MeasureUnit>(
-                              key: Key('${_catalog.id}-unit'),
-                              label: unitConvertStrings.unit,
-                              value: _from,
-                              items: _catalog.unitsOf(_system),
-                              labelOf: _unitLabel,
-                              onChanged: _selectUnit,
-                            ),
-                          ),
+                            const SizedBox(width: 10),
+                            Expanded(flex: 2, child: _unitSelect),
+                          ] else
+                            Expanded(child: _unitSelect),
                         ],
                       ),
                       const SizedBox(height: 12),
@@ -259,9 +277,11 @@ class _UnitConvertPageState extends State<UnitConvertPage>
                           ),
                         ),
                         const SizedBox(height: 6),
-                        _SystemTabs(controller: _tabs, systems: systems),
-                        const SizedBox(height: 2),
-                        for (final unit in _catalog.unitsOf(_tabSystem))
+                        if (_catalog.splitsBySystem) ...[
+                          _SystemTabs(controller: _tabs, systems: systems),
+                          const SizedBox(height: 2),
+                        ],
+                        for (final unit in _resultUnits)
                           _ResultRow(
                             unit: unit,
                             text: _format(
@@ -297,14 +317,6 @@ class _UnitConvertPageState extends State<UnitConvertPage>
         ),
       ),
     );
-  }
-
-  /// 下拉项文案：名称后带符号，符号与名称相同时（市制单位）只显示名称。
-  static String _unitLabel(MeasureUnit unit) {
-    final label = unit.labelIn(appLanguage);
-    // 市制单位的符号就是汉字本身，重复显示没有意义
-    if (unit.symbol == unit.label || unit.symbol == label) return label;
-    return fill(unitConvertStrings.unitOption, [label, unit.symbol]);
   }
 
   static String _format(double? value) =>

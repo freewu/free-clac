@@ -16,6 +16,8 @@ const MeasureCatalog kTemperatureCatalog = MeasureCatalog(
   baseName: '摄氏度',
   defaultUnitId: 'c',
   systems: <MeasureSystem>[MeasureSystem.metric, MeasureSystem.imperial],
+  // 温度不分公制 / 英制：摄氏度、华氏度、开尔文放在同一个下拉里
+  groupedBySystem: false,
   units: <MeasureUnit>[
     // 公制
     MeasureUnit(

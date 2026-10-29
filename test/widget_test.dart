@@ -529,6 +529,40 @@ void main() {
     expect(kTools.first.color, isNot(kDarkPalette.tertiary));
   });
 
+  testWidgets('设置页：温度默认单位改成华氏度后，温度换算页按 ℉ 打开', (tester) async {
+    tester.view.physicalSize = const Size(1400, 2400);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+    final store = _MemoryStore();
+    final settings = SettingsController(store: store);
+    await tester.pumpWidget(FreeCalcApp(settings: settings, initialTab: 3));
+    await tester.pumpAndSettle();
+
+    // 设置卡片里只有一项「默认单位」，没有体系 / 结果 tab
+    expect(find.text('默认单位'), findsOneWidget);
+    await tester.tap(
+      find.byKey(const Key('settings-convert-temperature-unit')),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('华氏度（°F）').last);
+    await tester.pumpAndSettle();
+    expect(store.values['convert.temperature.unit'], 'f');
+
+    await tester.pumpWidget(
+      FreeCalcApp(
+        key: UniqueKey(),
+        settings: settings,
+        initialTab: 2,
+        initialTool: 'temperature',
+      ),
+    );
+    await tester.pumpAndSettle();
+    expect(find.text('1 华氏度'), findsOneWidget);
+    // 1 °F = −17.2222… °C = 255.928 K
+    expect(find.text('-17.22222222'), findsOneWidget);
+    expect(find.byType(Tab), findsNothing);
+  });
+
   testWidgets('设置页：换算默认体系与结果 tab 生效且各工具互不影响', (tester) async {
     tester.view.physicalSize = const Size(1400, 2400);
     tester.view.devicePixelRatio = 1;
@@ -538,20 +572,25 @@ void main() {
     await tester.pumpWidget(FreeCalcApp(settings: settings, initialTab: 3));
     await tester.pumpAndSettle();
 
-    // 六个换算工具各有独立的一张卡片，各两项设置
+    // 六个换算工具各有独立的一张卡片；温度不分体系，只有「默认单位」
     expect(find.text('单位换算默认值'), findsOneWidget);
-    for (final id in [
-      'distance',
-      'area',
-      'volume',
-      'weight',
-      'temperature',
-      'speed',
-    ]) {
+    for (final id in ['distance', 'area', 'volume', 'weight', 'speed']) {
       expect(find.byKey(Key('settings-convert-$id-system')), findsOneWidget);
       expect(find.byKey(Key('settings-convert-$id-tab')), findsOneWidget);
     }
-    expect(find.text('默认体系'), findsNWidgets(6));
+    expect(
+      find.byKey(const Key('settings-convert-temperature-system')),
+      findsNothing,
+    );
+    expect(
+      find.byKey(const Key('settings-convert-temperature-tab')),
+      findsNothing,
+    );
+    expect(
+      find.byKey(const Key('settings-convert-temperature-unit')),
+      findsOneWidget,
+    );
+    expect(find.text('默认体系'), findsNWidgets(5));
     expect(find.text('长度换算'), findsOneWidget);
     expect(find.text('容量换算'), findsOneWidget);
     expect(find.text('温度换算'), findsOneWidget);
@@ -1343,7 +1382,10 @@ void main() {
       tester.view.physicalSize = const Size(1440, 1600);
       tester.view.devicePixelRatio = 1;
       addTearDown(tester.view.reset);
-      await tester.pumpWidget(FreeCalcApp(initialTab: 2, initialTool: id));
+      // 换 key 让 HomePage 重新挂载，否则会停在上一个工具的页面上
+      await tester.pumpWidget(
+        FreeCalcApp(key: UniqueKey(), initialTab: 2, initialTool: id),
+      );
       await tester.pumpAndSettle();
 
       expect(find.byType(type), findsOneWidget);
@@ -1416,7 +1458,7 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('温度换算：只有公制与英制两个 tab，仿射换算正确', (tester) async {
+  testWidgets('温度换算：不分公制英制，一个下拉与一张结果列表', (tester) async {
     tester.view.physicalSize = const Size(1440, 1600);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.reset);
@@ -1426,36 +1468,32 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.byType(TemperaturePage), findsOneWidget);
-    // 1 °C = 33.8 °F = 274.15 K
+    // 不再有「计量体系」下拉与结果 tab
+    expect(find.byKey(const Key('temperature-system')), findsNothing);
+    expect(find.byType(Tab), findsNothing);
+    // 1 °C = 33.8 °F = 274.15 K 一次全列出来
     expect(find.text('1 摄氏度'), findsOneWidget);
-    expect(find.text('274.15'), findsOneWidget); // 开尔文
-
-    // 华氏度在英制 tab 里
-    await tester.tap(find.widgetWithText(Tab, '英制'));
-    await tester.pumpAndSettle();
     expect(find.text('33.8'), findsOneWidget);
-    // 温度没有市制，tab 只有两个
-    expect(find.widgetWithText(Tab, '公制'), findsOneWidget);
-    expect(find.widgetWithText(Tab, '英制'), findsOneWidget);
-    expect(find.widgetWithText(Tab, '市制'), findsNothing);
-    expect(find.text('25'), findsNothing);
-    expect(find.text('千米'), findsNothing);
+    expect(find.text('274.15'), findsOneWidget);
 
-    // 体系下拉也只有两项：公制 / 英制
-    await tester.tap(find.byKey(const Key('temperature-system')));
+    // 单位下拉里有三种温标，没有公制 / 英制 / 市制分组
+    await tester.tap(find.byKey(const Key('temperature-unit')));
     await tester.pumpAndSettle();
-    expect(find.text('市制'), findsNothing);
-    await tester.tap(find.text('英制').last);
-    await tester.pumpAndSettle();
+    expect(find.text('摄氏度（°C）'), findsWidgets);
     expect(find.text('华氏度（°F）'), findsOneWidget);
+    expect(find.text('开尔文（K）'), findsOneWidget);
+    expect(find.text('公制'), findsNothing);
+    expect(find.text('英制'), findsNothing);
+    expect(find.text('市制'), findsNothing);
 
-    // 1 °F = −17.22 °C
+    // 改用华氏度输入：32 °F = 0 °C = 273.15 K
+    await tester.tap(find.text('华氏度（°F）').last);
+    await tester.pumpAndSettle();
     await tester.enterText(find.byType(TextField).first, '32');
     await tester.pumpAndSettle();
     expect(find.text('32 华氏度'), findsOneWidget);
-    await tester.tap(find.widgetWithText(Tab, '公制'));
-    await tester.pumpAndSettle();
-    expect(find.text('0'), findsWidgets); // 32 °F = 0 °C
+    expect(find.text('0'), findsOneWidget);
+    expect(find.text('273.15'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
 
@@ -1493,10 +1531,18 @@ void main() {
       tester.view.devicePixelRatio = 1;
       addTearDown(tester.view.reset);
 
-      await tester.pumpWidget(FreeCalcApp(initialTab: 2, initialTool: id));
+      // 换 key 让 HomePage 重新挂载，否则会停在上一个工具的页面上
+      await tester.pumpWidget(
+        FreeCalcApp(key: UniqueKey(), initialTab: 2, initialTool: id),
+      );
       await tester.pumpAndSettle();
       expect(find.byType(NavigationBar), findsOneWidget, reason: id);
-      expect(find.widgetWithText(Tab, '公制'), findsOneWidget, reason: id);
+      if (id == 'temperature') {
+        // 温度不分体系，页面里没有 tab
+        expect(find.byType(Tab), findsNothing, reason: id);
+      } else {
+        expect(find.widgetWithText(Tab, '公制'), findsOneWidget, reason: id);
+      }
       expect(tester.takeException(), isNull, reason: id);
     }
   });

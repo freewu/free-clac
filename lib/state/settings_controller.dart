@@ -68,6 +68,9 @@ class SettingsController extends ChangeNotifier {
   /// 各换算工具结果默认选中的 tab（换算工具 id → 体系）。
   final Map<String, MeasureSystem> convertTabs = <String, MeasureSystem>{};
 
+  /// 不分体系的换算工具（温度）默认选中的单位 id。
+  final Map<String, String> convertUnits = <String, String>{};
+
   /// 读取本地设置；没有存过或读取失败时保持构造时的默认值。
   Future<void> load() async {
     final values = await _store.readAll();
@@ -99,9 +102,16 @@ class SettingsController extends ChangeNotifier {
       final dot = rest.lastIndexOf('.');
       if (dot <= 0) continue;
       final id = rest.substring(0, dot);
+      final field = rest.substring(dot + 1);
+      if (field == 'unit') {
+        if (entry.value.isEmpty || convertUnits[id] == entry.value) continue;
+        convertUnits[id] = entry.value;
+        changed = true;
+        continue;
+      }
       final system = MeasureSystem.fromCode(entry.value);
       if (system == null) continue;
-      final target = switch (rest.substring(dot + 1)) {
+      final target = switch (field) {
         'system' => convertSystems,
         'tab' => convertTabs,
         _ => null,
@@ -161,6 +171,17 @@ class SettingsController extends ChangeNotifier {
   /// 某个换算工具结果默认选中的 tab 对应体系。
   MeasureSystem convertTabFor(String catalogId) =>
       convertTabs[catalogId] ?? MeasureSystem.metric;
+
+  /// 某个换算工具默认选中的单位（只对不分体系的工具如温度有意义）。
+  String? convertUnitFor(String catalogId) => convertUnits[catalogId];
+
+  /// 设置换算工具的默认单位。
+  Future<void> setConvertUnit(String catalogId, String unitId) async {
+    if (convertUnits[catalogId] == unitId) return;
+    convertUnits[catalogId] = unitId;
+    notifyListeners();
+    await _store.write('$_convertPrefix$catalogId.unit', unitId);
+  }
 
   /// 设置换算工具默认的计量体系。
   Future<void> setConvertSystem(String catalogId, MeasureSystem system) async {

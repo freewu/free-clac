@@ -141,6 +141,7 @@ class MeasureCatalog {
     required this.defaultUnitId,
     required this.units,
     this.systems = MeasureSystem.values,
+    this.groupedBySystem = true,
     this.samples = const <MeasureSample>[],
   });
 
@@ -161,6 +162,15 @@ class MeasureCatalog {
 
   /// 这套单位用到的体系（温度只有公制与英制），结果 tab 按它生成。
   final List<MeasureSystem> systems;
+
+  /// 是否按体系分组（「计量体系」下拉 + 结果 tab）。
+  ///
+  /// 温度是一种量、两套温标并列，不分公制 / 英制更好用，所以设成 false：
+  /// 页面只有一个单位下拉，结果一次列出全部单位。
+  final bool groupedBySystem;
+
+  /// 页面是否真的按体系分组：既要声明分组，体系也得确实多于一个。
+  bool get splitsBySystem => groupedBySystem && systems.length > 1;
 
   /// 常见参照物。
   final List<MeasureSample> samples;

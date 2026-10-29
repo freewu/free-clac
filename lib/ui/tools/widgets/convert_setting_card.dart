@@ -6,6 +6,7 @@ import '../../widgets/settings_card.dart';
 import '../unit_catalog.dart';
 import 'measure_system_label.dart';
 import 'tool_select.dart';
+import 'unit_convert_strings.dart';
 
 /// 单位换算类工具设置卡片的公共外壳。
 ///
@@ -34,7 +35,26 @@ class ConvertSettingCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // 温度、速度没有市制，选项直接取自该工具支持的体系
+    // 温度不分公制 / 英制，只有「默认单位」一项
+    if (!catalog.splitsBySystem) {
+      final stored = catalog.unitById(
+        controller.convertUnitFor(catalog.id) ?? '',
+      );
+      return SettingsCard(
+        icon: icon,
+        title: title,
+        child: ToolSelect<String>(
+          key: Key('settings-convert-${catalog.id}-unit'),
+          label: t.settingsConvertUnit,
+          value: (stored ?? catalog.defaultUnit).id,
+          items: [for (final unit in catalog.units) unit.id],
+          labelOf: (id) =>
+              unitOptionLabel(catalog.unitById(id) ?? catalog.defaultUnit),
+          onChanged: (id) => controller.setConvertUnit(catalog.id, id),
+        ),
+      );
+    }
+    // 速度没有市制，选项直接取自该工具支持的体系
     final systems = catalog.systems;
     return SettingsCard(
       icon: icon,

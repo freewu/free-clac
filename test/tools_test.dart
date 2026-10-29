@@ -1526,6 +1526,37 @@ void main() {
       expect(reloaded.convertTabFor('temperature'), MeasureSystem.metric);
     });
 
+    test('只有温度不分体系，其余换算工具仍按公制 / 英制 / 市制分组', () {
+      for (final catalog in kConversionCatalogs) {
+        if (catalog.id == 'temperature') {
+          expect(catalog.groupedBySystem, isFalse);
+          expect(catalog.splitsBySystem, isFalse);
+        } else {
+          expect(catalog.splitsBySystem, isTrue, reason: catalog.id);
+        }
+      }
+      // 三种温标放在同一张单位表里，页面不分体系也能一次列全
+      expect(
+        kTemperatureCatalog.units.map((unit) => unit.id).toList(),
+        <String>['c', 'k', 'f', 'r'],
+      );
+    });
+
+    test('温度不分体系：默认单位单独存一份', () async {
+      final store = _MemoryStore();
+      final settings = SettingsController(store: store);
+      expect(settings.convertUnitFor('temperature'), isNull);
+
+      await settings.setConvertUnit('temperature', 'f');
+      expect(store.values['convert.temperature.unit'], 'f');
+
+      final reloaded = SettingsController(store: store);
+      await reloaded.load();
+      expect(reloaded.convertUnitFor('temperature'), 'f');
+      // 别的工具没有默认单位
+      expect(reloaded.convertUnitFor('distance'), isNull);
+    });
+
     test('按系统语言判断首次启动的语言', () {
       expect(
         AppLanguage.fromLocale(const Locale('zh', 'CN')),

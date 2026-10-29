@@ -46,6 +46,7 @@ abstract class AppStrings {
   String get settingsConversionHint;
   String get settingsConvertSystem;
   String get settingsConvertTab;
+  String get settingsConvertUnit;
   String get systemMetric;
   String get systemImperial;
   String get systemChinese;
@@ -115,6 +116,8 @@ class _ZhHansStrings extends AppStrings {
   String get settingsConversionHint => '六个换算工具各记一套：打开时的计量体系，以及结果默认选中的标签页。';
   @override
   String get settingsConvertSystem => '默认体系';
+  @override
+  String get settingsConvertUnit => '默认单位';
   @override
   String get settingsConvertTab => '结果 tab';
   @override
@@ -196,6 +199,8 @@ class _ZhHantStrings extends AppStrings {
   String get settingsConversionHint => '六個換算工具各記一套：開啟時的計量體系，以及結果預設選中的分頁。';
   @override
   String get settingsConvertSystem => '預設體系';
+  @override
+  String get settingsConvertUnit => '預設單位';
   @override
   String get settingsConvertTab => '結果分頁';
   @override
@@ -283,6 +288,8 @@ class _EnStrings extends AppStrings {
   @override
   String get settingsConvertSystem => 'Default system';
   @override
+  String get settingsConvertUnit => 'Default unit';
+  @override
   String get settingsConvertTab => 'Result tab';
   @override
   String get systemMetric => 'Metric';
@@ -363,6 +370,8 @@ class _JaStrings extends AppStrings {
   String get settingsConversionHint => '6 つの換算ツールごとに、開いたときの単位系と結果タブを記憶します。';
   @override
   String get settingsConvertSystem => '既定の単位系';
+  @override
+  String get settingsConvertUnit => '既定の単位';
   @override
   String get settingsConvertTab => '結果タブ';
   @override
@@ -447,6 +456,8 @@ class _EsStrings extends AppStrings {
       'Se guarda por herramienta: el sistema con el que abre y la pestaña de resultados.';
   @override
   String get settingsConvertSystem => 'Sistema por defecto';
+  @override
+  String get settingsConvertUnit => 'Unidad predeterminada';
   @override
   String get settingsConvertTab => 'Pestaña de resultados';
   @override

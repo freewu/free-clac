@@ -101,6 +101,8 @@ cmd.exe /c "cd /d $(wslpath -w "$PWD") && flutter test"
 - **页面构建函数不要返回 `const` 组件**：`ToolInfo.builder` 返回 `const` 实例时，重建拿到的还是同一个对象，Flutter 判定无需更新，切主题 / 语言后已打开的页面不会跟着变。换算页的标题也从 `<tool>_lang.dart` 取（`toolText(kXxxLang).name`）。
 - **颜色一律走 `AppColors`**：不要硬编码 `Color(0xFF...)`，也不要在 `const` 表达式里用 `AppColors.xxx`（它不是常量），深色 / 浅色两套配色都要能看。
 - 每个小工具的东西都放在自己目录 `lib/ui/tools/<tool>/`：纯逻辑（如 `bmi.dart`、`loan.dart`，仍不依赖 Flutter）、界面（`<tool>_page.dart`）、语言包（`<tool>_lang.dart`）、`defined.dart` 与 `setting.dart` 并列放，不再有 `lib/tools/` 与 `lang/` 子目录。共用的输入框与比例条放在 `lib/ui/tools/widgets/`（`tool_field.dart`、`tool_unit_picker.dart`、`tool_select.dart`、`tool_bars.dart`），不要在每个工具里各写一份。每个工具的 `ToolInfo`（名称、卖点、图标、配色、页面构造器）写在**自己目录的 `defined.dart`** 里，`lib/ui/tools/tool_catalog.dart` 只汇总 `kTools`；新增工具 = 新建 `<tool>/<tool>.dart`（逻辑）+ `<tool>/<tool>_page.dart` + `<tool>/defined.dart` + `<tool>/<tool>_lang.dart`（五种语言）+ 在 `kTools` 追加一行 + `tool/screenshot.sh` 加一条 `shoot`。单位换算类工具共用的 `unit_catalog.dart` 放在 `lib/ui/tools/`。
+  `MeasureCatalog.groupedBySystem: false` 表示不按体系分组（目前只有温度）：页面不显示「计量体系」下拉与结果 tab，
+  单位下拉与结果列表一次列全，设置卡片也只留「默认单位」（存 `convert.<工具 id>.unit`）。
 - 界面有明显变化时用 `just shots` 重新生成截图，并在 README 引用。
 - `justfile` 用到的 Python 辅助脚本（如 `tool/android_target.py`）要带 `--selftest`，并挂到 `just check` 的 `tool-check` 上。
 - 需要 Android 工具链的配方（`build-apk`、`android`）先 `. tool/android-env.sh`：它会补 `JAVA_HOME` / `ANDROID_HOME`，WSL 下再用 `WSLENV` 传给 Windows 侧进程。

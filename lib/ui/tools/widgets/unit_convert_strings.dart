@@ -1,5 +1,13 @@
 import '../../../l10n/app_i18n.dart';
 import '../../../l10n/app_language.dart';
+import '../unit_catalog.dart';
+
+/// 单位下拉项文案：`名称（符号）`；市制单位的符号就是汉字本身，只显示名称。
+String unitOptionLabel(MeasureUnit unit) {
+  final label = unit.labelIn(appLanguage);
+  if (unit.symbol == unit.label || unit.symbol == label) return label;
+  return fill(unitConvertStrings.unitOption, [label, unit.symbol]);
+}
 
 /// 六个单位换算工具共用的页面文案。
 ///
