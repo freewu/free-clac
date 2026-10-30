@@ -41,6 +41,11 @@ import 'package:free_clac/plot/plot_painter.dart';
 import 'package:free_clac/ui/widgets/plot_canvas.dart';
 
 void main() {
+  // 默认的设置存储换成内存里的：测试不该读写开发机上的真实配置，
+  // 工具页的输入草稿（ToolDraft）也会落到这里。
+  setUp(() => SettingsController.defaultStore = _MemoryStore());
+  tearDown(() => SettingsController.defaultStore = null);
+
   Future<void> tapKey(WidgetTester tester, String label) async {
     await tester.tap(
       find.descendant(of: find.byType(Keypad), matching: find.text(label)),
@@ -1804,6 +1809,117 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.byType(BmiPage), findsNothing);
     expect(find.text('复利计算'), findsOneWidget);
+  });
+
+  testWidgets('工具页：重新进入后保留上次填的数值与单位', (tester) async {
+    tester.view.physicalSize = const Size(1440, 900);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+
+    final settings = SettingsController(store: _MemoryStore());
+    await tester.pumpWidget(
+      FreeCalcApp(initialTab: 2, initialTool: 'distance', settings: settings),
+    );
+    await tester.pumpAndSettle();
+
+    // 体系切到英制、单位换成英尺、填 5280，然后返回工具列表
+    await tester.tap(find.byKey(const Key('distance-system')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('英制').last);
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('distance-unit')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('英尺（ft）').last);
+    await tester.pumpAndSettle();
+    await tester.enterText(find.byType(TextField).first, '5280');
+    await tester.pumpAndSettle();
+    expect(find.text('5280 英尺'), findsOneWidget);
+
+    await tester.pageBack();
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('长度换算'));
+    await tester.pumpAndSettle();
+
+    // 数值与单位都还是上次的
+    expect(find.byType(DistancePage), findsOneWidget);
+    expect(find.text('5280 英尺'), findsOneWidget);
+    expect(
+      tester.widget<TextField>(find.byType(TextField).first).controller?.text,
+      '5280',
+    );
+    // 结果也确实按英尺算（5280 ft = 1 英里）
+    expect(find.text('1'), findsWidgets);
+  });
+
+  testWidgets('工具页：BMI 重新进入保留身高体重与英制选择', (tester) async {
+    tester.view.physicalSize = const Size(1440, 900);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+
+    final settings = SettingsController(store: _MemoryStore());
+    await tester.pumpWidget(
+      FreeCalcApp(initialTab: 2, initialTool: 'bmi', settings: settings),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.enterText(find.byType(TextField).at(0), '180');
+    await tester.enterText(find.byType(TextField).at(1), '80');
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('英制'));
+    await tester.pumpAndSettle();
+    // 180 cm / 80 kg → 5.91 ft / 176.4 lb，BMI 24.7
+    expect(find.text('5.91'), findsOneWidget);
+
+    await tester.pageBack();
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('BMI 计算'));
+    await tester.pumpAndSettle();
+
+    // 单位还是英制，数值是按英制换算过的，BMI 不变
+    expect(find.byType(BmiPage), findsOneWidget);
+    expect(find.text('5.91'), findsOneWidget);
+    expect(
+      tester.widget<TextField>(find.byType(TextField).at(1)).controller?.text,
+      '176.4',
+    );
+    expect(find.text('24.7'), findsWidgets);
+  });
+
+  testWidgets('设置页改默认单位后，BMI 页不再用上次的草稿', (tester) async {
+    final store = _MemoryStore();
+    final settings = SettingsController(store: store);
+    // 先在这页填一次公制数值
+    settings.setToolDraftValue('bmi', 'height', '180');
+    settings.setToolDraftValue('bmi', 'weight', '80');
+    await settings.flushDrafts();
+
+    await tester.pumpWidget(
+      FreeCalcApp(initialTab: 2, initialTool: 'bmi', settings: settings),
+    );
+    await tester.pumpAndSettle();
+    expect(
+      tester.widget<TextField>(find.byType(TextField).at(0)).controller?.text,
+      '180',
+    );
+
+    // 设置页把默认单位改成英制：草稿作废，按英制默认值打开
+    await settings.setBmiUnit(BmiUnitSystem.imperial);
+    await tester.pumpWidget(
+      FreeCalcApp(
+        key: UniqueKey(),
+        initialTab: 2,
+        initialTool: 'bmi',
+        settings: settings,
+      ),
+    );
+    await tester.pumpAndSettle();
+    expect(
+      tester.widget<TextField>(find.byType(TextField).at(0)).controller?.text,
+      '5.58',
+    );
+
+    // 页面里回填数值会触发一次防抖写盘，等它落地免得留个待定的 Timer
+    await tester.pump(const Duration(seconds: 1));
   });
 
   testWidgets('工具页：手机尺寸下卡片与工具页不溢出', (tester) async {

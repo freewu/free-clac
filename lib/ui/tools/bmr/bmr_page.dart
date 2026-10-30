@@ -4,6 +4,7 @@ import '../../../core/number_format.dart';
 import '../../../l10n/app_i18n.dart';
 import '../../../state/settings_controller.dart';
 import '../../../theme/app_theme.dart';
+import '../tool_draft.dart';
 import '../widgets/tool_bars.dart';
 import '../widgets/tool_field.dart';
 import '../widgets/tool_select.dart';
@@ -20,13 +21,23 @@ class BmrPage extends StatefulWidget {
 }
 
 class _BmrPageState extends State<BmrPage> {
-  /// 默认性别与活动水平来自设置页（`BmrSetting`），页内仍可随时切换。
-  BmrGender _gender = currentSettings?.bmrGender ?? BmrGender.male;
-  BmrActivity _activity = currentSettings?.bmrActivity ?? BmrActivity.light;
+  /// 上次填的年龄身高体重与选的性别 / 活动水平。
+  final ToolDraft _draft = ToolDraft('bmr');
 
-  final TextEditingController _age = TextEditingController(text: '30');
-  final TextEditingController _height = TextEditingController(text: '170');
-  final TextEditingController _weight = TextEditingController(text: '65');
+  /// 默认性别与活动水平来自设置页（`BmrSetting`），页内仍可随时切换；
+  /// 打开过一次后以草稿里的上次选择为准。
+  late BmrGender _gender =
+      BmrGender.fromCode(_draft.text('gender')) ??
+      currentSettings?.bmrGender ??
+      BmrGender.male;
+  late BmrActivity _activity =
+      BmrActivity.fromCode(_draft.text('activity')) ??
+      currentSettings?.bmrActivity ??
+      BmrActivity.light;
+
+  late final TextEditingController _age = _draft.controller('age', '30');
+  late final TextEditingController _height = _draft.controller('height', '170');
+  late final TextEditingController _weight = _draft.controller('weight', '65');
 
   @override
   void dispose() {
@@ -74,7 +85,10 @@ class _BmrPageState extends State<BmrPage> {
                   icon: Icons.person_outline_rounded,
                   trailing: _GenderSwitch(
                     gender: _gender,
-                    onChanged: (gender) => setState(() => _gender = gender),
+                    onChanged: (gender) {
+                      _draft.setEnum('gender', gender);
+                      setState(() => _gender = gender);
+                    },
                   ),
                   child: _BodyFields(
                     height: ToolNumberField(
@@ -107,8 +121,10 @@ class _BmrPageState extends State<BmrPage> {
                     value: _activity,
                     items: BmrActivity.values,
                     labelOf: s.activityOptionOf,
-                    onChanged: (activity) =>
-                        setState(() => _activity = activity),
+                    onChanged: (activity) {
+                      _draft.setEnum('activity', activity);
+                      setState(() => _activity = activity);
+                    },
                   ),
                 ),
                 const SizedBox(height: 12),

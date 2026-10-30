@@ -56,6 +56,12 @@ cmd.exe /c "cd /d $(wslpath -w "$PWD") && flutter test"
 - 严格通过 `dart format`（80 列）与 `analysis_options.yaml` 的 lint，不要用 `// ignore:` 绕过。
 - 改动计算逻辑或采样算法时，在 `test/` 补单元测试；改动交互时补 Widget 测试。
 - 新增曲线类型 / 视图行为时同步更新 README 的功能列表、示例表格与测试数量。
+- **工具页记住上次输入**：每个工具页开头建一个 `ToolDraft('<工具 id>')`（`lib/ui/tools/tool_draft.dart`），
+  输入框一律用 `_draft.controller('字段', 默认值)` 建，选项（单位 / 模式 / 枚举）改了调
+  `_draft.setEnum(...)`，初值用 `_draft.text / integer / enumOf` 读，读不到再回落到设置页的默认值。
+  存储键是 `tool.<工具 id>`（一段 JSON），`SettingsController` 里 400 ms 防抖写盘、`dispose` 时兜底。
+  设置页改默认值（`setBmiUnit`、`setBmrGender`、`setConvertSystem` 等）必须调 `clearToolDraft()`
+  清掉对应草稿，否则旧数值会被新单位解释。
 - **工具相关设置**（如 BMI 默认单位）放在 `lib/ui/tools/<tool>/setting.dart`，由设置页引用；设置项本身存在 `SettingsController`，页面用不到 `BuildContext` 时读全局 `currentSettings`。六个单位换算工具也各自有 `<tool>/setting.dart`（`LengthSetting`、`AreaSetting`…），只包一层公共外壳 `lib/ui/tools/widgets/convert_setting_card.dart`（默认体系 + 结果 tab 两个下拉框），存储键是 `convert.<工具 id>.system` / `convert.<工具 id>.tab`，`UnitConvertPage` 读同一份值。
 - **只在部分语言提供的工具**（如养老金、个税只适用中国口径）在 `ToolInfo.availableIn` 里声明语言集合；工具页与 `toolById` 都只看 `visibleTools`，别直接遍历 `kTools`。
 - **工具页内部文案也走多语言**：每个工具目录再放一份 `<tool>_strings.dart`——一个带 `required` 具名字段的

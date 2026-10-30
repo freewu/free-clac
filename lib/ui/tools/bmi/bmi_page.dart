@@ -6,6 +6,7 @@ import '../../../state/settings_controller.dart';
 import '../../../l10n/app_i18n.dart';
 import 'bmi.dart';
 import 'bmi_strings.dart';
+import '../tool_draft.dart';
 import '../widgets/tool_field.dart';
 import '../widgets/tool_unit_picker.dart';
 import 'bmi_gauge.dart';
@@ -22,23 +23,33 @@ class BmiPage extends StatefulWidget {
 }
 
 class _BmiPageState extends State<BmiPage> {
-  /// 默认值来自设置页（`BmiSetting`），页内仍可随时切换。
-  BmiUnitSystem _unit = currentSettings?.bmiUnit ?? BmiUnitSystem.metric;
+  /// 上次填的身高体重与选的单位，重新进入时填回。
+  final ToolDraft _draft = ToolDraft('bmi');
+
+  /// 默认值来自设置页（`BmiSetting`），页内仍可随时切换；
+  /// 打开过一次后以草稿里的上次选择为准。
+  late BmiUnitSystem _unit =
+      BmiUnitSystem.fromCode(_draft.text('unit')) ??
+      currentSettings?.bmiUnit ??
+      BmiUnitSystem.metric;
 
   /// 英制身高输入框的单位（ft / in），点输入框右侧的按钮切换。
-  BmiImperialHeightUnit _heightUnit = BmiImperialHeightUnit.feet;
+  late BmiImperialHeightUnit _heightUnit =
+      _draft.enumOf('heightUnit', BmiImperialHeightUnit.values) ??
+      BmiImperialHeightUnit.feet;
 
   /// 公制为身高（cm），英制为 ft 或 in（见 [_heightUnit]）。
-  final TextEditingController _height = TextEditingController(text: '170');
+  late final TextEditingController _height = _draft.controller('height', '170');
 
   /// 公制为体重（kg），英制为磅（lb）。
-  final TextEditingController _weight = TextEditingController(text: '65');
+  late final TextEditingController _weight = _draft.controller('weight', '65');
 
   @override
   void initState() {
     super.initState();
     // 默认单位是英制时，初始数值也跟着换成英制，别把 170 cm 当 170 ft。
-    if (_unit == BmiUnitSystem.imperial) {
+    // 上次填过值（草稿里有）就照原样留着，那是用户自己按单位填的。
+    if (_draft.text('height') == null && _unit == BmiUnitSystem.imperial) {
       _height.text = _formatImperialHeight(170);
       _weight.text = poundsFromKg(65).toStringAsFixed(1);
     }
@@ -71,6 +82,7 @@ class _BmiPageState extends State<BmiPage> {
 
   void _switchUnit(BmiUnitSystem unit) {
     if (unit == _unit) return;
+    _draft.setEnum('unit', unit);
     final current = _result;
     setState(() {
       _unit = unit;
@@ -88,6 +100,7 @@ class _BmiPageState extends State<BmiPage> {
   /// ft / in 之间切换：按当前单位换算数值，BMI 保持不变。
   void _switchHeightUnit(BmiImperialHeightUnit unit) {
     if (unit == _heightUnit) return;
+    _draft.setEnum('heightUnit', unit);
     final cm = _heightCm;
     setState(() {
       _heightUnit = unit;

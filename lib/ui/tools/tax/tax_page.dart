@@ -6,6 +6,7 @@ import '../../../l10n/money.dart';
 import '../../../theme/app_theme.dart';
 import 'tax.dart';
 import 'tax_strings.dart';
+import '../tool_draft.dart';
 import '../widgets/tool_bars.dart';
 import '../widgets/tool_field.dart';
 
@@ -29,14 +30,25 @@ class TaxPage extends StatefulWidget {
 }
 
 class _TaxPageState extends State<TaxPage> {
-  final TextEditingController _salary = TextEditingController(text: '20000');
-  final TextEditingController _base = TextEditingController();
-  final TextEditingController _special = TextEditingController(text: '0');
+  /// 上次填的月薪、缴纳基数、专项附加与各项比例。
+  final ToolDraft _draft = ToolDraft('tax');
+
+  late final TextEditingController _salary = _draft.controller(
+    'salary',
+    '20000',
+  );
+
+  /// 缴纳基数留空表示按税前月薪算，所以不给默认值。
+  late final TextEditingController _base = _draft.controller('base', '');
+  late final TextEditingController _special = _draft.controller('special', '0');
 
   /// 各项缴纳比例（%）的输入框。
-  final Map<InsuranceItem, TextEditingController> _rateControllers = {
+  late final Map<InsuranceItem, TextEditingController> _rateControllers = {
     for (final item in InsuranceItem.values)
-      item: TextEditingController(text: _trimRate(item.defaultRatePercent)),
+      item: _draft.controller(
+        'rate.${item.name}',
+        _trimRate(item.defaultRatePercent),
+      ),
   };
 
   @override

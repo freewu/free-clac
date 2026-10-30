@@ -1575,6 +1575,63 @@ void main() {
     });
   });
 
+  group('工具页输入草稿（ToolDraft）', () {
+    test('写入后合并成一条 JSON，重建设置能读回', () async {
+      final store = _MemoryStore();
+      final settings = SettingsController(store: store);
+      await settings.load();
+      expect(settings.toolDraftOf('bmi'), isEmpty);
+
+      settings.setToolDraftValue('bmi', 'height', '180');
+      settings.setToolDraftValue('bmi', 'unit', 'imperial');
+      // 空串表示清掉该字段（输入框被清空时）
+      settings.setToolDraftValue('bmi', 'weight', '');
+      settings.setToolDraftValue('loan', 'amount', '500000');
+      await settings.flushDrafts();
+
+      // 每个工具只占一个键，值是 JSON
+      expect(store.values.keys.toSet(), <String>{'tool.bmi', 'tool.loan'});
+
+      final reloaded = SettingsController(store: store);
+      await reloaded.load();
+      expect(reloaded.toolDraftOf('bmi'), <String, String>{
+        'height': '180',
+        'unit': 'imperial',
+      });
+      expect(reloaded.toolDraftOf('loan'), <String, String>{
+        'amount': '500000',
+      });
+      expect(reloaded.toolDraftOf('nope'), isEmpty);
+    });
+
+    test('清空最后一个字段时整条草稿也删掉', () async {
+      final store = _MemoryStore();
+      final settings = SettingsController(store: store);
+      settings.setToolDraftValue('bmr', 'age', '40');
+      await settings.flushDrafts();
+      settings.setToolDraftValue('bmr', 'age', '');
+      await settings.flushDrafts();
+
+      expect(settings.toolDraftOf('bmr'), isEmpty);
+      expect(store.values['tool.bmr'], '');
+
+      final reloaded = SettingsController(store: store);
+      await reloaded.load();
+      expect(reloaded.toolDraftOf('bmr'), isEmpty);
+    });
+
+    test('损坏的草稿内容不会让设置加载失败', () async {
+      final store = _MemoryStore()
+        ..values['tool.bmi'] = '{不是 JSON'
+        ..values['tool.loan'] = '["数组"]'
+        ..values['tool.tax'] = '{"salary": 20000}';
+      final settings = SettingsController(store: store);
+      await settings.load();
+      // 三种都不是「字段 → 字符串」的表，直接忽略
+      expect(settings.toolDrafts, isEmpty);
+    });
+  });
+
   group('设置：主题模式与本地存储', () {
     test('默认跟随系统：按系统明暗给深色或浅色配色', () {
       final settings = SettingsController(store: _MemoryStore());

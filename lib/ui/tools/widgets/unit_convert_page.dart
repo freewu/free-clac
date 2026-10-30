@@ -5,6 +5,7 @@ import '../../../core/number_format.dart';
 import '../../../l10n/app_i18n.dart';
 import '../../../state/settings_controller.dart';
 import '../../../theme/app_theme.dart';
+import '../tool_draft.dart';
 import '../unit_catalog.dart';
 import 'measure_system_label.dart';
 import 'tool_field.dart';
@@ -41,10 +42,15 @@ class UnitConvertPage extends StatefulWidget {
 
 class _UnitConvertPageState extends State<UnitConvertPage>
     with SingleTickerProviderStateMixin {
-  /// 输入单位：优先用设置里为该工具选的默认体系，没选过用单位表自带的默认值。
-  late MeasureUnit _from = _initialUnit;
+  /// 上次在这页选的输入单位与填的数值。
+  late final ToolDraft _draft = ToolDraft(widget.catalog.id);
 
-  final TextEditingController _value = TextEditingController(text: '1');
+  /// 输入单位：上次在这页选过的单位优先，其次是设置里为该工具选的默认体系，
+  /// 都没选过就用单位表自带的默认值。
+  late MeasureUnit _from =
+      widget.catalog.unitById(_draft.text('from') ?? '') ?? _initialUnit;
+
+  late final TextEditingController _value = _draft.controller('value', '1');
 
   /// 「常见 XX」默认展开，点标题行可折叠起来省空间。
   bool _samplesExpanded = true;
@@ -78,9 +84,13 @@ class _UnitConvertPageState extends State<UnitConvertPage>
     return units.contains(storedUnit) ? storedUnit! : units.first;
   }
 
-  /// 设置里为该工具选的结果 tab；体系不可用时落到第一个 tab。
+  /// 结果 tab 的初始位置：上次选的输入单位优先，否则用设置里为该工具选的
+  /// 默认 tab；体系不可用时落到第一个 tab。
   int get _initialTabIndex => _tabIndexOf(
-    currentSettings?.convertTabFor(widget.catalog.id) ?? MeasureSystem.metric,
+    _draft.text('from') != null
+        ? _from.system
+        : currentSettings?.convertTabFor(widget.catalog.id) ??
+              MeasureSystem.metric,
   );
 
   @override
@@ -135,13 +145,16 @@ class _UnitConvertPageState extends State<UnitConvertPage>
   void _switchSystem(MeasureSystem system) {
     if (system == _system) return;
     // 切体系时落到该体系的第一个单位；数值保持不变，配合参照物更快
+    final unit = _catalog.unitsOf(system).first;
+    _draft.set('from', unit.id);
     setState(() {
-      _from = _catalog.unitsOf(system).first;
+      _from = unit;
       _tabs.index = _tabIndexOf(system);
     });
   }
 
   void _selectUnit(MeasureUnit unit) {
+    _draft.set('from', unit.id);
     setState(() {
       _from = unit;
       _tabs.index = _tabIndexOf(unit.system);
@@ -152,6 +165,7 @@ class _UnitConvertPageState extends State<UnitConvertPage>
   void _applySample(MeasureSample sample) {
     final unit = _catalog.unitOfSample(sample);
     if (unit == null) return;
+    _draft.set('from', unit.id);
     setState(() {
       _from = unit;
       _value.text = _trim(sample.value);

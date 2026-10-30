@@ -6,6 +6,7 @@ import '../../../l10n/money.dart';
 import '../../../theme/app_theme.dart';
 import 'pension.dart';
 import 'pension_strings.dart';
+import '../tool_draft.dart';
 import '../widgets/tool_bars.dart';
 import '../widgets/tool_field.dart';
 import '../widgets/tool_select.dart';
@@ -19,16 +20,31 @@ class PensionPage extends StatefulWidget {
 }
 
 class _PensionPageState extends State<PensionPage> {
-  final TextEditingController _age = TextEditingController(text: '30');
-  final TextEditingController _paidYears = TextEditingController(text: '5');
-  final TextEditingController _balance = TextEditingController(text: '50000');
-  final TextEditingController _wage = TextEditingController(text: '10000');
-  final TextEditingController _socialWage = TextEditingController(text: '8000');
-  final TextEditingController _growth = TextEditingController(text: '5');
-  final TextEditingController _accountRate = TextEditingController(text: '3');
+  /// 上次填的各项参数与选的退休年龄。
+  final ToolDraft _draft = ToolDraft('pension');
+
+  late final TextEditingController _age = _draft.controller('age', '30');
+  late final TextEditingController _paidYears = _draft.controller(
+    'paidYears',
+    '5',
+  );
+  late final TextEditingController _balance = _draft.controller(
+    'balance',
+    '50000',
+  );
+  late final TextEditingController _wage = _draft.controller('wage', '10000');
+  late final TextEditingController _socialWage = _draft.controller(
+    'socialWage',
+    '8000',
+  );
+  late final TextEditingController _growth = _draft.controller('growth', '5');
+  late final TextEditingController _accountRate = _draft.controller(
+    'accountRate',
+    '3',
+  );
 
   /// 预计退休年龄，决定计发月数。
-  int _retireAge = 60;
+  late int _retireAge = _draft.integer('retireAge') ?? 60;
 
   /// 增长假设默认收起，绝大多数人只需要改前两栏。
   bool _advancedExpanded = false;
@@ -103,7 +119,10 @@ class _PensionPageState extends State<PensionPage> {
                           age,
                           pensionPayoutMonthsOf(age),
                         ]),
-                        onChanged: (age) => setState(() => _retireAge = age),
+                        onChanged: (age) {
+                          _draft.set('retireAge', age);
+                          setState(() => _retireAge = age);
+                        },
                       );
                       final paid = ToolNumberField(
                         label: s.paidYears,

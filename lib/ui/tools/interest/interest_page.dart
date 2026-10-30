@@ -5,6 +5,7 @@ import '../../../l10n/app_i18n.dart';
 import '../../../l10n/money.dart';
 import 'interest.dart';
 import 'interest_strings.dart';
+import '../tool_draft.dart';
 import '../widgets/tool_field.dart';
 
 /// 利率计算页：本金配日付 / 月付 / 年付，双向换算年化率。
@@ -31,15 +32,22 @@ enum _Mode {
 }
 
 class _InterestPageState extends State<InterestPage> {
-  _Mode _mode = _Mode.fromPayment;
+  /// 上次填的本金 / 期付 / 年化率与选的方向、周期。
+  final ToolDraft _draft = ToolDraft('interest');
+
+  late _Mode _mode = _draft.enumOf('mode', _Mode.values) ?? _Mode.fromPayment;
 
   /// 当前关注的付息周期：模式一时是「输入哪一种期付」，
   /// 模式二时是「重点显示哪一种期付」。
-  InterestPeriod _period = InterestPeriod.daily;
+  late InterestPeriod _period =
+      _draft.enumOf('period', InterestPeriod.values) ?? InterestPeriod.daily;
 
-  final TextEditingController _principal = TextEditingController(text: '10000');
-  final TextEditingController _payment = TextEditingController(text: '1');
-  final TextEditingController _rate = TextEditingController(text: '3.65');
+  late final TextEditingController _principal = _draft.controller(
+    'principal',
+    '10000',
+  );
+  late final TextEditingController _payment = _draft.controller('payment', '1');
+  late final TextEditingController _rate = _draft.controller('rate', '3.65');
 
   @override
   void dispose() {
@@ -75,6 +83,7 @@ class _InterestPageState extends State<InterestPage> {
   /// 切换方向时把当前结果带过去，避免数值突变。
   void _switchMode(_Mode mode) {
     if (mode == _mode) return;
+    _draft.setEnum('mode', mode);
     final quote = _quote;
     setState(() {
       _mode = mode;
@@ -89,6 +98,7 @@ class _InterestPageState extends State<InterestPage> {
 
   void _switchPeriod(InterestPeriod period) {
     if (period == _period) return;
+    _draft.setEnum('period', period);
     final quote = _quote;
     setState(() {
       _period = period;

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../l10n/app_i18n.dart';
 import '../../../theme/app_theme.dart';
+import '../tool_draft.dart';
 import '../widgets/tool_field.dart';
 import '../widgets/tool_select.dart';
 import 'retirement.dart';
@@ -32,9 +33,13 @@ class _RetirementPageState extends State<RetirementPage> {
 
   static final List<int> _months = List<int>.generate(12, (index) => index + 1);
 
-  int _birthYear = 1985;
-  int _birthMonth = 6;
-  RetirementGroup _group = RetirementGroup.male;
+  /// 上次选的出生年月与人员类别。
+  final ToolDraft _draft = ToolDraft('retirement');
+
+  late int _birthYear = _draft.integer('birthYear') ?? 1985;
+  late int _birthMonth = _draft.integer('birthMonth') ?? 6;
+  late RetirementGroup _group =
+      _draft.enumOf('group', RetirementGroup.values) ?? RetirementGroup.male;
 
   /// 「还需奋斗」的基准时间，测试可注入固定值。
   late final DateTime _now = widget.now ?? DateTime.now();
@@ -85,8 +90,10 @@ class _RetirementPageState extends State<RetirementPage> {
                               value: _birthYear,
                               items: _years,
                               labelOf: (year) => fill(s.yearOption, [year]),
-                              onChanged: (year) =>
-                                  setState(() => _birthYear = year),
+                              onChanged: (year) {
+                                _draft.set('birthYear', year);
+                                setState(() => _birthYear = year);
+                              },
                             ),
                           ),
                           const SizedBox(width: 10),
@@ -97,8 +104,10 @@ class _RetirementPageState extends State<RetirementPage> {
                               value: _birthMonth,
                               items: _months,
                               labelOf: (month) => fill(s.monthOption, [month]),
-                              onChanged: (month) =>
-                                  setState(() => _birthMonth = month),
+                              onChanged: (month) {
+                                _draft.set('birthMonth', month);
+                                setState(() => _birthMonth = month);
+                              },
                             ),
                           ),
                         ],
@@ -110,7 +119,10 @@ class _RetirementPageState extends State<RetirementPage> {
                         value: _group,
                         items: RetirementGroup.values,
                         labelOf: s.groupLabel,
-                        onChanged: (group) => setState(() => _group = group),
+                        onChanged: (group) {
+                          _draft.setEnum('group', group);
+                          setState(() => _group = group);
+                        },
                       ),
                     ],
                   ),

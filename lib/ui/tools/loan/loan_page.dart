@@ -5,6 +5,7 @@ import '../../../l10n/app_i18n.dart';
 import '../../../l10n/money.dart';
 import 'loan.dart';
 import 'loan_strings.dart';
+import '../tool_draft.dart';
 import '../widgets/tool_bars.dart';
 import '../widgets/tool_field.dart';
 import '../widgets/tool_unit_picker.dart';
@@ -15,17 +16,21 @@ Color get loanPrincipalColor => AppColors.primary;
 /// 利息条的颜色。
 Color get loanInterestColor => AppColors.warning;
 
-/// 解析深链里的还款方式（Web 端 `?method=equalPrincipal`），无效值回落到等额本息。
+/// 解析深链里的还款方式（Web 端 `?method=equalPrincipal`），没带或写错时返回 null。
 ///
 /// 主要给截图脚本用：`?page=tools&tool=loan&method=equalPrincipal`
 /// 打开就是等额本金，能直接看到明细的倒梯形。
-LoanMethod loanMethodFromQuery(Map<String, String> query) {
+LoanMethod? loanMethodOrNull(Map<String, String> query) {
   final name = query['method'];
-  return LoanMethod.values.firstWhere(
-    (method) => method.name == name,
-    orElse: () => LoanMethod.equalInstallment,
-  );
+  for (final method in LoanMethod.values) {
+    if (method.name == name) return method;
+  }
+  return null;
 }
+
+/// 深链里的还款方式，无效值回落到等额本息。
+LoanMethod loanMethodFromQuery(Map<String, String> query) =>
+    loanMethodOrNull(query) ?? LoanMethod.equalInstallment;
 
 /// 贷款计算器：等额本息 / 等额本金，逐期拆分本金与利息并用双色条表示。
 class LoanPage extends StatefulWidget {
@@ -36,12 +41,24 @@ class LoanPage extends StatefulWidget {
 }
 
 class _LoanPageState extends State<LoanPage> {
-  LoanMethod _method = loanMethodFromQuery(Uri.base.queryParameters);
-  LoanTermUnit _termUnit = LoanTermUnit.years;
+  /// 上次填的金额 / 利率 / 期限与选的还款方式、期限单位。
+  final ToolDraft _draft = ToolDraft('loan');
 
-  final TextEditingController _amount = TextEditingController(text: '1000000');
-  final TextEditingController _rate = TextEditingController(text: '4.9');
-  final TextEditingController _term = TextEditingController(text: '30');
+  /// 深链（截图脚本）优先，其次是上次选的还款方式。
+  late LoanMethod _method =
+      loanMethodOrNull(Uri.base.queryParameters) ??
+      _draft.enumOf('method', LoanMethod.values) ??
+      LoanMethod.equalInstallment;
+
+  late LoanTermUnit _termUnit =
+      _draft.enumOf('termUnit', LoanTermUnit.values) ?? LoanTermUnit.years;
+
+  late final TextEditingController _amount = _draft.controller(
+    'amount',
+    '1000000',
+  );
+  late final TextEditingController _rate = _draft.controller('rate', '4.9');
+  late final TextEditingController _term = _draft.controller('term', '30');
 
   /// 明细表按「月」还是按「年」汇总。
   bool _groupByYear = false;
@@ -69,6 +86,7 @@ class _LoanPageState extends State<LoanPage> {
     if (unit == _termUnit) return;
     // 先用旧单位换算出月数，再切单位回填，避免「30 年 → 30 月」
     final months = _termUnit.toMonths(_parse(_term));
+    _draft.setEnum('termUnit', unit);
     setState(() {
       _termUnit = unit;
       _term.text = unit == LoanTermUnit.months
@@ -180,8 +198,10 @@ class _LoanPageState extends State<LoanPage> {
                                 style: const TextStyle(fontSize: 11.5),
                               ),
                               selected: _method == method,
-                              onSelected: (_) =>
-                                  setState(() => _method = method),
+                              onSelected: (_) {
+                                _draft.setEnum('method', method);
+                                setState(() => _method = method);
+                              },
                               visualDensity: VisualDensity.compact,
                               labelPadding: const EdgeInsets.symmetric(
                                 horizontal: 4,

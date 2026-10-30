@@ -6,6 +6,7 @@ import '../../../l10n/app_i18n.dart';
 import '../../../l10n/money.dart';
 import 'compound.dart';
 import 'compound_strings.dart';
+import '../tool_draft.dart';
 import '../widgets/tool_field.dart';
 
 /// 复利计算页：本金、利率、期限、复利频率与定期追加，输出本息与逐年增长表。
@@ -17,14 +18,23 @@ class CompoundPage extends StatefulWidget {
 }
 
 class _CompoundPageState extends State<CompoundPage> {
-  final TextEditingController _principal = TextEditingController(
-    text: '100000',
-  );
-  final TextEditingController _rate = TextEditingController(text: '5');
-  final TextEditingController _years = TextEditingController(text: '10');
-  final TextEditingController _contribution = TextEditingController(text: '0');
+  /// 上次填的本金 / 利率 / 期限 / 追加与复利频率。
+  final ToolDraft _draft = ToolDraft('compound');
 
-  CompoundFrequency _frequency = CompoundFrequency.yearly;
+  late final TextEditingController _principal = _draft.controller(
+    'principal',
+    '100000',
+  );
+  late final TextEditingController _rate = _draft.controller('rate', '5');
+  late final TextEditingController _years = _draft.controller('years', '10');
+  late final TextEditingController _contribution = _draft.controller(
+    'contribution',
+    '0',
+  );
+
+  late CompoundFrequency _frequency =
+      _draft.enumOf('frequency', CompoundFrequency.values) ??
+      CompoundFrequency.yearly;
 
   @override
   void dispose() {
@@ -156,8 +166,10 @@ class _CompoundPageState extends State<CompoundPage> {
                                 style: const TextStyle(fontSize: 11.5),
                               ),
                               selected: _frequency == frequency,
-                              onSelected: (_) =>
-                                  setState(() => _frequency = frequency),
+                              onSelected: (_) {
+                                _draft.setEnum('frequency', frequency);
+                                setState(() => _frequency = frequency);
+                              },
                               visualDensity: VisualDensity.compact,
                               labelPadding: const EdgeInsets.symmetric(
                                 horizontal: 4,
