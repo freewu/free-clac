@@ -446,7 +446,11 @@ Web 端可用 `?page=plot` 直接打开绘图页，`?page=plot&preset=0` 还会�
 项目用 [just](https://github.com/casey/just) 管理常用任务，`just` 不带参数即可列出全部命令。
 
 - **WSL**：自动通过 `cmd.exe` 调用 Windows 侧的 Flutter，无需额外配置
-- **Windows（PowerShell / cmd）**：recipes 由 Git Bash 的 `sh` 执行，需安装 [Git for Windows](https://git-scm.com/download/win)
+- **Windows（PowerShell / cmd）**：recipes 由 POSIX `sh`（Git Bash 或 Cygwin 的）执行，需安装
+  [Git for Windows](https://git-scm.com/download/win)；`flutter` / `dart` 一律经 `cmd.exe` 调用
+  `flutter.bat` / `dart.bat`（它们本身是 bash 脚本，PATH 里的 `bash` 若指向 WSL 会直接报
+  `No such file or directory`）。`just icons` / `just check` 里的图标脚本还需要
+  `pip install pillow`
 
 ```bash
 just              # 列出全部命令

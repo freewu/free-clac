@@ -10,7 +10,8 @@
 - 绘图：`lib/plot/`（视口、采样器、示例曲线），状态在 `lib/state/`，界面在 `lib/ui/`。
 - 多语言：`lib/l10n/`（语言枚举 `AppLanguage`、应用级文案 `AppStrings`、全局入口 `t`），工具语言包在 `lib/ui/tools/<tool>/<tool>_lang.dart`。
 - 配色：`lib/theme/app_theme.dart` 的 `AppPalette`（深色 `kDarkPalette` / 浅色 `kLightPalette`），全局取色入口是 `AppColors`；设置页在 `lib/ui/settings_page.dart`，状态在 `lib/state/settings_controller.dart`，本地存储在 `lib/services/settings_store*.dart`。
-- 已知环境：Windows + WSL，`flutter` / `dart` 是 Windows 程序。
+- 已知环境：Windows + WSL，`flutter` / `dart` 是 Windows 程序（`C:\flutter\bin` 下是 bash 脚本 +
+  `.bat`，所以 justfile 在 Windows 原生 shell 里也经 `cmd.exe` 调用 `flutter.bat` / `dart.bat`）。
 
 ## 环境与命令
 

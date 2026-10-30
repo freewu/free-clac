@@ -21,14 +21,23 @@ wsl := if os() == "linux" {
 } else {
   "0"
 }
-# 在 WSL 中把当前目录换算成 Windows 路径后再调用可执行文件
+# 在 WSL 中把当前目录换算成 Windows 路径后再调用可执行文件；Windows 原生
+# shell 里交给 cmd 走 flutter.bat：flutter 本身是带 `#!/usr/bin/env bash` 的
+# shell 脚本，而 PATH 里排在前面的往往是 Cygwin / MSYS 的 sh，它们的 `bash`
+# 可能指向 WSL 的 bash.exe，于是报 “/cygdrive/…/flutter: No such file or
+# directory”。走 cmd 就只执行 flutter.bat，不再看 shell 的脸色。
 flutter := if wsl == "1" {
   '_fl() { WSLENV="JAVA_HOME:ANDROID_HOME:ANDROID_SDK_ROOT:${WSLENV:-}" cmd.exe /c "cd /d $(wslpath -w "$PWD") && flutter $*"; }; _fl'
+} else if os() == "windows" {
+  "cmd.exe /c flutter"
 } else {
   "flutter"
 }
+# dart 同理：`C:\flutter\bin\dart` 也是带 shebang 的 shell 脚本
 dart := if wsl == "1" {
   '_dt() { cmd.exe /c "cd /d $(wslpath -w "$PWD") && dart $*"; }; _dt'
+} else if os() == "windows" {
+  "cmd.exe /c dart"
 } else {
   "dart"
 }
