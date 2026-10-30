@@ -27,6 +27,33 @@ abstract class AppStrings {
   /// 「12 个应用」这类计数文案，[count] 为工具数量。
   String toolsCount(int count);
 
+  /// 工具页「置顶」分区的小标题。
+  String get toolsPinned;
+
+  /// 工具页「其他工具」分区的小标题。
+  String get toolsOthers;
+
+  /// 卡片右上角图钉的提示：置顶。
+  String get toolPin;
+
+  /// 卡片右上角图钉的提示：取消置顶。
+  String get toolUnpin;
+
+  /// 置顶已满时的提示，`{0}` 是当前上限。
+  String toolPinLimit(int limit);
+
+  /// 设置页「置顶工具」卡片标题。
+  String get settingsPinned;
+
+  /// 设置页「置顶数量」下拉框标签。
+  String get settingsPinnedLimit;
+
+  /// 设置页置顶卡片的说明。
+  String get settingsPinnedHint;
+
+  /// 「已置顶 2 / 3」。
+  String pinnedCount(int count, int limit);
+
   String get settingsTitle;
   String get settingsSubtitle;
   String get settingsAppearance;
@@ -81,6 +108,24 @@ class _ZhHansStrings extends AppStrings {
   String get toolsOffline => '全部内置，离线可用';
   @override
   String toolsCount(int count) => '$count 个应用';
+  @override
+  String get toolsPinned => '置顶工具';
+  @override
+  String get toolsOthers => '其他工具';
+  @override
+  String get toolPin => '置顶';
+  @override
+  String get toolUnpin => '取消置顶';
+  @override
+  String toolPinLimit(int limit) => '最多只能置顶 $limit 个工具，可在设置里调整';
+  @override
+  String get settingsPinned => '置顶工具';
+  @override
+  String get settingsPinnedLimit => '置顶数量';
+  @override
+  String get settingsPinnedHint => '点工具卡片右上角的图钉即可置顶或取消，置顶的工具排在工具页最前面。';
+  @override
+  String pinnedCount(int count, int limit) => '已置顶 $count / $limit';
   @override
   String get settingsTitle => '设置';
   @override
@@ -171,6 +216,24 @@ class _ZhHantStrings extends AppStrings {
   @override
   String toolsCount(int count) => '$count 個應用';
   @override
+  String get toolsPinned => '置頂工具';
+  @override
+  String get toolsOthers => '其他工具';
+  @override
+  String get toolPin => '置頂';
+  @override
+  String get toolUnpin => '取消置頂';
+  @override
+  String toolPinLimit(int limit) => '最多只能置頂 $limit 個工具，可在設定裡調整';
+  @override
+  String get settingsPinned => '置頂工具';
+  @override
+  String get settingsPinnedLimit => '置頂數量';
+  @override
+  String get settingsPinnedHint => '點工具卡片右上角的圖釘即可置頂或取消，置頂的工具排在工具頁最前面。';
+  @override
+  String pinnedCount(int count, int limit) => '已置頂 $count / $limit';
+  @override
   String get settingsTitle => '設定';
   @override
   String get settingsSubtitle => '外觀與語言，只儲存在本機';
@@ -259,6 +322,27 @@ class _EnStrings extends AppStrings {
   String get toolsOffline => 'All built in, works offline';
   @override
   String toolsCount(int count) => '$count apps';
+  @override
+  String get toolsPinned => 'Pinned';
+  @override
+  String get toolsOthers => 'More tools';
+  @override
+  String get toolPin => 'Pin to top';
+  @override
+  String get toolUnpin => 'Unpin';
+  @override
+  String toolPinLimit(int limit) =>
+      'You can pin up to $limit tools. Change the limit in Settings.';
+  @override
+  String get settingsPinned => 'Pinned tools';
+  @override
+  String get settingsPinnedLimit => 'How many can be pinned';
+  @override
+  String get settingsPinnedHint =>
+      'Tap the pin at the top-right of a card to pin or unpin it. '
+      'Pinned tools stay at the top of the Tools page.';
+  @override
+  String pinnedCount(int count, int limit) => 'Pinned $count / $limit';
   @override
   String get settingsTitle => 'Settings';
   @override
@@ -357,6 +441,26 @@ class _JaStrings extends AppStrings {
   @override
   String toolsCount(int count) => '$count 個のアプリ';
   @override
+  String get toolsPinned => 'ピン留め';
+  @override
+  String get toolsOthers => 'その他のツール';
+  @override
+  String get toolPin => 'ピン留めする';
+  @override
+  String get toolUnpin => 'ピン留めを解除';
+  @override
+  String toolPinLimit(int limit) => 'ピン留めできるのは最大 $limit 個です。設定で変更できます。';
+  @override
+  String get settingsPinned => 'ピン留めしたツール';
+  @override
+  String get settingsPinnedLimit => 'ピン留めの上限';
+  @override
+  String get settingsPinnedHint =>
+      'カード右上のピンを押すとピン留め / 解除できます。'
+      'ピン留めしたツールはツールページの先頭に並びます。';
+  @override
+  String pinnedCount(int count, int limit) => 'ピン留め $count / $limit';
+  @override
   String get settingsTitle => '設定';
   @override
   String get settingsSubtitle => '外観と言語、この端末にのみ保存';
@@ -444,6 +548,27 @@ class _EsStrings extends AppStrings {
   String get toolsOffline => 'Todo integrado, funciona sin conexión';
   @override
   String toolsCount(int count) => '$count aplicaciones';
+  @override
+  String get toolsPinned => 'Fijados';
+  @override
+  String get toolsOthers => 'Más herramientas';
+  @override
+  String get toolPin => 'Fijar arriba';
+  @override
+  String get toolUnpin => 'Quitar de fijados';
+  @override
+  String toolPinLimit(int limit) =>
+      'Solo puedes fijar $limit herramientas. Cámbialo en Ajustes.';
+  @override
+  String get settingsPinned => 'Herramientas fijadas';
+  @override
+  String get settingsPinnedLimit => 'Cuántas se pueden fijar';
+  @override
+  String get settingsPinnedHint =>
+      'Toca el alfiler de la esquina superior derecha de una tarjeta para '
+      'fijarla o quitarla. Las fijadas se quedan arriba en Herramientas.';
+  @override
+  String pinnedCount(int count, int limit) => 'Fijados $count / $limit';
   @override
   String get settingsTitle => 'Ajustes';
   @override

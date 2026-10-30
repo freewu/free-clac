@@ -15,6 +15,7 @@ import 'tools/pressure/setting.dart';
 import 'tools/speed/setting.dart';
 import 'tools/temperature/setting.dart';
 import 'tools/volume/setting.dart';
+import 'tools/tools_setting.dart';
 import 'tools/weight/setting.dart';
 import 'tools/widgets/tool_select.dart';
 import 'widgets/settings_card.dart';
@@ -119,6 +120,8 @@ class SettingsPage extends StatelessWidget {
                     ],
                   ),
                 ),
+                const SizedBox(height: 12),
+                ToolsSetting(controller: controller),
                 const SizedBox(height: 12),
                 BmiSetting(controller: controller),
                 const SizedBox(height: 12),

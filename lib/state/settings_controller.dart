@@ -59,6 +59,20 @@ class SettingsController extends ChangeNotifier {
   static const String _bmrGenderKey = 'bmr_gender';
   static const String _bmrActivityKey = 'bmr_activity';
   static const String _currencyKey = 'currency_style';
+  static const String _pinnedToolsKey = 'pinned_tools';
+  static const String _pinnedLimitKey = 'pinned_limit';
+
+  /// 置顶工具数量下限。
+  static const int minPinnedTools = 2;
+
+  /// 置顶工具数量上限。
+  static const int maxPinnedTools = 5;
+
+  /// 默认最多置顶几个工具。
+  static const int defaultPinnedTools = 3;
+
+  /// 置顶数量可选的值（设置页下拉框用）。
+  static const List<int> pinnedLimitOptions = <int>[2, 3, 4, 5];
 
   /// 换算工具设置键的前缀，完整键如 `convert.distance.system`。
   static const String _convertPrefix = 'convert.';
@@ -94,6 +108,12 @@ class SettingsController extends ChangeNotifier {
 
   /// 不分体系的换算工具（温度）默认选中的单位 id。
   final Map<String, String> convertUnits = <String, String>{};
+
+  /// 置顶的工具 id，显示在工具页最前面；顺序不影响展示（按工具表顺序）。
+  final List<String> pinnedTools = <String>[];
+
+  /// 最多能置顶几个工具，取值 2 ~ 5，默认 3，可在设置页调整。
+  int pinnedLimit = defaultPinnedTools;
 
   /// 各工具页上次填的输入（工具 id → 字段 → 值），重新进入时填回。
   final Map<String, Map<String, String>> toolDrafts =
@@ -160,6 +180,31 @@ class SettingsController extends ChangeNotifier {
       if (target == null || target[id] == system) continue;
       target[id] = system;
       changed = true;
+    }
+    final storedPinned = values[_pinnedToolsKey];
+    if (storedPinned != null) {
+      final ids = <String>[
+        for (final id in storedPinned.split(','))
+          if (id.trim().isNotEmpty) id.trim(),
+      ];
+      if (!listEquals(ids, pinnedTools)) {
+        pinnedTools
+          ..clear()
+          ..addAll(ids);
+        changed = true;
+      }
+    }
+    final storedLimit = int.tryParse(values[_pinnedLimitKey] ?? '');
+    if (storedLimit != null && storedLimit != pinnedLimit) {
+      final limit = storedLimit.clamp(minPinnedTools, maxPinnedTools);
+      if (limit != pinnedLimit) {
+        pinnedLimit = limit;
+        changed = true;
+      }
+    }
+    // 数量上限调小后，多出来的置顶项直接丢掉，避免界面上看不到也取消不掉
+    if (pinnedTools.length > pinnedLimit) {
+      pinnedTools.removeRange(pinnedLimit, pinnedTools.length);
     }
     for (final entry in values.entries) {
       if (!entry.key.startsWith(_draftPrefix)) continue;
@@ -268,6 +313,45 @@ class SettingsController extends ChangeNotifier {
     notifyListeners();
     await clearToolDraft(catalogId, field: 'from');
     await _store.write('$_convertPrefix$catalogId.tab', system.code);
+  }
+
+  /// 某个工具是否已置顶。
+  bool isPinned(String toolId) => pinnedTools.contains(toolId);
+
+  /// 置顶还能再加几个。
+  int get pinnedSlotsLeft => pinnedLimit - pinnedTools.length;
+
+  /// 是否已经顶满（再加就得先取消一个）。
+  bool get pinnedFull => pinnedTools.length >= pinnedLimit;
+
+  /// 置顶 / 取消置顶某个工具。
+  ///
+  /// 置顶数已达上限时不再添加，返回 false 让调用方提示用户；
+  /// 取消置顶总是成功。
+  Future<bool> togglePinned(String toolId) async {
+    if (pinnedTools.remove(toolId)) {
+      notifyListeners();
+      await _store.write(_pinnedToolsKey, pinnedTools.join(','));
+      return true;
+    }
+    if (pinnedFull) return false;
+    pinnedTools.add(toolId);
+    notifyListeners();
+    await _store.write(_pinnedToolsKey, pinnedTools.join(','));
+    return true;
+  }
+
+  /// 调整最多能置顶几个工具（超出 2 ~ 5 的值会被夹回范围内）。
+  Future<void> setPinnedLimit(int limit) async {
+    final next = limit.clamp(minPinnedTools, maxPinnedTools);
+    if (next == pinnedLimit) return;
+    pinnedLimit = next;
+    // 上限调小：从末尾丢掉多出来的置顶项
+    final trimmed = pinnedTools.length > next;
+    if (trimmed) pinnedTools.removeRange(next, pinnedTools.length);
+    notifyListeners();
+    await _store.write(_pinnedLimitKey, '$next');
+    if (trimmed) await _store.write(_pinnedToolsKey, pinnedTools.join(','));
   }
 
   /// 某个工具上次填的输入（字段 → 值），没存过时为空表。

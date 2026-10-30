@@ -1575,6 +1575,77 @@ void main() {
     });
   });
 
+  group('工具置顶', () {
+    test('默认 3 个上限、没有置顶项，置顶后写回本地', () async {
+      final store = _MemoryStore();
+      final settings = SettingsController(store: store);
+      await settings.load();
+      expect(settings.pinnedLimit, 3);
+      expect(settings.pinnedTools, isEmpty);
+      expect(settings.isPinned('bmi'), isFalse);
+
+      expect(await settings.togglePinned('bmi'), isTrue);
+      expect(await settings.togglePinned('loan'), isTrue);
+      expect(store.values['pinned_tools'], 'bmi,loan');
+
+      final reloaded = SettingsController(store: store);
+      await reloaded.load();
+      expect(reloaded.pinnedTools, <String>['bmi', 'loan']);
+      expect(reloaded.isPinned('loan'), isTrue);
+    });
+
+    test('顶满上限后不再添加，取消置顶总是成功', () async {
+      final settings = SettingsController(store: _MemoryStore());
+      for (final id in <String>['bmi', 'bmr', 'compound']) {
+        expect(await settings.togglePinned(id), isTrue);
+      }
+      expect(settings.pinnedFull, isTrue);
+      expect(settings.pinnedSlotsLeft, 0);
+
+      // 第四个放不进去
+      expect(await settings.togglePinned('loan'), isFalse);
+      expect(settings.pinnedTools, hasLength(3));
+      expect(settings.isPinned('loan'), isFalse);
+
+      // 取消置顶不受上限影响
+      expect(await settings.togglePinned('bmi'), isTrue);
+      expect(settings.isPinned('bmi'), isFalse);
+      expect(await settings.togglePinned('loan'), isTrue);
+      expect(settings.isPinned('loan'), isTrue);
+    });
+
+    test('上限只在 2 ~ 5 之间，调小时丢掉多出来的置顶项', () async {
+      final store = _MemoryStore();
+      final settings = SettingsController(store: store);
+      for (final id in <String>['bmi', 'bmr', 'compound', 'loan']) {
+        await settings.togglePinned(id);
+      }
+      await settings.setPinnedLimit(1);
+      expect(settings.pinnedLimit, 2);
+      expect(settings.pinnedTools, <String>['bmi', 'bmr']);
+      expect(store.values['pinned_limit'], '2');
+      expect(store.values['pinned_tools'], 'bmi,bmr');
+
+      await settings.setPinnedLimit(9);
+      expect(settings.pinnedLimit, 5);
+
+      // 存了越界的值时按范围夹回
+      final reloaded = SettingsController(
+        store: _MemoryStore()..values['pinned_limit'] = '10',
+      );
+      await reloaded.load();
+      expect(reloaded.pinnedLimit, 5);
+    });
+
+    test('读不到或写坏了的置顶项不影响加载', () async {
+      final settings = SettingsController(
+        store: _MemoryStore()..values['pinned_tools'] = 'bmi,,  ,loan',
+      );
+      await settings.load();
+      expect(settings.pinnedTools, <String>['bmi', 'loan']);
+    });
+  });
+
   group('工具页输入草稿（ToolDraft）', () {
     test('写入后合并成一条 JSON，重建设置能读回', () async {
       final store = _MemoryStore();

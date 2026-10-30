@@ -102,7 +102,7 @@ shoot loan       1440,900 "index.html?page=tools&tool=loan&method=equalPrincipal
 shoot pension    1440,1000 "index.html?page=tools&tool=pension"
 shoot retirement 1440,700  "index.html?page=tools&tool=retirement"
 shoot tax        1440,980 "index.html?page=tools&tool=tax"
-shoot settings   1440,1960 "index.html?page=settings"
+shoot settings   1440,2220 "index.html?page=settings"
 shoot light      1440,900 "index.html?theme=light"
 shoot english    1440,900 "index.html?page=tools&tool=distance&lang=en"
 shoot zh-hant    1440,700 "index.html?page=tools&tool=retirement&lang=zh-Hant"

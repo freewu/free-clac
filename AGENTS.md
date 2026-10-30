@@ -56,6 +56,12 @@ cmd.exe /c "cd /d $(wslpath -w "$PWD") && flutter test"
 - 严格通过 `dart format`（80 列）与 `analysis_options.yaml` 的 lint，不要用 `// ignore:` 绕过。
 - 改动计算逻辑或采样算法时，在 `test/` 补单元测试；改动交互时补 Widget 测试。
 - 新增曲线类型 / 视图行为时同步更新 README 的功能列表、示例表格与测试数量。
+- **工具页置顶**：卡片右上角的图钉（`lib/ui/tools_page.dart` 的 `_PinButton`）切换置顶，状态存
+  `SettingsController.pinnedTools`（键 `pinned_tools`），上限 `pinnedLimit`（键 `pinned_limit`，
+  2 ~ 5，默认 3，设置页的 `lib/ui/tools/tools_setting.dart` 负责调）。工具页自己套
+  `ListenableBuilder(listenable: currentSettings)` 监听设置：它活在内嵌 Navigator 的路由里，
+  外层 `setState` 不会重跑路由 builder；重建时**不要返回 const 子树**，否则切语言 / 配色不刷新。
+  新增工具的 `ToolInfo` 只需在 `kTools` 里追加，置顶、语言过滤都自动生效。
 - **工具页记住上次输入**：每个工具页开头建一个 `ToolDraft('<工具 id>')`（`lib/ui/tools/tool_draft.dart`），
   输入框一律用 `_draft.controller('字段', 默认值)` 建，选项（单位 / 模式 / 枚举）改了调
   `_draft.setEnum(...)`，初值用 `_draft.text / integer / enumOf` 读，读不到再回落到设置页的默认值。

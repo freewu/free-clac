@@ -1770,7 +1770,7 @@ void main() {
     // 工具变多后手机上贷款计算器要滚动才看得到
     await tester.dragUntilVisible(
       find.text('贷款计算器'),
-      find.byType(GridView),
+      find.byType(CustomScrollView),
       const Offset(0, -120),
     );
     await tester.pumpAndSettle();
@@ -1809,6 +1809,98 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.byType(BmiPage), findsNothing);
     expect(find.text('复利计算'), findsOneWidget);
+  });
+
+  testWidgets('工具页：置顶的工具排在最前面，再点一次取消', (tester) async {
+    tester.view.physicalSize = const Size(1440, 900);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+
+    final store = _MemoryStore();
+    final settings = SettingsController(store: store);
+    await tester.pumpWidget(FreeCalcApp(initialTab: 2, settings: settings));
+    await tester.pumpAndSettle();
+
+    // 一开始没有置顶分区
+    expect(find.text('置顶工具'), findsNothing);
+    expect(find.byKey(const Key('tool-pin-compound')), findsOneWidget);
+
+    await tester.tap(find.byKey(const Key('tool-pin-compound')));
+    await tester.pumpAndSettle();
+
+    expect(find.text('置顶工具'), findsOneWidget);
+    expect(find.text('已置顶 1 / 3'), findsOneWidget);
+    expect(settings.pinnedTools, <String>['compound']);
+    expect(store.values['pinned_tools'], 'compound');
+    // 置顶的复利计算跑到上面，BMI 换到「其他工具」分区
+    expect(
+      tester.getTopLeft(find.text('复利计算')).dy,
+      lessThan(tester.getTopLeft(find.text('BMI 计算')).dy),
+    );
+
+    await tester.tap(find.byKey(const Key('tool-pin-compound')));
+    await tester.pumpAndSettle();
+    expect(find.text('置顶工具'), findsNothing);
+    expect(settings.pinnedTools, isEmpty);
+    expect(store.values['pinned_tools'], '');
+  });
+
+  testWidgets('工具页：顶满 3 个后再置顶会提示上限，设置里放宽后可以再置顶', (tester) async {
+    tester.view.physicalSize = const Size(1440, 900);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+
+    final settings = SettingsController(store: _MemoryStore());
+    for (final id in <String>['bmi', 'bmr', 'compound']) {
+      await settings.togglePinned(id);
+    }
+    await tester.pumpWidget(FreeCalcApp(initialTab: 2, settings: settings));
+    await tester.pumpAndSettle();
+    expect(find.text('已置顶 3 / 3'), findsOneWidget);
+
+    await tester.tap(find.byKey(const Key('tool-pin-distance')));
+    await tester.pumpAndSettle();
+    expect(find.text('最多只能置顶 3 个工具，可在设置里调整'), findsOneWidget);
+    expect(settings.isPinned('distance'), isFalse);
+
+    // 设置页把上限改成 5 之后还能继续置顶
+    await settings.setPinnedLimit(5);
+    await tester.pumpAndSettle();
+    expect(find.text('已置顶 3 / 5'), findsOneWidget);
+    await tester.tap(find.byKey(const Key('tool-pin-distance')));
+    await tester.pumpAndSettle();
+    expect(settings.isPinned('distance'), isTrue);
+    expect(find.text('已置顶 4 / 5'), findsOneWidget);
+  });
+
+  testWidgets('手机尺寸：置顶后工具页卡片不溢出', (tester) async {
+    await pumpApp(tester, const Size(390, 844));
+    await tester.tap(find.text('工具'));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byKey(const Key('tool-pin-bmi')));
+    await tester.pumpAndSettle();
+    expect(find.text('置顶工具'), findsOneWidget);
+    expect(find.text('已置顶 1 / 3'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('设置页：置顶数量默认 3，可在 2 ~ 5 之间调整并写回本地', (tester) async {
+    await pumpApp(tester, const Size(1440, 900));
+    await tester.tap(find.text('设置'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('已置顶 0 / 3'), findsOneWidget);
+    await tester.tap(find.byKey(const Key('settings-pinned-limit')));
+    await tester.pumpAndSettle();
+    // 选项只有 2 / 3 / 4 / 5
+    expect(find.text('2'), findsWidgets);
+    expect(find.text('4'), findsWidgets);
+    await tester.tap(find.text('5').last);
+    await tester.pumpAndSettle();
+
+    expect(find.text('已置顶 0 / 5'), findsOneWidget);
+    expect(currentSettings?.pinnedLimit, 5);
   });
 
   testWidgets('工具页：重新进入后保留上次填的数值与单位', (tester) async {
@@ -2426,7 +2518,7 @@ void main() {
     // 手机上卡片一列排布，第 6 张（个税）要滚动才看得到
     await tester.dragUntilVisible(
       find.text('个人所得税'),
-      find.byType(GridView),
+      find.byType(CustomScrollView),
       const Offset(0, -120),
     );
     await tester.pumpAndSettle();
