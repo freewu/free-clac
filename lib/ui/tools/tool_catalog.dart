@@ -1,5 +1,6 @@
 import 'area/defined.dart';
 import 'bmi/defined.dart';
+import 'bmr/defined.dart';
 import 'compound/defined.dart';
 import 'distance/defined.dart';
 import 'energy/defined.dart';
@@ -25,6 +26,7 @@ export 'tool_info.dart';
 /// 只在首次访问时求值，切到浅色主题后颜色就会停在旧配色上。
 List<ToolInfo> get kTools => List.unmodifiable(<ToolInfo>[
   bmiTool,
+  bmrTool,
   compoundTool,
   distanceTool,
   areaTool,

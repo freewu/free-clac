@@ -8,6 +8,7 @@ import '../state/settings_controller.dart';
 import '../theme/app_theme.dart';
 import 'tools/area/setting.dart';
 import 'tools/bmi/setting.dart';
+import 'tools/bmr/setting.dart';
 import 'tools/distance/setting.dart';
 import 'tools/energy/setting.dart';
 import 'tools/pressure/setting.dart';
@@ -120,6 +121,8 @@ class SettingsPage extends StatelessWidget {
                 ),
                 const SizedBox(height: 12),
                 BmiSetting(controller: controller),
+                const SizedBox(height: 12),
+                BmrSetting(controller: controller),
                 const SizedBox(height: 18),
                 SettingsSectionHeader(
                   title: t.settingsConversion,

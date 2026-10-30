@@ -37,6 +37,9 @@ abstract class AppStrings {
   String get settingsLanguageHint;
   String get settingsBmiUnit;
   String get settingsBmiUnitHint;
+  String get settingsBmr;
+  String get settingsBmrActivity;
+  String get settingsBmrHint;
   String get settingsCurrency;
   String get settingsCurrencyHint;
   String get currencyFollowLanguage;
@@ -98,6 +101,12 @@ class _ZhHansStrings extends AppStrings {
   String get settingsBmiUnit => 'BMI 默认单位';
   @override
   String get settingsBmiUnitHint => '打开 BMI 计算时默认用这个单位，页内仍可随时切换。';
+  @override
+  String get settingsBmr => '基础代谢默认值';
+  @override
+  String get settingsBmrActivity => '默认活动水平';
+  @override
+  String get settingsBmrHint => '打开基础代谢计算时按这里的性别与活动水平预填，页内仍可随时切换。';
   @override
   String get settingsCurrency => '金额符号';
   @override
@@ -181,6 +190,12 @@ class _ZhHantStrings extends AppStrings {
   String get settingsBmiUnit => 'BMI 預設單位';
   @override
   String get settingsBmiUnitHint => '開啟 BMI 計算時預設用這個單位，頁內仍可隨時切換。';
+  @override
+  String get settingsBmr => '基礎代謝預設值';
+  @override
+  String get settingsBmrActivity => '預設活動水平';
+  @override
+  String get settingsBmrHint => '開啟基礎代謝計算時按這裡的性別與活動水平預填，頁內仍可隨時切換。';
   @override
   String get settingsCurrency => '金額符號';
   @override
@@ -268,6 +283,14 @@ class _EnStrings extends AppStrings {
   String get settingsBmiUnitHint =>
       'Used when the BMI calculator opens; you can still switch it there.';
   @override
+  String get settingsBmr => 'BMR defaults';
+  @override
+  String get settingsBmrActivity => 'Default activity level';
+  @override
+  String get settingsBmrHint =>
+      'Sex and activity level used when the BMR calculator opens; you can '
+      'still change them there.';
+  @override
   String get settingsCurrency => 'Currency symbol';
   @override
   String get settingsCurrencyHint =>
@@ -354,6 +377,12 @@ class _JaStrings extends AppStrings {
   @override
   String get settingsBmiUnitHint => 'BMI 計算を開いたときの単位です。画面内でも切り替えられます。';
   @override
+  String get settingsBmr => '基礎代謝の既定値';
+  @override
+  String get settingsBmrActivity => '既定の活動レベル';
+  @override
+  String get settingsBmrHint => '基礎代謝計算を開いたときの性別と活動レベルです。画面内でも切り替えられます。';
+  @override
   String get settingsCurrency => '金額の記号';
   @override
   String get settingsCurrencyHint =>
@@ -438,6 +467,14 @@ class _EsStrings extends AppStrings {
   @override
   String get settingsBmiUnitHint =>
       'Se usa al abrir la calculadora de IMC; dentro puedes cambiarlas.';
+  @override
+  String get settingsBmr => 'Valores del metabolismo basal';
+  @override
+  String get settingsBmrActivity => 'Nivel de actividad por defecto';
+  @override
+  String get settingsBmrHint =>
+      'Sexo y nivel de actividad con los que abre la calculadora de '
+      'metabolismo basal; dentro puedes cambiarlos.';
   @override
   String get settingsCurrency => 'Símbolo de moneda';
   @override

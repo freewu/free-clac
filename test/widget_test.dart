@@ -15,6 +15,8 @@ import 'package:free_clac/theme/app_theme.dart';
 import 'package:free_clac/ui/settings_page.dart';
 import 'package:free_clac/ui/tools/tool_catalog.dart';
 import 'package:free_clac/ui/tools/bmi/bmi.dart';
+import 'package:free_clac/ui/tools/bmr/bmr.dart';
+import 'package:free_clac/ui/tools/bmr/bmr_page.dart';
 import 'package:free_clac/ui/tools/loan/loan.dart';
 import 'package:free_clac/ui/widgets/calc_display.dart';
 import 'package:free_clac/ui/widgets/plot_export_dialog.dart';
@@ -262,6 +264,81 @@ void main() {
     expect(find.text('cm'), findsOneWidget);
     expect(find.textContaining('170.2 cm'), findsOneWidget);
     expect(find.textContaining('74.8 kg'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('基础代谢：默认值算 BMR 与 TDEE，切性别与活动水平即时更新', (tester) async {
+    await pumpApp(tester, const Size(1440, 900));
+
+    await tester.tap(find.text('工具'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('基础代谢 BMR'));
+    await tester.pumpAndSettle();
+    expect(find.byType(BmrPage), findsOneWidget);
+
+    // 默认男 / 30 岁 / 170 cm / 65 kg → BMR 1567.5 → 1568
+    expect(tester.widget<Text>(find.byKey(const Key('bmr-bmr'))).data, '1568');
+    // 轻度活动 ×1.375 → TDEE 2155
+    expect(tester.widget<Text>(find.byKey(const Key('bmr-tdee'))).data, '2155');
+    // 五种活动水平都列出来，当前的轻度活动高亮
+    expect(find.byKey(const Key('bmr-levels')), findsOneWidget);
+    for (final code in ['sedentary', 'light', 'moderate', 'active']) {
+      expect(find.byKey(Key('bmr-level-$code')), findsOneWidget);
+    }
+
+    // 换成女性：常数项 +5 → −161，BMR 少 166
+    await tester.tap(find.byKey(const Key('bmr-gender-female')));
+    await tester.pumpAndSettle();
+    expect(tester.widget<Text>(find.byKey(const Key('bmr-bmr'))).data, '1402');
+
+    // 活动水平改成极高强度 ×1.9 → TDEE 2663
+    await tester.tap(find.byKey(const Key('bmr-activity')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('极高强度（体力工作 + 训练）').last);
+    await tester.pumpAndSettle();
+    expect(tester.widget<Text>(find.byKey(const Key('bmr-tdee'))).data, '2663');
+
+    // 年龄填 0（非法输入）时回到空状态提示
+    await tester.enterText(find.byType(TextField).at(2), '0');
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('bmr-bmr')), findsNothing);
+    expect(find.text('填写体重、身高与年龄后自动计算'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('设置页：基础代谢默认性别与活动水平带到页内', (tester) async {
+    tester.view.physicalSize = const Size(1440, 2000);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+    final store = _MemoryStore();
+    final settings = SettingsController(store: store);
+    await tester.pumpWidget(FreeCalcApp(settings: settings, initialTab: 3));
+    await tester.pumpAndSettle();
+
+    expect(find.text('基础代谢默认值'), findsOneWidget);
+
+    await tester.tap(find.byKey(const Key('settings-bmr-gender')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('女').last);
+    await tester.pumpAndSettle();
+    expect(settings.bmrGender, BmrGender.female);
+    expect(store.values['bmr_gender'], 'female');
+
+    await tester.tap(find.byKey(const Key('settings-bmr-activity')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('中度活动（每周运动 3–5 次）').last);
+    await tester.pumpAndSettle();
+    expect(settings.bmrActivity, BmrActivity.moderate);
+    expect(store.values['bmr_activity'], 'moderate');
+
+    // 打开工具：女 / 中度活动已经选好，TDEE 1401.5 × 1.55 → 2172
+    await tester.tap(find.text('工具').last);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('基础代谢 BMR'));
+    await tester.pumpAndSettle();
+    expect(find.byType(BmrPage), findsOneWidget);
+    expect(tester.widget<Text>(find.byKey(const Key('bmr-bmr'))).data, '1402');
+    expect(tester.widget<Text>(find.byKey(const Key('bmr-tdee'))).data, '2172');
     expect(tester.takeException(), isNull);
   });
 
@@ -704,7 +781,7 @@ void main() {
     // 养老金与个税只服务中国社保 / 税法，日语界面不展示
     expect(find.text('年金計算'), findsNothing);
     expect(find.text('所得税'), findsNothing);
-    expect(find.text('12 個のアプリ'), findsOneWidget);
+    expect(find.text('13 個のアプリ'), findsOneWidget);
   });
 
   testWidgets('工具页：切回简体中文后养老金、个税与退休年龄又出现了', (tester) async {
@@ -718,7 +795,7 @@ void main() {
     await tester.pumpWidget(FreeCalcApp(settings: settings, initialTab: 2));
     await tester.pumpAndSettle();
     // 英文界面只有 12 个工具
-    expect(find.text('12 apps'), findsOneWidget);
+    expect(find.text('13 apps'), findsOneWidget);
     expect(find.text('Pension calculator'), findsNothing);
     expect(find.text('Income tax'), findsNothing);
 
@@ -732,7 +809,7 @@ void main() {
 
     await tester.tap(find.text('工具').last);
     await tester.pumpAndSettle();
-    expect(find.text('15 个应用'), findsOneWidget);
+    expect(find.text('16 个应用'), findsOneWidget);
     expect(find.text('养老金计算器'), findsOneWidget);
     expect(find.text('退休年龄计算器'), findsOneWidget);
     expect(find.text('个人所得税'), findsOneWidget);
@@ -1628,6 +1705,30 @@ void main() {
       }
       expect(tester.takeException(), isNull, reason: id);
     }
+  });
+
+  testWidgets('手机尺寸：基础代谢页不溢出', (tester) async {
+    tester.view.physicalSize = const Size(390, 844);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+
+    await tester.pumpWidget(
+      const FreeCalcApp(initialTab: 2, initialTool: 'bmr'),
+    );
+    await tester.pumpAndSettle();
+    expect(find.byType(BmrPage), findsOneWidget);
+    expect(find.byType(NavigationBar), findsOneWidget);
+    // 窄屏下身高 / 体重一行、年龄单独一行
+    expect(
+      tester.getCenter(find.text('年龄')).dy,
+      greaterThan(tester.getCenter(find.text('体重')).dy),
+    );
+    expect(tester.takeException(), isNull);
+
+    // 滚到底看五种活动水平的列表与说明，同样不能溢出
+    await tester.drag(find.byType(BmrPage), const Offset(0, -400));
+    await tester.pumpAndSettle();
+    expect(tester.takeException(), isNull);
   });
 
   testWidgets('工具页：手机尺寸下长度换算不溢出', (tester) async {

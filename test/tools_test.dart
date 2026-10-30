@@ -9,6 +9,8 @@ import 'package:free_clac/state/settings_controller.dart';
 import 'package:free_clac/theme/app_theme.dart';
 import 'package:free_clac/ui/tools/area/area.dart';
 import 'package:free_clac/ui/tools/bmi/bmi.dart';
+import 'package:free_clac/ui/tools/bmr/bmr.dart';
+import 'package:free_clac/ui/tools/bmr/bmr_strings.dart';
 import 'package:free_clac/ui/tools/compound/compound.dart';
 import 'package:free_clac/ui/tools/distance/distance.dart';
 import 'package:free_clac/ui/tools/energy/energy.dart';
@@ -280,6 +282,140 @@ void main() {
     test('单位枚举带中文标签', () {
       expect(BmiUnitSystem.metric.label, '公制');
       expect(BmiUnitSystem.imperial.label, '英制');
+    });
+  });
+
+  group('BMR：Mifflin-St Jeor 公式', () {
+    test('男女常数项不同，基础代谢按公式给出', () {
+      // 10×70 + 6.25×175 − 5×30 + 5 = 1648.75
+      final male = calculateBmr(
+        gender: BmrGender.male,
+        age: 30,
+        heightCm: 175,
+        weightKg: 70,
+      )!;
+      expect(male.bmr, closeTo(1648.75, 1e-9));
+      // 女性把 +5 换成 −161，正好差 166
+      final female = calculateBmr(
+        gender: BmrGender.female,
+        age: 30,
+        heightCm: 175,
+        weightKg: 70,
+      )!;
+      expect(female.bmr, closeTo(male.bmr - 166, 1e-9));
+      expect(female.gender, BmrGender.female);
+      expect(female.age, 30);
+    });
+
+    test('身高支持米制输入，年龄四舍五入到整岁', () {
+      final result = calculateBmr(
+        gender: BmrGender.male,
+        age: 29.6,
+        heightCm: 1.75,
+        weightKg: 70,
+      )!;
+      expect(result.heightCm, 175);
+      expect(result.age, 30);
+      expect(result.bmr, closeTo(1648.75, 1e-9));
+    });
+
+    test('五种活动水平的系数与 TDEE', () {
+      final result = calculateBmr(
+        gender: BmrGender.male,
+        age: 30,
+        heightCm: 175,
+        weightKg: 70,
+      )!;
+      expect(BmrActivity.values.map((value) => value.factor), [
+        1.2,
+        1.375,
+        1.55,
+        1.725,
+        1.9,
+      ]);
+      // 默认轻度活动
+      expect(result.activity, BmrActivity.light);
+      expect(result.tdee, closeTo(result.bmr * 1.375, 1e-9));
+      expect(
+        result.tdeeOf(BmrActivity.sedentary),
+        closeTo(result.bmr * 1.2, 1e-9),
+      );
+      expect(
+        result.tdeeOf(BmrActivity.veryActive),
+        closeTo(result.bmr * 1.9, 1e-9),
+      );
+      // TDEE − BMR 就是日常活动的额外消耗
+      expect(result.activityCalories, closeTo(result.tdee - result.bmr, 1e-9));
+      expect(result.tdeeByActivity.length, BmrActivity.values.length);
+      expect(result.tdeeByActivity.last, closeTo(result.bmr * 1.9, 1e-9));
+    });
+
+    test('非法输入返回 null', () {
+      BmrResult? calc({
+        BmrGender gender = BmrGender.male,
+        double age = 30,
+        double heightCm = 175,
+        double weightKg = 70,
+      }) => calculateBmr(
+        gender: gender,
+        age: age,
+        heightCm: heightCm,
+        weightKg: weightKg,
+      );
+
+      expect(calc(), isNotNull);
+      expect(calc(weightKg: 0), isNull);
+      expect(calc(weightKg: 600), isNull);
+      expect(calc(age: 0), isNull);
+      expect(calc(age: 200), isNull);
+      expect(calc(heightCm: 0), isNull);
+      expect(calc(heightCm: 400), isNull);
+    });
+
+    test('枚举的持久化标识可解析', () {
+      expect(BmrGender.male.code, 'male');
+      expect(BmrGender.female.label, '女');
+      expect(BmrGender.fromCode('female'), BmrGender.female);
+      expect(BmrGender.fromCode(null), isNull);
+      expect(BmrGender.fromCode('other'), isNull);
+      expect(BmrActivity.fromCode('very_active'), BmrActivity.veryActive);
+      expect(BmrActivity.fromCode('yoga'), isNull);
+      expect(BmrActivity.sedentary.factor, 1.2);
+    });
+
+    test('五种语言的页面文案齐全，活动水平按语言取', () {
+      for (final language in AppLanguage.values) {
+        final strings = kBmrStrings[language];
+        expect(strings, isNotNull, reason: language.code);
+        for (final value in BmrActivity.values) {
+          expect(
+            strings!.activityLabel(value),
+            isNotEmpty,
+            reason: '${language.code}.${value.code}',
+          );
+          expect(
+            strings.activityHint(value),
+            isNotEmpty,
+            reason: '${language.code}.${value.code}',
+          );
+          expect(
+            strings.activityOptionOf(value),
+            contains(strings.activityLabel(value)),
+          );
+        }
+        expect(strings!.genderLabel(BmrGender.male), isNotEmpty);
+        expect(strings.genderLabel(BmrGender.female), isNotEmpty);
+        expect(strings.formulaNote, contains('Mifflin-St Jeor'));
+      }
+      // 中文以外的语言不照搬中文活动名
+      expect(
+        kBmrStrings[AppLanguage.en]!.activityLabel(BmrActivity.sedentary),
+        'Sedentary',
+      );
+      expect(
+        kBmrStrings[AppLanguage.ja]!.activityLabel(BmrActivity.light),
+        '軽い活動',
+      );
     });
   });
 
@@ -1501,6 +1637,23 @@ void main() {
       expect(reloaded.bmiUnit, BmiUnitSystem.imperial);
     });
 
+    test('基础代谢默认性别与活动水平：改动后写回本地并能读回来', () async {
+      final store = _MemoryStore();
+      final settings = SettingsController(store: store);
+      expect(settings.bmrGender, BmrGender.male);
+      expect(settings.bmrActivity, BmrActivity.light);
+
+      await settings.setBmrGender(BmrGender.female);
+      await settings.setBmrActivity(BmrActivity.veryActive);
+      expect(store.values['bmr_gender'], 'female');
+      expect(store.values['bmr_activity'], 'very_active');
+
+      final reloaded = SettingsController(store: store);
+      await reloaded.load();
+      expect(reloaded.bmrGender, BmrGender.female);
+      expect(reloaded.bmrActivity, BmrActivity.veryActive);
+    });
+
     test('换算工具默认体系与结果 tab：各工具分别保存，默认公制', () async {
       final store = _MemoryStore();
       final settings = SettingsController(store: store);
@@ -1715,6 +1868,9 @@ void main() {
           strings.themeLight,
           strings.themeDark,
           strings.settingsLanguage,
+          strings.settingsBmr,
+          strings.settingsBmrActivity,
+          strings.settingsBmrHint,
           strings.settingsAbout,
         ]) {
           expect(text, isNotEmpty, reason: '${language.code} 有空文案');
@@ -1727,10 +1883,10 @@ void main() {
     });
 
     test('养老金、个税与退休年龄只在中文界面展示', () {
-      // 简体、繁体都能看到 15 个工具
+      // 简体、繁体都能看到 16 个工具
       for (final language in [AppLanguage.zhHans, AppLanguage.zhHant]) {
         applyAppLanguage(language);
-        expect(visibleTools.length, 15, reason: language.code);
+        expect(visibleTools.length, 16, reason: language.code);
         expect(
           visibleTools.map((tool) => tool.id),
           containsAll(<String>['pension', 'tax', 'retirement']),
@@ -1738,7 +1894,7 @@ void main() {
       }
       for (final language in [AppLanguage.en, AppLanguage.ja, AppLanguage.es]) {
         applyAppLanguage(language);
-        expect(visibleTools.length, 12, reason: language.code);
+        expect(visibleTools.length, 13, reason: language.code);
         expect(
           visibleTools.map((tool) => tool.id),
           isNot(contains('pension')),
@@ -1758,9 +1914,10 @@ void main() {
         expect(toolById('pension'), isNull, reason: language.code);
         expect(toolById('retirement'), isNull, reason: language.code);
         expect(toolById('bmi'), isNotNull, reason: language.code);
+        expect(toolById('bmr'), isNotNull, reason: language.code);
       }
       applyAppLanguage(AppLanguage.zhHans);
-      expect(kTools.length, 15);
+      expect(kTools.length, 16);
     });
 
     test('每个工具的语言包都有五种语言，且 id 唯一', () {
@@ -1775,7 +1932,7 @@ void main() {
           expect(text.description, isNotEmpty);
         }
       }
-      expect(kTools.length, 15);
+      expect(kTools.length, 16);
     });
 
     test('工具名称随语言变化，缺翻译时回落简体中文', () {

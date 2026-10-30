@@ -5,6 +5,7 @@ import '../l10n/currency.dart';
 import '../services/settings_store.dart';
 import '../theme/app_theme.dart';
 import '../ui/tools/bmi/bmi.dart';
+import '../ui/tools/bmr/bmr.dart';
 import '../ui/tools/unit_catalog.dart';
 
 /// 当前生效的设置控制器。
@@ -40,12 +41,16 @@ class SettingsController extends ChangeNotifier {
     this.themeMode = AppThemeMode.system,
     this.language = AppLanguage.zhHans,
     this.bmiUnit = BmiUnitSystem.metric,
+    this.bmrGender = BmrGender.male,
+    this.bmrActivity = BmrActivity.light,
     this.currencyCode = kFollowLanguageCurrency,
   }) : _store = store ?? const SettingsStore();
 
   static const String _themeKey = 'theme_mode';
   static const String _languageKey = 'language';
   static const String _bmiUnitKey = 'bmi_unit';
+  static const String _bmrGenderKey = 'bmr_gender';
+  static const String _bmrActivityKey = 'bmr_activity';
   static const String _currencyKey = 'currency_style';
 
   /// 换算工具设置键的前缀，完整键如 `convert.distance.system`。
@@ -58,6 +63,12 @@ class SettingsController extends ChangeNotifier {
 
   /// BMI 工具默认使用的计量单位。
   BmiUnitSystem bmiUnit;
+
+  /// 基础代谢工具默认的性别。
+  BmrGender bmrGender;
+
+  /// 基础代谢工具默认的活动水平。
+  BmrActivity bmrActivity;
 
   /// 金额符号偏好：`auto` 跟随语言（默认），否则是货币的 ISO 代码。
   String currencyCode;
@@ -88,6 +99,16 @@ class SettingsController extends ChangeNotifier {
     final storedBmiUnit = BmiUnitSystem.fromCode(values[_bmiUnitKey]);
     if (storedBmiUnit != null && storedBmiUnit != bmiUnit) {
       bmiUnit = storedBmiUnit;
+      changed = true;
+    }
+    final storedBmrGender = BmrGender.fromCode(values[_bmrGenderKey]);
+    if (storedBmrGender != null && storedBmrGender != bmrGender) {
+      bmrGender = storedBmrGender;
+      changed = true;
+    }
+    final storedBmrActivity = BmrActivity.fromCode(values[_bmrActivityKey]);
+    if (storedBmrActivity != null && storedBmrActivity != bmrActivity) {
+      bmrActivity = storedBmrActivity;
       changed = true;
     }
     final storedCurrency = values[_currencyKey];
@@ -154,6 +175,22 @@ class SettingsController extends ChangeNotifier {
     bmiUnit = unit;
     notifyListeners();
     await _store.write(_bmiUnitKey, unit.code);
+  }
+
+  /// 切换基础代谢默认性别。
+  Future<void> setBmrGender(BmrGender gender) async {
+    if (gender == bmrGender) return;
+    bmrGender = gender;
+    notifyListeners();
+    await _store.write(_bmrGenderKey, gender.code);
+  }
+
+  /// 切换基础代谢默认活动水平。
+  Future<void> setBmrActivity(BmrActivity activity) async {
+    if (activity == bmrActivity) return;
+    bmrActivity = activity;
+    notifyListeners();
+    await _store.write(_bmrActivityKey, activity.code);
   }
 
   /// 切换金额符号偏好（`auto` 或货币代码）。
