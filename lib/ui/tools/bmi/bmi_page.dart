@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../core/number_format.dart';
+import '../../../state/app_appearance.dart';
 import '../../../theme/app_theme.dart';
 import '../../../state/settings_controller.dart';
 import '../../../l10n/app_i18n.dart';
@@ -22,7 +23,7 @@ class BmiPage extends StatefulWidget {
   State<BmiPage> createState() => _BmiPageState();
 }
 
-class _BmiPageState extends State<BmiPage> {
+class _BmiPageState extends State<BmiPage> with AppAppearanceAware {
   /// 上次填的身高体重与选的单位，重新进入时填回。
   final ToolDraft _draft = ToolDraft('bmi');
 

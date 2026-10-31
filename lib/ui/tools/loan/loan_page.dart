@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../state/app_appearance.dart';
 import '../../../theme/app_theme.dart';
 import '../../../l10n/app_i18n.dart';
 import '../../../l10n/money.dart';
@@ -40,7 +41,7 @@ class LoanPage extends StatefulWidget {
   State<LoanPage> createState() => _LoanPageState();
 }
 
-class _LoanPageState extends State<LoanPage> {
+class _LoanPageState extends State<LoanPage> with AppAppearanceAware {
   /// 上次填的金额 / 利率 / 期限与选的还款方式、期限单位。
   final ToolDraft _draft = ToolDraft('loan');
 

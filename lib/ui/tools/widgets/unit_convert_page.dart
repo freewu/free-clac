@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import '../../../core/number_format.dart';
 import '../../../l10n/app_i18n.dart';
 import '../../../state/settings_controller.dart';
+import '../../../state/app_appearance.dart';
 import '../../../theme/app_theme.dart';
 import '../tool_draft.dart';
 import '../unit_catalog.dart';
@@ -41,7 +42,7 @@ class UnitConvertPage extends StatefulWidget {
 }
 
 class _UnitConvertPageState extends State<UnitConvertPage>
-    with SingleTickerProviderStateMixin {
+    with SingleTickerProviderStateMixin, AppAppearanceAware {
   /// 上次在这页选的输入单位与填的数值。
   late final ToolDraft _draft = ToolDraft(widget.catalog.id);
 

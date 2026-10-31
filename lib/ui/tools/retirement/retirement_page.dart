@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../l10n/app_i18n.dart';
+import '../../../state/app_appearance.dart';
 import '../../../theme/app_theme.dart';
 import '../tool_draft.dart';
 import '../widgets/tool_field.dart';
@@ -19,7 +20,8 @@ class RetirementPage extends StatefulWidget {
   State<RetirementPage> createState() => _RetirementPageState();
 }
 
-class _RetirementPageState extends State<RetirementPage> {
+class _RetirementPageState extends State<RetirementPage>
+    with AppAppearanceAware {
   /// 可选出生年份：覆盖「改革前出生」到刚参加工作的人群。
   static const List<int> _years = <int>[
     1950, 1951, 1952, 1953, 1954, 1955, 1956, 1957, 1958, 1959, //

@@ -4,6 +4,7 @@ import 'bmr/defined.dart';
 import 'compound/defined.dart';
 import 'distance/defined.dart';
 import 'energy/defined.dart';
+import 'hourly/defined.dart';
 import 'interest/defined.dart';
 import 'loan/defined.dart';
 import 'pension/defined.dart';
@@ -28,6 +29,7 @@ List<ToolInfo> get kTools => List.unmodifiable(<ToolInfo>[
   bmiTool,
   bmrTool,
   compoundTool,
+  hourlyTool,
   distanceTool,
   areaTool,
   volumeTool,

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../core/number_format.dart';
+import '../../../state/app_appearance.dart';
 import '../../../theme/app_theme.dart';
 import '../../../l10n/app_i18n.dart';
 import '../../../l10n/money.dart';
@@ -17,7 +18,7 @@ class CompoundPage extends StatefulWidget {
   State<CompoundPage> createState() => _CompoundPageState();
 }
 
-class _CompoundPageState extends State<CompoundPage> {
+class _CompoundPageState extends State<CompoundPage> with AppAppearanceAware {
   /// 上次填的本金 / 利率 / 期限 / 追加与复利频率。
   final ToolDraft _draft = ToolDraft('compound');
 

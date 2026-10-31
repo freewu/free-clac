@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../core/number_format.dart';
 import '../../../l10n/app_i18n.dart';
 import '../../../l10n/money.dart';
+import '../../../state/app_appearance.dart';
 import '../../../theme/app_theme.dart';
 import 'tax.dart';
 import 'tax_strings.dart';
@@ -29,7 +30,7 @@ class TaxPage extends StatefulWidget {
   State<TaxPage> createState() => _TaxPageState();
 }
 
-class _TaxPageState extends State<TaxPage> {
+class _TaxPageState extends State<TaxPage> with AppAppearanceAware {
   /// 上次填的月薪、缴纳基数、专项附加与各项比例。
   final ToolDraft _draft = ToolDraft('tax');
 

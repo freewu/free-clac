@@ -14,6 +14,8 @@ import 'package:free_clac/ui/tools/bmr/bmr_strings.dart';
 import 'package:free_clac/ui/tools/compound/compound.dart';
 import 'package:free_clac/ui/tools/distance/distance.dart';
 import 'package:free_clac/ui/tools/energy/energy.dart';
+import 'package:free_clac/ui/tools/hourly/hourly.dart';
+import 'package:free_clac/ui/tools/hourly/hourly_strings.dart';
 import 'package:free_clac/ui/tools/interest/interest.dart';
 import 'package:free_clac/ui/tools/loan/loan.dart';
 import 'package:free_clac/ui/tools/pension/pension.dart';
@@ -416,6 +418,183 @@ void main() {
         kBmrStrings[AppLanguage.ja]!.activityLabel(BmrActivity.light),
         '軽い活動',
       );
+    });
+  });
+
+  group('时薪：月薪 ÷ (工作天数 × 每日工时)', () {
+    test('工作日制度的天数：双休 21.75、大小周 23.75、996 25.75', () {
+      expect(baseWorkDays, 21.75);
+      expect(WorkSchedule.standard.daysPerMonth, 21.75);
+      expect(WorkSchedule.alternate.daysPerMonth, 23.75);
+      expect(WorkSchedule.overtime.daysPerMonth, 25.75);
+      expect(WorkSchedule.fromCode('alternate'), WorkSchedule.alternate);
+      expect(WorkSchedule.fromCode('nope'), isNull);
+      expect(WorkSchedule.fromCode(null), isNull);
+    });
+
+    test('时薪 = 月薪 ÷ (天数 × 每日工时)，月工时与日薪同步', () {
+      final result = calculateHourly(
+        monthlySalary: 10000,
+        schedule: WorkSchedule.standard,
+        hoursPerDay: 8,
+      )!;
+      expect(result.workDays, 21.75);
+      expect(result.monthlyHours, closeTo(174, 1e-9));
+      expect(result.hourly, closeTo(57.4712643678, 1e-8));
+      expect(result.dailyWage, closeTo(459.7701149425, 1e-8));
+
+      // 996 每月多上 4 天，时薪被摊薄
+      final overtime = calculateHourly(
+        monthlySalary: 10000,
+        schedule: WorkSchedule.overtime,
+        hoursPerDay: 8,
+      )!;
+      expect(overtime.monthlyHours, closeTo(206, 1e-9));
+      expect(overtime.hourly, closeTo(48.5436893204, 1e-8));
+      expect(overtime.hourly, lessThan(result.hourly));
+
+      // 大小周正好多 2 天
+      final alternate = calculateHourly(
+        monthlySalary: 10000,
+        schedule: WorkSchedule.alternate,
+        hoursPerDay: 8,
+      )!;
+      expect(alternate.monthlyHours, closeTo(190, 1e-9));
+    });
+
+    test('月薪或每日工时越界时返回 null', () {
+      for (final salary in [0.0, -100.0, 2e9, double.nan, double.infinity]) {
+        expect(
+          calculateHourly(
+            monthlySalary: salary,
+            schedule: WorkSchedule.standard,
+            hoursPerDay: 8,
+          ),
+          isNull,
+          reason: '\$salary',
+        );
+      }
+      for (final hours in [0.0, -1.0, 24.5, double.nan]) {
+        expect(
+          calculateHourly(
+            monthlySalary: 10000,
+            schedule: WorkSchedule.standard,
+            hoursPerDay: hours,
+          ),
+          isNull,
+          reason: '\$hours',
+        );
+      }
+      expect(
+        calculateHourly(
+          monthlySalary: 10000,
+          schedule: WorkSchedule.standard,
+          hoursPerDay: 24,
+        ),
+        isNotNull,
+      );
+    });
+
+    test('历史记录：编码解码往返，坏数据返回 null', () {
+      final result = calculateHourly(
+        monthlySalary: 12000,
+        schedule: WorkSchedule.alternate,
+        hoursPerDay: 8,
+      )!;
+      final record = HourlyRecord.fromResult(
+        result,
+        savedAt: DateTime(2025, 3, 9, 18, 5),
+      );
+      final decoded = HourlyRecord.decode(record.encode())!;
+      expect(decoded.hourly, closeTo(result.hourly, 1e-12));
+      expect(decoded.monthlySalary, 12000);
+      expect(decoded.schedule, WorkSchedule.alternate);
+      expect(decoded.hoursPerDay, 8);
+      expect(decoded.monthlyHours, closeTo(result.monthlyHours, 1e-12));
+      expect(decoded.savedAt, DateTime(2025, 3, 9, 18, 5));
+      expect(decoded.sameInputAs(record), isTrue);
+      expect(
+        decoded.sameInputAs(
+          HourlyRecord.fromResult(
+            calculateHourly(
+              monthlySalary: 13000,
+              schedule: WorkSchedule.alternate,
+              hoursPerDay: 8,
+            )!,
+          ),
+        ),
+        isFalse,
+      );
+
+      expect(HourlyRecord.decode(''), isNull);
+      expect(HourlyRecord.decode('{不是 JSON'), isNull);
+      expect(HourlyRecord.decode('[1, 2]'), isNull);
+      // 制度认不出来
+      expect(
+        HourlyRecord.decode(
+          '{"hourly": 57, "salary": 10000, "hours": 8, "schedule": "nope"}',
+        ),
+        isNull,
+      );
+      // 时薪为 0、每日工时超过 24 小时
+      expect(
+        HourlyRecord.decode(
+          '{"hourly": 0, "salary": 10000, "hours": 8, '
+          '"schedule": "standard"}',
+        ),
+        isNull,
+      );
+      expect(
+        HourlyRecord.decode(
+          '{"hourly": 20, "salary": 10000, "hours": 25, '
+          '"schedule": "standard"}',
+        ),
+        isNull,
+      );
+    });
+
+    test('五种语言的页面文案齐全，制度名称按语言取', () {
+      for (final language in AppLanguage.values) {
+        final strings = kHourlyStrings[language];
+        expect(strings, isNotNull, reason: language.code);
+        for (final schedule in WorkSchedule.values) {
+          expect(
+            strings!.scheduleLabel(schedule),
+            isNotEmpty,
+            reason: '\${language.code}.\${schedule.code}',
+          );
+          // 选项里带上每月天数和制度名，21.75 天不会因为语言变化
+          final option = fill(strings.scheduleOption, [
+            strings.scheduleLabel(schedule),
+            '\${schedule.daysPerMonth}',
+          ]);
+          expect(option, contains(strings.scheduleLabel(schedule)));
+          expect(option, contains('\${schedule.daysPerMonth}'));
+        }
+        for (final text in <String>[
+          strings!.title,
+          strings.sectionInput,
+          strings.salary,
+          strings.hoursPerDay,
+          strings.emptyHint,
+          strings.hourlyLabel,
+          strings.formulaNote,
+          strings.sectionHistory,
+          strings.historyEmpty,
+          strings.save,
+        ]) {
+          expect(text, isNotEmpty, reason: '\${language.code} 有空文案');
+        }
+        // 西语用逗号当小数点，两种写法都算对
+        expect(strings.formulaNote, contains(RegExp('21[.,]75')));
+      }
+      // 中文以外的语言不照搬中文制度名
+      expect(
+        kHourlyStrings[AppLanguage.en]!.scheduleLabel(WorkSchedule.alternate),
+        'Alternating weeks',
+      );
+      expect(kHourlyStrings[AppLanguage.zhHans]!.title, '时薪计算器');
+      expect(kHourlyStrings[AppLanguage.zhHant]!.title, '時薪計算器');
     });
   });
 
@@ -1703,6 +1882,70 @@ void main() {
     });
   });
 
+  group('工具历史记录（toolHistory）', () {
+    test('新的排在最前，按上限裁掉最旧的，重建设置能读回', () async {
+      final store = _MemoryStore();
+      final settings = SettingsController(store: store);
+      await settings.load();
+      expect(settings.toolHistoryOf('hourly'), isEmpty);
+
+      await settings.addToolHistory('hourly', '第一条', limit: 3);
+      await settings.addToolHistory('hourly', '第二条', limit: 3);
+      await settings.addToolHistory('hourly', '第三条', limit: 3);
+      expect(settings.toolHistoryOf('hourly'), <String>['第三条', '第二条', '第一条']);
+      // 每个工具只占一个键，值是 JSON 数组
+      expect(store.values.keys.toSet(), <String>{'history.hourly'});
+
+      await settings.addToolHistory('hourly', '第四条', limit: 3);
+      expect(settings.toolHistoryOf('hourly'), <String>['第四条', '第三条', '第二条']);
+
+      final reloaded = SettingsController(store: store);
+      await reloaded.load();
+      expect(reloaded.toolHistoryOf('hourly'), <String>['第四条', '第三条', '第二条']);
+      // 没存过的工具是空表，且不能改到内部列表
+      expect(reloaded.toolHistoryOf('nope'), isEmpty);
+      expect(
+        () => reloaded.toolHistoryOf('hourly').add('x'),
+        throwsUnsupportedError,
+      );
+    });
+
+    test('删单条与清空都写回本地', () async {
+      final store = _MemoryStore();
+      final settings = SettingsController(store: store);
+      await settings.addToolHistory('hourly', 'a');
+      await settings.addToolHistory('hourly', 'b');
+      await settings.addToolHistory('hourly', 'c');
+
+      await settings.removeToolHistory('hourly', 1);
+      expect(settings.toolHistoryOf('hourly'), <String>['c', 'a']);
+      // 越界下标直接忽略
+      await settings.removeToolHistory('hourly', 9);
+      expect(settings.toolHistoryOf('hourly'), <String>['c', 'a']);
+
+      await settings.clearToolHistory('hourly');
+      expect(settings.toolHistoryOf('hourly'), isEmpty);
+      expect(store.values['history.hourly'], '');
+
+      final reloaded = SettingsController(store: store);
+      await reloaded.load();
+      expect(reloaded.toolHistoryOf('hourly'), isEmpty);
+    });
+
+    test('损坏的历史记录不会让设置加载失败', () async {
+      final store = _MemoryStore()
+        ..values['history.hourly'] = '{不是 JSON'
+        ..values['history.loan'] = '["只有一条"]'
+        ..values['history.bmi'] = '{"a": 1}';
+      final settings = SettingsController(store: store);
+      await settings.load();
+      expect(settings.toolHistoryOf('hourly'), isEmpty);
+      // 数组里的非字符串项被跳过，剩下的照常读回
+      expect(settings.toolHistoryOf('loan'), <String>['只有一条']);
+      expect(settings.toolHistoryOf('bmi'), isEmpty);
+    });
+  });
+
   group('设置：主题模式与本地存储', () {
     test('默认跟随系统：按系统明暗给深色或浅色配色', () {
       final settings = SettingsController(store: _MemoryStore());
@@ -2011,10 +2254,10 @@ void main() {
     });
 
     test('养老金、个税与退休年龄只在中文界面展示', () {
-      // 简体、繁体都能看到 16 个工具
+      // 简体、繁体都能看到 17 个工具
       for (final language in [AppLanguage.zhHans, AppLanguage.zhHant]) {
         applyAppLanguage(language);
-        expect(visibleTools.length, 16, reason: language.code);
+        expect(visibleTools.length, 17, reason: language.code);
         expect(
           visibleTools.map((tool) => tool.id),
           containsAll(<String>['pension', 'tax', 'retirement']),
@@ -2022,7 +2265,7 @@ void main() {
       }
       for (final language in [AppLanguage.en, AppLanguage.ja, AppLanguage.es]) {
         applyAppLanguage(language);
-        expect(visibleTools.length, 13, reason: language.code);
+        expect(visibleTools.length, 14, reason: language.code);
         expect(
           visibleTools.map((tool) => tool.id),
           isNot(contains('pension')),
@@ -2045,7 +2288,7 @@ void main() {
         expect(toolById('bmr'), isNotNull, reason: language.code);
       }
       applyAppLanguage(AppLanguage.zhHans);
-      expect(kTools.length, 16);
+      expect(kTools.length, 17);
     });
 
     test('每个工具的语言包都有五种语言，且 id 唯一', () {
@@ -2060,7 +2303,7 @@ void main() {
           expect(text.description, isNotEmpty);
         }
       }
-      expect(kTools.length, 16);
+      expect(kTools.length, 17);
     });
 
     test('工具名称随语言变化，缺翻译时回落简体中文', () {

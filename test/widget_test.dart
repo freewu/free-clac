@@ -25,6 +25,7 @@ import 'package:free_clac/ui/tools/bmi/bmi_page.dart';
 import 'package:free_clac/ui/tools/compound/compound_page.dart';
 import 'package:free_clac/ui/tools/distance/distance_page.dart';
 import 'package:free_clac/ui/tools/energy/energy_page.dart';
+import 'package:free_clac/ui/tools/hourly/hourly_page.dart';
 import 'package:free_clac/ui/tools/interest/interest_page.dart';
 import 'package:free_clac/ui/tools/loan/loan_page.dart';
 import 'package:free_clac/ui/tools/pension/pension_page.dart';
@@ -345,6 +346,167 @@ void main() {
     expect(tester.widget<Text>(find.byKey(const Key('bmr-bmr'))).data, '1402');
     expect(tester.widget<Text>(find.byKey(const Key('bmr-tdee'))).data, '2172');
     expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('时薪：默认 10000 / 8 小时 → 57.47，切 996 后摊薄，存进历史能对比', (tester) async {
+    tester.view.physicalSize = const Size(1440, 1200);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+    final store = _MemoryStore();
+    final settings = SettingsController(store: store);
+    await tester.pumpWidget(FreeCalcApp(initialTab: 2, settings: settings));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('时薪计算器'));
+    await tester.pumpAndSettle();
+    expect(find.byType(HourlyPage), findsOneWidget);
+
+    // 10000 ÷ (21.75 × 8) = 57.47
+    expect(
+      tester.widget<Text>(find.byKey(const Key('hourly-value'))).data,
+      '¥ 57.47',
+    );
+    // 月工时 174 小时
+    expect(find.text('174 小时'), findsOneWidget);
+    expect(find.byKey(const Key('hourly-record-0')), findsNothing);
+
+    // 换成 996：每月多上 4 天 → 206 小时，时薪摊薄到 48.54
+    await tester.tap(find.byKey(const Key('hourly-schedule-overtime')));
+    await tester.pumpAndSettle();
+    expect(
+      tester.widget<Text>(find.byKey(const Key('hourly-value'))).data,
+      '¥ 48.54',
+    );
+    expect(find.text('206 小时'), findsOneWidget);
+
+    // 记一笔：历史里出现 996 那条，与当前结果持平
+    await tester.tap(find.byKey(const Key('hourly-save')));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('hourly-record-0')), findsOneWidget);
+    expect(find.text('1 条'), findsOneWidget);
+    expect(_deltaText(tester, 0), '与当前相同');
+    expect(store.values.keys, contains('history.hourly'));
+
+    // 月薪改成 12000 → 当前 58.25，历史那条比当前低 9.71
+    await tester.enterText(find.byKey(const Key('hourly-salary')), '12000');
+    await tester.pumpAndSettle();
+    expect(
+      tester.widget<Text>(find.byKey(const Key('hourly-value'))).data,
+      '¥ 58.25',
+    );
+    expect(_deltaText(tester, 0), '比当前低 ¥ 9.71');
+
+    // 再记一笔，新的排在最前；当前结果与它持平
+    await tester.tap(find.byKey(const Key('hourly-save')));
+    await tester.pumpAndSettle();
+    expect(find.text('2 条'), findsOneWidget);
+    expect(_deltaText(tester, 0), '与当前相同');
+    expect(_deltaText(tester, 1), '比当前低 ¥ 9.71');
+
+    // 重复点保存不会再加一条
+    await tester.tap(find.byKey(const Key('hourly-save')));
+    await tester.pumpAndSettle();
+    expect(find.text('2 条'), findsOneWidget);
+
+    // 点历史那条把它填回输入框：月薪 10000、996、8 小时
+    await tester.tap(find.byKey(const Key('hourly-record-1')));
+    await tester.pumpAndSettle();
+    expect(
+      tester.widget<Text>(find.byKey(const Key('hourly-value'))).data,
+      '¥ 48.54',
+    );
+
+    // 删单条
+    await tester.tap(find.byKey(const Key('hourly-delete-0')));
+    await tester.pumpAndSettle();
+    expect(find.text('1 条'), findsOneWidget);
+
+    // 清空要确认
+    await tester.tap(find.byKey(const Key('hourly-clear')));
+    await tester.pumpAndSettle();
+    expect(find.text('清空历史记录？'), findsOneWidget);
+    await tester.tap(find.byKey(const Key('hourly-clear-confirm')));
+    await tester.pumpAndSettle();
+    expect(find.textContaining('还没有记录'), findsOneWidget);
+    expect(store.values['history.hourly'], '');
+
+    expect(tester.takeException(), isNull);
+    await tester.pump(const Duration(seconds: 1));
+  });
+
+  testWidgets('时薪：历史记录下次进入还在，设置里换语言文案跟着变', (tester) async {
+    tester.view.physicalSize = const Size(1440, 1200);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+    final store = _MemoryStore();
+    final settings = SettingsController(store: store);
+
+    await tester.pumpWidget(
+      FreeCalcApp(
+        key: UniqueKey(),
+        initialTab: 2,
+        initialTool: 'hourly',
+        settings: settings,
+      ),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('hourly-save')));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('hourly-record-0')), findsOneWidget);
+
+    // 重新进入（新的设置实例，从本地读回历史）
+    final reloaded = SettingsController(store: store);
+    await reloaded.load();
+    await tester.pumpWidget(
+      FreeCalcApp(
+        key: UniqueKey(),
+        initialTab: 2,
+        initialTool: 'hourly',
+        settings: reloaded,
+      ),
+    );
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('hourly-record-0')), findsOneWidget);
+    expect(
+      tester.widget<Text>(find.byKey(const Key('hourly-value'))).data,
+      '¥ 57.47',
+    );
+
+    // 切成英文：页面文案与计算结果都跟着变
+    await reloaded.setLanguage(AppLanguage.en);
+    await tester.pumpAndSettle();
+    expect(find.text('Hourly wage'), findsWidgets);
+    expect(find.text('Monthly salary'), findsOneWidget);
+    expect(find.text('Save this result'), findsOneWidget);
+    expect(
+      tester.widget<Text>(find.byKey(const Key('hourly-value'))).data,
+      r'$ 57.47',
+    );
+    expect(tester.takeException(), isNull);
+    await tester.pump(const Duration(seconds: 1));
+  });
+
+  testWidgets('手机尺寸：时薪页不溢出', (tester) async {
+    tester.view.physicalSize = const Size(390, 844);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+
+    await tester.pumpWidget(
+      const FreeCalcApp(initialTab: 2, initialTool: 'hourly'),
+    );
+    await tester.pumpAndSettle();
+    expect(find.byType(HourlyPage), findsOneWidget);
+    expect(find.byType(NavigationBar), findsOneWidget);
+    expect(tester.takeException(), isNull);
+
+    // 滚到底看历史记录（记一笔后才有内容）
+    await tester.tap(find.byKey(const Key('hourly-save')));
+    await tester.pumpAndSettle();
+    await tester.drag(find.byType(HourlyPage), const Offset(0, -400));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('hourly-record-0')), findsOneWidget);
+    expect(tester.takeException(), isNull);
+    await tester.pump(const Duration(seconds: 1));
   });
 
   testWidgets('工具页：复利计算显示本息与逐年表格', (tester) async {
@@ -786,7 +948,7 @@ void main() {
     // 养老金与个税只服务中国社保 / 税法，日语界面不展示
     expect(find.text('年金計算'), findsNothing);
     expect(find.text('所得税'), findsNothing);
-    expect(find.text('13 個のアプリ'), findsOneWidget);
+    expect(find.text('14 個のアプリ'), findsOneWidget);
   });
 
   testWidgets('工具页：切回简体中文后养老金、个税与退休年龄又出现了', (tester) async {
@@ -799,8 +961,8 @@ void main() {
     );
     await tester.pumpWidget(FreeCalcApp(settings: settings, initialTab: 2));
     await tester.pumpAndSettle();
-    // 英文界面只有 12 个工具
-    expect(find.text('13 apps'), findsOneWidget);
+    // 英文界面只有 14 个工具
+    expect(find.text('14 apps'), findsOneWidget);
     expect(find.text('Pension calculator'), findsNothing);
     expect(find.text('Income tax'), findsNothing);
 
@@ -814,7 +976,7 @@ void main() {
 
     await tester.tap(find.text('工具').last);
     await tester.pumpAndSettle();
-    expect(find.text('16 个应用'), findsOneWidget);
+    expect(find.text('17 个应用'), findsOneWidget);
     expect(find.text('养老金计算器'), findsOneWidget);
     expect(find.text('退休年龄计算器'), findsOneWidget);
     expect(find.text('个人所得税'), findsOneWidget);
@@ -2572,6 +2734,16 @@ class _FakeExporter extends PlotExporter {
     );
   }
 }
+
+/// 测试辅助：时薪历史记录第 [index] 条的对比角标文案。
+String? _deltaText(WidgetTester tester, int index) => tester
+    .widget<Text>(
+      find.descendant(
+        of: find.byKey(Key('hourly-delta-$index')),
+        matching: find.byType(Text),
+      ),
+    )
+    .data;
 
 /// 取绘图画布当前使用的绘制器。
 PlotPainter _plotPainter(WidgetTester tester) => tester

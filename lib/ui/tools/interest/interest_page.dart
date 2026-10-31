@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../state/app_appearance.dart';
 import '../../../theme/app_theme.dart';
 import '../../../l10n/app_i18n.dart';
 import '../../../l10n/money.dart';
@@ -31,7 +32,7 @@ enum _Mode {
   };
 }
 
-class _InterestPageState extends State<InterestPage> {
+class _InterestPageState extends State<InterestPage> with AppAppearanceAware {
   /// 上次填的本金 / 期付 / 年化率与选的方向、周期。
   final ToolDraft _draft = ToolDraft('interest');
 

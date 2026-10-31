@@ -77,6 +77,9 @@ class SettingsController extends ChangeNotifier {
   /// 换算工具设置键的前缀，完整键如 `convert.distance.system`。
   static const String _convertPrefix = 'convert.';
 
+  /// 工具历史记录的键前缀，完整键如 `history.hourly`（值是一个 JSON 数组）。
+  static const String _historyPrefix = 'history.';
+
   /// 工具页输入草稿的键前缀，完整键如 `tool.loan`（值是一段 JSON）。
   static const String _draftPrefix = 'tool.';
 
@@ -118,6 +121,11 @@ class SettingsController extends ChangeNotifier {
   /// 各工具页上次填的输入（工具 id → 字段 → 值），重新进入时填回。
   final Map<String, Map<String, String>> toolDrafts =
       <String, Map<String, String>>{};
+
+  /// 各工具的历史记录（工具 id → 记录，最近的在前，每条是一段 JSON）。
+  ///
+  /// 目前只有「时薪计算器」用，存法保持通用：工具自己负责编解码。
+  final Map<String, List<String>> toolHistory = <String, List<String>>{};
 
   /// 待写盘的草稿（工具 id → 定时器）。
   final Map<String, Timer> _draftTimers = <String, Timer>{};
@@ -212,6 +220,13 @@ class SettingsController extends ChangeNotifier {
       final parsed = _decodeDraft(entry.value);
       if (parsed == null || parsed.isEmpty) continue;
       toolDrafts[id] = parsed;
+    }
+    for (final entry in values.entries) {
+      if (!entry.key.startsWith(_historyPrefix)) continue;
+      final id = entry.key.substring(_historyPrefix.length);
+      final parsed = _decodeHistory(entry.value);
+      if (parsed == null || parsed.isEmpty) continue;
+      toolHistory[id] = parsed;
     }
     if (changed) notifyListeners();
   }
@@ -417,6 +432,62 @@ class SettingsController extends ChangeNotifier {
       '$_draftPrefix$toolId',
       draft == null || draft.isEmpty ? '' : jsonEncode(draft),
     );
+  }
+
+  /// 某个工具的历史记录（最近的在前），没存过时为空表。
+  List<String> toolHistoryOf(String toolId) =>
+      List<String>.unmodifiable(toolHistory[toolId] ?? const <String>[]);
+
+  /// 记一条历史记录（最新的排在最前），超过 [limit] 条时丢掉最旧的。
+  Future<void> addToolHistory(
+    String toolId,
+    String entry, {
+    int limit = 20,
+  }) async {
+    final list = toolHistory.putIfAbsent(toolId, () => <String>[]);
+    list.insert(0, entry);
+    if (list.length > limit) list.removeRange(limit, list.length);
+    notifyListeners();
+    await _writeHistory(toolId);
+  }
+
+  /// 删掉某个工具的第 [index] 条历史记录。
+  Future<void> removeToolHistory(String toolId, int index) async {
+    final list = toolHistory[toolId];
+    if (list == null || index < 0 || index >= list.length) return;
+    list.removeAt(index);
+    if (list.isEmpty) toolHistory.remove(toolId);
+    notifyListeners();
+    await _writeHistory(toolId);
+  }
+
+  /// 清空某个工具的历史记录。
+  Future<void> clearToolHistory(String toolId) async {
+    if (toolHistory.remove(toolId) == null) return;
+    notifyListeners();
+    await _writeHistory(toolId);
+  }
+
+  Future<void> _writeHistory(String toolId) async {
+    final list = toolHistory[toolId];
+    await _store.write(
+      '$_historyPrefix$toolId',
+      list == null || list.isEmpty ? '' : jsonEncode(list),
+    );
+  }
+
+  static List<String>? _decodeHistory(String raw) {
+    if (raw.isEmpty) return null;
+    try {
+      final decoded = jsonDecode(raw);
+      if (decoded is! List) return null;
+      return <String>[
+        for (final entry in decoded)
+          if (entry is String) entry,
+      ];
+    } on Object {
+      return null;
+    }
   }
 
   static Map<String, String>? _decodeDraft(String raw) {

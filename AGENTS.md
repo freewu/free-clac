@@ -69,6 +69,17 @@ cmd.exe /c "cd /d $(wslpath -w "$PWD") && flutter test"
   设置页改默认值（`setBmiUnit`、`setBmrGender`、`setConvertSystem` 等）必须调 `clearToolDraft()`
   清掉对应草稿，否则旧数值会被新单位解释。
 - **工具相关设置**（如 BMI 默认单位）放在 `lib/ui/tools/<tool>/setting.dart`，由设置页引用；设置项本身存在 `SettingsController`，页面用不到 `BuildContext` 时读全局 `currentSettings`。六个单位换算工具也各自有 `<tool>/setting.dart`（`LengthSetting`、`AreaSetting`…），只包一层公共外壳 `lib/ui/tools/widgets/convert_setting_card.dart`（默认体系 + 结果 tab 两个下拉框），存储键是 `convert.<工具 id>.system` / `convert.<工具 id>.tab`，`UnitConvertPage` 读同一份值。
+- **工具的历史记录走通用接口**：需要「和历史比对」的工具（如时薪计算器）不要自己写存储，
+  统一调 `SettingsController` 的 `addToolHistory(toolId, entry, {limit})` /
+  `toolHistoryOf(toolId)` / `removeToolHistory(toolId, index)` / `clearToolHistory(toolId)`，
+  条目是工具自己编码好的一行字符串（`HourlyRecord.encode()` 那种单行 JSON），
+  键固定为 `history.<工具 id>`，值是 JSON 数组，满了从最旧的截断。
+  界面上的「保存 / 删除 / 清空」直接操作它，清空要弹确认框。
+- **工具页的 State 一律 `with AppAppearanceAware`**（`lib/state/app_appearance.dart`）：
+  工具页活在内嵌 `Navigator` 的路由里，`ToolInfo.pageBuilder` 交下来的多是
+  `const XxxPage()`，切主题 / 语言时 `ListenableBuilder` 拿到的还是同一个实例，
+  Flutter 会跳过 `State.build`，页面文案就停在旧语言。加了 mixin 才会真正重建。
+  新增工具页时别忘了这一句，`test/widget_test.dart` 里有「打开着切语言」的用例兜底。
 - **只在部分语言提供的工具**（如养老金、个税只适用中国口径）在 `ToolInfo.availableIn` 里声明语言集合；工具页与 `toolById` 都只看 `visibleTools`，别直接遍历 `kTools`。
 - **工具页内部文案也走多语言**：每个工具目录再放一份 `<tool>_strings.dart`——一个带 `required` 具名字段的
   `class <Tool>Strings` + `const Map<AppLanguage, <Tool>Strings> k<Tool>Strings` + `<Tool>Strings get <tool>Strings`

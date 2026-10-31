@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../core/number_format.dart';
 import '../../../l10n/app_i18n.dart';
 import '../../../l10n/money.dart';
+import '../../../state/app_appearance.dart';
 import '../../../theme/app_theme.dart';
 import 'pension.dart';
 import 'pension_strings.dart';
@@ -19,7 +20,7 @@ class PensionPage extends StatefulWidget {
   State<PensionPage> createState() => _PensionPageState();
 }
 
-class _PensionPageState extends State<PensionPage> {
+class _PensionPageState extends State<PensionPage> with AppAppearanceAware {
   /// 上次填的各项参数与选的退休年龄。
   final ToolDraft _draft = ToolDraft('pension');
 

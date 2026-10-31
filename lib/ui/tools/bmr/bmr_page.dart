@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../core/number_format.dart';
 import '../../../l10n/app_i18n.dart';
 import '../../../state/settings_controller.dart';
+import '../../../state/app_appearance.dart';
 import '../../../theme/app_theme.dart';
 import '../tool_draft.dart';
 import '../widgets/tool_bars.dart';
@@ -20,7 +21,7 @@ class BmrPage extends StatefulWidget {
   State<BmrPage> createState() => _BmrPageState();
 }
 
-class _BmrPageState extends State<BmrPage> {
+class _BmrPageState extends State<BmrPage> with AppAppearanceAware {
   /// 上次填的年龄身高体重与选的性别 / 活动水平。
   final ToolDraft _draft = ToolDraft('bmr');
 
