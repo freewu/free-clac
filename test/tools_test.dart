@@ -422,14 +422,30 @@ void main() {
   });
 
   group('时薪：月薪 ÷ (工作天数 × 每日工时)', () {
-    test('工作日制度的天数：双休 21.75、大小周 23.75、996 25.75', () {
+    test('工作日制度的天数与每日工时：双休 21.75、大小周 23.75、996 25.75、995 同双休', () {
       expect(baseWorkDays, 21.75);
       expect(WorkSchedule.standard.daysPerMonth, 21.75);
       expect(WorkSchedule.alternate.daysPerMonth, 23.75);
       expect(WorkSchedule.overtime.daysPerMonth, 25.75);
+      // 995 只改工时，不加班，天数与双休一样
+      expect(WorkSchedule.nineFiveFive.daysPerMonth, baseWorkDays);
+      // 996 / 995 每天按 10 小时算（去掉午休），双休与大小周 8 小时
+      expect(WorkSchedule.standard.hoursPerDay, 8);
+      expect(WorkSchedule.alternate.hoursPerDay, 8);
+      expect(WorkSchedule.overtime.hoursPerDay, 10);
+      expect(WorkSchedule.nineFiveFive.hoursPerDay, 10);
       expect(WorkSchedule.fromCode('alternate'), WorkSchedule.alternate);
+      expect(
+        WorkSchedule.fromCode('nine_five_five'),
+        WorkSchedule.nineFiveFive,
+      );
       expect(WorkSchedule.fromCode('nope'), isNull);
       expect(WorkSchedule.fromCode(null), isNull);
+      // 四个制度的 code 互不相同，持久化的旧记录也能认出来
+      expect(
+        WorkSchedule.values.map((schedule) => schedule.code).toSet().length,
+        WorkSchedule.values.length,
+      );
     });
 
     test('时薪 = 月薪 ÷ (天数 × 每日工时)，月工时与日薪同步', () {
@@ -443,15 +459,26 @@ void main() {
       expect(result.hourly, closeTo(57.4712643678, 1e-8));
       expect(result.dailyWage, closeTo(459.7701149425, 1e-8));
 
-      // 996 每月多上 4 天，时薪被摊薄
+      // 996 每月多上 4 天、每天 10 小时 → 257.5 小时，时薪被摊薄
       final overtime = calculateHourly(
         monthlySalary: 10000,
         schedule: WorkSchedule.overtime,
-        hoursPerDay: 8,
+        hoursPerDay: WorkSchedule.overtime.hoursPerDay,
       )!;
-      expect(overtime.monthlyHours, closeTo(206, 1e-9));
-      expect(overtime.hourly, closeTo(48.5436893204, 1e-8));
+      expect(overtime.monthlyHours, closeTo(257.5, 1e-9));
+      expect(overtime.hourly, closeTo(38.8349514563, 1e-8));
       expect(overtime.hourly, lessThan(result.hourly));
+
+      // 995：天数与双休一样，只是每天 10 小时 → 217.5 小时
+      final nineFive = calculateHourly(
+        monthlySalary: 10000,
+        schedule: WorkSchedule.nineFiveFive,
+        hoursPerDay: WorkSchedule.nineFiveFive.hoursPerDay,
+      )!;
+      expect(nineFive.monthlyHours, closeTo(217.5, 1e-9));
+      expect(nineFive.hourly, closeTo(45.9770114943, 1e-8));
+      // 同样是每天 10 小时，少上 4 天就比 996 高
+      expect(nineFive.hourly, greaterThan(overtime.hourly));
 
       // 大小周正好多 2 天
       final alternate = calculateHourly(
@@ -587,6 +614,9 @@ void main() {
         }
         // 西语用逗号当小数点，两种写法都算对
         expect(strings.formulaNote, contains(RegExp('21[.,]75')));
+        expect(strings.formulaNote, contains('10'));
+        expect(strings.scheduleHint, isNotEmpty);
+        expect(strings.scheduleLabel(WorkSchedule.nineFiveFive), '995');
       }
       // 中文以外的语言不照搬中文制度名
       expect(

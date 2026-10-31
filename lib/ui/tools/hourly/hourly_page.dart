@@ -69,6 +69,14 @@ class _HourlyPageState extends State<HourlyPage> with AppAppearanceAware {
       );
   }
 
+  /// 换工作日制度：天数变了，每日工时也换成这种制度的常规值（仍可手动改）。
+  void _selectSchedule(WorkSchedule schedule) {
+    final hours = formatNumber(schedule.hoursPerDay, significantDigits: 4);
+    _draft.setEnum('schedule', schedule);
+    if (_hours.text != hours) _hours.text = hours;
+    setState(() => _schedule = schedule);
+  }
+
   Future<void> _save(HourlyResult result) async {
     final s = hourlyStrings;
     final record = HourlyRecord.fromResult(result);
@@ -220,16 +228,22 @@ class _HourlyPageState extends State<HourlyPage> with AppAppearanceAware {
                                 style: const TextStyle(fontSize: 11.5),
                               ),
                               selected: _schedule == schedule,
-                              onSelected: (_) {
-                                _draft.setEnum('schedule', schedule);
-                                setState(() => _schedule = schedule);
-                              },
+                              onSelected: (_) => _selectSchedule(schedule),
                               visualDensity: VisualDensity.compact,
                               labelPadding: const EdgeInsets.symmetric(
                                 horizontal: 4,
                               ),
                             ),
                         ],
+                      ),
+                      const SizedBox(height: 6),
+                      Text(
+                        s.scheduleHint,
+                        style: TextStyle(
+                          color: AppColors.textSecondary,
+                          fontSize: 10.5,
+                          height: 1.5,
+                        ),
                       ),
                     ],
                   ),

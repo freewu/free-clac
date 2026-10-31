@@ -348,7 +348,9 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('时薪：默认 10000 / 8 小时 → 57.47，切 996 后摊薄，存进历史能对比', (tester) async {
+  testWidgets('时薪：默认 10000 / 8 小时 → 57.47，切 996 / 995 会改每日工时，存进历史能对比', (
+    tester,
+  ) async {
     tester.view.physicalSize = const Size(1440, 1200);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.reset);
@@ -370,14 +372,28 @@ void main() {
     expect(find.text('174 小时'), findsOneWidget);
     expect(find.byKey(const Key('hourly-record-0')), findsNothing);
 
-    // 换成 996：每月多上 4 天 → 206 小时，时薪摊薄到 48.54
+    // 换成 996：每月多上 4 天、每天 10 小时 → 257.5 小时，时薪摊薄到 38.83
     await tester.tap(find.byKey(const Key('hourly-schedule-overtime')));
     await tester.pumpAndSettle();
+    expect(_hoursText(tester), '10');
     expect(
       tester.widget<Text>(find.byKey(const Key('hourly-value'))).data,
-      '¥ 48.54',
+      '¥ 38.83',
     );
-    expect(find.text('206 小时'), findsOneWidget);
+    expect(find.text('257.5 小时'), findsOneWidget);
+
+    // 995 也按每天 10 小时，但天数回到 21.75 → 217.5 小时、45.98
+    await tester.tap(find.byKey(const Key('hourly-schedule-nine_five_five')));
+    await tester.pumpAndSettle();
+    expect(_hoursText(tester), '10');
+    expect(find.text('217.5 小时'), findsOneWidget);
+    expect(
+      tester.widget<Text>(find.byKey(const Key('hourly-value'))).data,
+      '¥ 45.98',
+    );
+    // 回到 996 继续后面的历史对比
+    await tester.tap(find.byKey(const Key('hourly-schedule-overtime')));
+    await tester.pumpAndSettle();
 
     // 记一笔：历史里出现 996 那条，与当前结果持平
     await tester.tap(find.byKey(const Key('hourly-save')));
@@ -387,33 +403,61 @@ void main() {
     expect(_deltaText(tester, 0), '与当前相同');
     expect(store.values.keys, contains('history.hourly'));
 
-    // 月薪改成 12000 → 当前 58.25，历史那条比当前低 9.71
+    // 月薪改成 12000 → 当前 46.60，历史那条比当前低 7.77
     await tester.enterText(find.byKey(const Key('hourly-salary')), '12000');
     await tester.pumpAndSettle();
     expect(
       tester.widget<Text>(find.byKey(const Key('hourly-value'))).data,
-      '¥ 58.25',
+      '¥ 46.60',
     );
-    expect(_deltaText(tester, 0), '比当前低 ¥ 9.71');
+    expect(_deltaText(tester, 0), '比当前低 ¥ 7.77');
 
     // 再记一笔，新的排在最前；当前结果与它持平
     await tester.tap(find.byKey(const Key('hourly-save')));
     await tester.pumpAndSettle();
     expect(find.text('2 条'), findsOneWidget);
     expect(_deltaText(tester, 0), '与当前相同');
-    expect(_deltaText(tester, 1), '比当前低 ¥ 9.71');
+    expect(_deltaText(tester, 1), '比当前低 ¥ 7.77');
 
     // 重复点保存不会再加一条
     await tester.tap(find.byKey(const Key('hourly-save')));
     await tester.pumpAndSettle();
     expect(find.text('2 条'), findsOneWidget);
 
-    // 点历史那条把它填回输入框：月薪 10000、996、8 小时
+    // 切到 995：当前涨到 55.17，两条历史都比现在低
+    await tester.tap(find.byKey(const Key('hourly-schedule-nine_five_five')));
+    await tester.pumpAndSettle();
+    expect(
+      tester.widget<Text>(find.byKey(const Key('hourly-value'))).data,
+      '¥ 55.17',
+    );
+    expect(_deltaText(tester, 0), '比当前低 ¥ 8.57');
+    expect(_deltaText(tester, 1), '比当前低 ¥ 16.34');
+
+    // 点历史那条把它填回输入框：月薪 10000、996、10 小时
     await tester.tap(find.byKey(const Key('hourly-record-1')));
     await tester.pumpAndSettle();
     expect(
       tester.widget<Text>(find.byKey(const Key('hourly-value'))).data,
-      '¥ 48.54',
+      '¥ 38.83',
+    );
+    expect(_hoursText(tester), '10');
+
+    // 选制度会覆盖每日工时，但之后手动改回来仍然按手动的算
+    await tester.enterText(find.byKey(const Key('hourly-hours')), '12');
+    await tester.pumpAndSettle();
+    expect(
+      tester.widget<Text>(find.byKey(const Key('hourly-value'))).data,
+      '¥ 32.36',
+    );
+    expect(find.text('309 小时'), findsOneWidget);
+    // 再点一次 996（同一个制度）会把工时重新填回 10
+    await tester.tap(find.byKey(const Key('hourly-schedule-standard')));
+    await tester.pumpAndSettle();
+    expect(_hoursText(tester), '8');
+    expect(
+      tester.widget<Text>(find.byKey(const Key('hourly-value'))).data,
+      '¥ 57.47',
     );
 
     // 删单条
@@ -2734,6 +2778,17 @@ class _FakeExporter extends PlotExporter {
     );
   }
 }
+
+/// 测试辅助：时薪页「每日工作时长」输入框里的文字。
+String _hoursText(WidgetTester tester) => tester
+    .widget<TextField>(
+      find.descendant(
+        of: find.byKey(const Key('hourly-hours')),
+        matching: find.byType(TextField),
+      ),
+    )
+    .controller!
+    .text;
 
 /// 测试辅助：时薪历史记录第 [index] 条的对比角标文案。
 String? _deltaText(WidgetTester tester, int index) => tester

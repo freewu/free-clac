@@ -18,6 +18,8 @@ class HourlyStrings {
     required this.scheduleStandard,
     required this.scheduleAlternate,
     required this.scheduleOvertime,
+    required this.scheduleNineFiveFive,
+    required this.scheduleHint,
     required this.emptyHint,
     required this.hourlyLabel,
     required this.hourlySuffix,
@@ -66,6 +68,12 @@ class HourlyStrings {
   final String scheduleStandard;
   final String scheduleAlternate;
   final String scheduleOvertime;
+
+  /// 995：天数同双休，每天 10 小时。
+  final String scheduleNineFiveFive;
+
+  /// 制度下方的说明：选制度会顺带填上该制度的每日工时。
+  final String scheduleHint;
 
   /// 输入不完整时的提示。
   final String emptyHint;
@@ -142,6 +150,7 @@ class HourlyStrings {
     WorkSchedule.standard => scheduleStandard,
     WorkSchedule.alternate => scheduleAlternate,
     WorkSchedule.overtime => scheduleOvertime,
+    WorkSchedule.nineFiveFive => scheduleNineFiveFive,
   };
 }
 
@@ -168,6 +177,8 @@ const HourlyStrings hourlyStringsZh = HourlyStrings(
   scheduleStandard: '双休',
   scheduleAlternate: '大小周',
   scheduleOvertime: '996',
+  scheduleNineFiveFive: '995',
+  scheduleHint: '选制度会自动填上每日工时：双休 / 大小周 8 小时，996 / 995 10 小时。',
   emptyHint: '填好月薪和每天的工作时长，就知道自己一小时值多少钱。',
   hourlyLabel: '时薪',
   hourlySuffix: '/ 小时',
@@ -194,7 +205,7 @@ const HourlyStrings hourlyStringsZh = HourlyStrings(
   restoredHint: '已把这组月薪和工时填回上面。',
   formulaNote:
       '时薪 = 月薪 ÷ (工作天数 × 每日工作时长)。工作天数按 21.75 天/月，'
-      '大小周 +2 天、996 +4 天。',
+      '大小周 +2 天、996 +4 天；995 天数同双休，996 与 995 都按每天 10 小时算。',
 );
 
 const HourlyStrings hourlyStringsZhHant = HourlyStrings(
@@ -208,6 +219,8 @@ const HourlyStrings hourlyStringsZhHant = HourlyStrings(
   scheduleStandard: '雙休',
   scheduleAlternate: '大小週',
   scheduleOvertime: '996',
+  scheduleNineFiveFive: '995',
+  scheduleHint: '選制度會自動填上每日工時：雙休 / 大小週 8 小時，996 / 995 10 小時。',
   emptyHint: '填好月薪和每天的工作時長，就知道自己一小時值多少錢。',
   hourlyLabel: '時薪',
   hourlySuffix: '/ 小時',
@@ -234,7 +247,7 @@ const HourlyStrings hourlyStringsZhHant = HourlyStrings(
   restoredHint: '已把這組月薪和工時填回上面。',
   formulaNote:
       '時薪 = 月薪 ÷ (工作天數 × 每日工作時長)。工作天數按 21.75 天/月，'
-      '大小週 +2 天、996 +4 天。',
+      '大小週 +2 天、996 +4 天；995 天數同雙休，996 與 995 都按每天 10 小時算。',
 );
 
 const HourlyStrings hourlyStringsEn = HourlyStrings(
@@ -248,6 +261,10 @@ const HourlyStrings hourlyStringsEn = HourlyStrings(
   scheduleStandard: 'Two days off',
   scheduleAlternate: 'Alternating weeks',
   scheduleOvertime: '996',
+  scheduleNineFiveFive: '995',
+  scheduleHint:
+      'Picking a schedule fills in its usual daily hours: 8 for two days off '
+      'and alternating weeks, 10 for 996 and 995.',
   emptyHint:
       'Enter your salary and daily hours to see what one hour of your time '
       'is worth.',
@@ -278,7 +295,8 @@ const HourlyStrings hourlyStringsEn = HourlyStrings(
   restoredHint: 'Put this salary and hours back in the fields above.',
   formulaNote:
       'Hourly wage = salary ÷ (work days × hours per day). Work days use '
-      '21.75 per month, +2 for alternating weeks and +4 for 996.',
+      '21.75 per month, +2 for alternating weeks and +4 for 996. 995 keeps '
+      'the same days as two days off; 996 and 995 both count 10 hours a day.',
 );
 
 const HourlyStrings hourlyStringsJa = HourlyStrings(
@@ -292,6 +310,9 @@ const HourlyStrings hourlyStringsJa = HourlyStrings(
   scheduleStandard: '完全週休 2 日',
   scheduleAlternate: '隔週休 2 日',
   scheduleOvertime: '996',
+  scheduleNineFiveFive: '995',
+  scheduleHint:
+      '勤務体系を選ぶと 1 日の勤務時間も入ります（週休 2 日・隔週休 2 日は 8 時間、996 と 995 は 10 時間）。',
   emptyHint: '月給と 1 日の勤務時間を入れると、自分の 1 時間の値打ちが出ます。',
   hourlyLabel: '時給',
   hourlySuffix: '/ 時間',
@@ -318,7 +339,8 @@ const HourlyStrings hourlyStringsJa = HourlyStrings(
   restoredHint: 'この月給と勤務時間を入力欄に戻しました。',
   formulaNote:
       '時給 = 月給 ÷（勤務日数 × 1 日の勤務時間）。勤務日数は月 21.75 日、'
-      '隔週休 2 日は +2 日、996 は +4 日。',
+      '隔週休 2 日は +2 日、996 は +4 日。995 は週休 2 日と同じ日数で、'
+      '996 と 995 はどちらも 1 日 10 時間で計算します。',
 );
 
 const HourlyStrings hourlyStringsEs = HourlyStrings(
@@ -332,6 +354,10 @@ const HourlyStrings hourlyStringsEs = HourlyStrings(
   scheduleStandard: 'Fin de semana libre',
   scheduleAlternate: 'Semanas alternas',
   scheduleOvertime: '996',
+  scheduleNineFiveFive: '995',
+  scheduleHint:
+      'Al elegir una jornada se rellenan sus horas habituales: 8 para fin de '
+      'semana libre y semanas alternas, 10 para 996 y 995.',
   emptyHint:
       'Introduce tu sueldo y las horas diarias para ver cuánto vale una hora '
       'de tu tiempo.',
@@ -363,5 +389,6 @@ const HourlyStrings hourlyStringsEs = HourlyStrings(
   restoredHint: 'He vuelto a poner este sueldo y estas horas arriba.',
   formulaNote:
       'Salario por hora = sueldo ÷ (días × horas). Los días son 21,75 al mes, '
-      '+2 con semanas alternas y +4 con 996.',
+      '+2 con semanas alternas y +4 con 996. 995 mantiene los días de fin de '
+      'semana libre; 996 y 995 cuentan 10 horas al día.',
 );

@@ -6,23 +6,33 @@ import 'dart:convert';
 /// 月计薪天数（双休）：人社部口径 21.75 天。
 const double baseWorkDays = 21.75;
 
-/// 工作日制度：月工作天数在 21.75 天基础上叠加。
+/// 工作日制度：月工作天数在 21.75 天基础上叠加，每日工时也有惯例值。
 ///
-/// * 双休：21.75 天
-/// * 大小周：每月多上 2 天 → 23.75 天
-/// * 996：每月多上 4 天 → 25.75 天
+/// * 双休：21.75 天，每天 8 小时
+/// * 大小周：每月多上 2 天 → 23.75 天，每天 8 小时
+/// * 996：每月多上 4 天 → 25.75 天，每天 10 小时（去掉午休）
+/// * 995：天数同双休 → 21.75 天，每天 10 小时
 enum WorkSchedule {
-  standard('双休', baseWorkDays, 'standard'),
-  alternate('大小周', baseWorkDays + 2, 'alternate'),
-  overtime('996', baseWorkDays + 4, 'overtime');
+  standard('双休', baseWorkDays, 8, 'standard'),
+  alternate('大小周', baseWorkDays + 2, 8, 'alternate'),
+  overtime('996', baseWorkDays + 4, 10, 'overtime'),
+  nineFiveFive('995', baseWorkDays, 10, 'nine_five_five');
 
-  const WorkSchedule(this.label, this.daysPerMonth, this.code);
+  const WorkSchedule(
+    this.label,
+    this.daysPerMonth,
+    this.hoursPerDay,
+    this.code,
+  );
 
   /// 数据层的中文名（界面文案走 `HourlyStrings.scheduleLabel()`）。
   final String label;
 
   /// 每月的工作天数。
   final double daysPerMonth;
+
+  /// 这种制度常见的每日工作时长，选制度时自动填进输入框。
+  final double hoursPerDay;
 
   /// 持久化用的稳定标识。
   final String code;
