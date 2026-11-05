@@ -33,7 +33,7 @@ flutter := if wsl == "1" {
 } else {
   "flutter"
 }
-# dart 同理：`C:\flutter\bin\dart` 也是带 shebang 的 shell 脚本
+# dart 同理：`D:\flutter\bin\dart` 也是带 shebang 的 shell 脚本
 dart := if wsl == "1" {
   '_dt() { cmd.exe /c "cd /d $(wslpath -w "$PWD") && dart $*"; }; _dt'
 } else if os() == "windows" {

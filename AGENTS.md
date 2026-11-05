@@ -11,7 +11,7 @@
 - 绘图：`lib/plot/`（视口、采样器、示例曲线），状态在 `lib/state/`，界面在 `lib/ui/`。
 - 多语言：`lib/l10n/`（语言枚举 `AppLanguage`、应用级文案 `AppStrings`、全局入口 `t`），工具语言包在 `lib/ui/tools/<tool>/<tool>_lang.dart`。
 - 配色：`lib/theme/app_theme.dart` 的 `AppPalette`（深色 `kDarkPalette` / 浅色 `kLightPalette`），全局取色入口是 `AppColors`；设置页在 `lib/ui/settings_page.dart`，状态在 `lib/state/settings_controller.dart`，本地存储在 `lib/services/settings_store*.dart`。
-- 已知环境：Windows + WSL，`flutter` / `dart` 是 Windows 程序（`C:\flutter\bin` 下是 bash 脚本 +
+- 已知环境：Windows + WSL，`flutter` / `dart` 是 Windows 程序（`D:\flutter\bin` 下是 bash 脚本 +
   `.bat`，所以 justfile 在 Windows 原生 shell 里也经 `cmd.exe` 调用 `flutter.bat` / `dart.bat`）。
 
 ## 环境与命令
@@ -132,6 +132,8 @@ cmd.exe /c "cd /d $(wslpath -w "$PWD") && flutter test"
 - `justfile` 用到的 Python 辅助脚本（如 `tool/android_target.py`）要带 `--selftest`，并挂到 `just check` 的 `tool-check` 上。
   需要 Pillow 的配方（`icons` / `icons-check`）一律经 `tool/with_pillow.sh` 调脚本：
   Windows 的 `python` 常没装 Pillow，它会在 `python3` / `py -3` / `python` / WSL 的 `python3` 里挑一个能用的。
+  Python 辅助脚本 print `✓` 之前必须调 `_force_utf8_stdout()`：重定向到文件时 Windows 默认用
+  GBK 编码，直接 `UnicodeEncodeError`（在 PowerShell 里跑 `just check` 就会踩到）。
 - 需要 Android 工具链的配方（`build-apk`、`android`）先 `. tool/android-env.sh`：它会补 `JAVA_HOME` / `ANDROID_HOME`，WSL 下再用 `WSLENV` 传给 Windows 侧进程。
 - Android 自适应图标 XML（`mipmap-anydpi-v26/*.xml`）必须声明 `xmlns:android`，否则 AAPT2 编译失败；`just icons-check` 会校验这一项。
 - Web 产物必须自包含：`just build-web` 走 `--no-web-resources-cdn`（CanvasKit 取 SDK 自带副本），并把 `web/fonts/`（`tool/web_fonts.py` 下载的 Roboto / Noto 回退字体）拷进 `build/web/fonts/`，配合 `web/flutter_bootstrap.js` 的 `fontFallbackBaseUrl: "fonts/"`。改 Web 构建相关配置后，用「阻断外网 + headless Chrome 截图」验证断网可正常渲染（做法见 README《Web 部署》）。

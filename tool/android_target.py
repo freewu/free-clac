@@ -13,6 +13,15 @@ import json
 import sys
 
 
+def _force_utf8_stdout() -> None:
+    """Windows 控制台默认 GBK，输出 ✓ / 中文会 UnicodeEncodeError。"""
+    for stream in (sys.stdout, sys.stderr):
+        try:
+            stream.reconfigure(encoding="utf-8")  # type: ignore[attr-defined]
+        except (AttributeError, ValueError):
+            pass
+
+
 def pick_device(text: str) -> str:
     """从 `flutter devices --machine` 的 JSON 里取第一个 Android 设备 id。"""
     start = text.find("[")
@@ -68,6 +77,8 @@ def selftest() -> int:
 
 
 def main(argv: list[str]) -> int:
+    if len(argv) > 1 and argv[1] in ("--selftest", "device", "emulator"):
+        _force_utf8_stdout()
     if len(argv) > 1 and argv[1] == "--selftest":
         return selftest()
     mode = argv[1] if len(argv) > 1 else "device"

@@ -676,7 +676,7 @@ justfile        常用开发任务
 - **PowerShell 下 `just` 报 `$'\r': command not found`**：recipes 需要 Git Bash，确认 `sh.exe` 在 PATH 中（安装 Git for Windows）。
 - **Web 版白屏，控制台报 `Failed to fetch dynamically imported module: https://www.gstatic.com/flutter-canvaskit/...`**：产物用了 CDN 版 CanvasKit，网络被墙或离线时加载失败。用 `just build-web` 重新构建（本地 CanvasKit），不要用 `build-web-cdn`。
 - **Web 版文字变成方块 / 报 `Failed to load font Roboto ... fonts.gstatic.com`**：`web/fonts/` 缺失或没拷进产物，执行 `just web-fonts` 后重新 `just build-web`。
-- **`just build-web` 报 `✗ 找不到 Flutter SDK`**：`tool/web_fonts.py` 需要定位 SDK，设置 `export FLUTTER_ROOT=C:/flutter` 即可。
+- **`just build-web` 报 `✗ 找不到 Flutter SDK`**：`tool/web_fonts.py` 需要定位 SDK，设置 `export FLUTTER_ROOT=D:/flutter` 即可。
 - **`just android` 报 `No supported devices found with name or id matching 'android'`**：没有任何 Android 设备在线。真机需打开「开发者选项 → USB 调试」并允许本机调试；用模拟器则先 `just emulator`（首次需按上文创建 AVD）。
 - **`just build-apk` 报 `No Android SDK found`**：参见上文「Android 构建」，装好 SDK / JDK 并设置 `ANDROID_HOME`、`JAVA_HOME` 后重开终端。
 - **`just build-apk` 报 `Please set the JAVA_HOME variable`**：旧终端读不到新写入的用户变量。`tool/android-env.sh` 会自动探测常见 JDK 路径，探测不到时新开终端即可；也可在当前会话临时设置 `$env:JAVA_HOME='C:\Users\<你>\jdks\jdk-21'`。
