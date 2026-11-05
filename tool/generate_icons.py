@@ -14,8 +14,9 @@
     * 源图可以是带透明底的 PNG，也可以是不透明的 JPG，两种都支持：
       - 透明底：保留透明背景（蓝色描边图形，深浅底色都能看清），先裁掉 logo 自带的
         留白、再按统一比例补回（[LOGO_FILL]），换一版留白不同的 logo 图标还是一样大；
-      - 不透明底（如 logo.jpg 整张图自带深色背景）：背景本身就是画面的一部分，不裁边、
-        不补白，整张图满幅铺满图标，交给各平台的蒙版去裁切；
+      - 不透明底（如 logo.jpg 整张图自带深色背景）：背景是画面的一部分，不能抠掉，
+        改为按背景色找出画面主体的外接矩形，留一圈边距（[ARTWORK_MARGIN]）裁成正方形，
+        主体约占图标 86%，再用源图自己的背景满幅铺满；
     * maskable / 自适应图标需要满幅：透明底源图垫一层深色底并留出安全区（图形约占
       72%），不透明底源图直接整张铺满，底图颜色取源图四周的平均色；
     * 生成脚本只依赖 Pillow，无需联网、不引入额外依赖。
@@ -30,7 +31,6 @@ from dataclasses import dataclass
 from pathlib import Path
 
 from PIL import Image, ImageChops, ImageDraw
-
 ROOT = Path(__file__).resolve().parent.parent
 LOGO = ROOT / "logo.jpg"
 
@@ -63,6 +63,15 @@ SAFE_ZONE = 0.72
 # 普通图标里图形占画布的比例：logo 自带多少留白都统一成这个值
 LOGO_FILL = 0.92
 
+# 不透明源图：按背景色找主体时用多大的缩略图（只在它上面逐像素扫，快）
+ARTWORK_SAMPLE = 256
+# 与背景色相差多少算主体像素（0 ~ 255）
+ARTWORK_THRESHOLD = 24
+# 行列里主体像素占比低于这个值的当噪点丢掉
+ARTWORK_MIN_SHARE = 0.02
+# 裁到主体后四周再留的边距，占主体最大边的比例（主体因此约占图标 86%）
+ARTWORK_MARGIN = 0.16
+
 # 自适应图标 XML：AAPT2 要求根节点声明 android 命名空间，否则打包直接失败
 ANDROID_ADAPTIVE = (
     "android/app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml",
@@ -75,7 +84,7 @@ class Logo:
     """归一化后的图标源图。
 
     image    正方形、可直接缩放到各平台尺寸；
-    opaque   源图没有透明背景（JPG 那种）：图标一律满幅，不裁边、不补白；
+    opaque   源图没有透明背景（JPG 那种）：图标满幅铺满，不补白；
     backdrop 自适应图标 background 用的底色（不透明图取源图四周平均色，
              透明底沿用 [BACKDROP]）。
     """
@@ -116,6 +125,70 @@ def border_average(logo: Image.Image) -> tuple[int, int, int]:
     )
 
 
+def artwork_bbox(logo: Image.Image) -> tuple[float, float, float, float] | None:
+    """按背景色找画面主体的外接矩形（原图坐标）；找不准时返回 None。
+
+    不透明 logo 的背景是画上去的，不能像透明底那样按 alpha 裁边，
+    因此拿四周一圈像素的中位数当背景色，和它差得够多的就是主体。
+    只在缩略图上逐像素扫，行列里噪点太少就丢掉，避免 JPEG 抹开的杂点把框撑大。
+    """
+    rgb = logo.convert("RGB")
+    # 只缩不小：本来就比缩略图小的图直接按原尺寸扫，免得插值把主体边界抹开
+    scale = max(1.0, max(rgb.width, rgb.height) / ARTWORK_SAMPLE)
+    sample = rgb.resize(
+        (
+            max(1, round(rgb.width / scale)),
+            max(1, round(rgb.height / scale)),
+        ),
+        Image.LANCZOS,
+    )
+    width, height = sample.size
+    border = [
+        sample.getpixel((x, 0)) for x in range(width)
+    ] + [
+        sample.getpixel((x, height - 1)) for x in range(width)
+    ] + [
+        sample.getpixel((0, y)) for y in range(height)
+    ] + [
+        sample.getpixel((width - 1, y)) for y in range(height)
+    ]
+    background = tuple(sorted(px[i] for px in border)[len(border) // 2] for i in range(3))
+    diff = ImageChops.difference(
+        sample, Image.new("RGB", sample.size, background)
+    ).convert("L")
+    mask = diff.point(lambda value: 255 if value > ARTWORK_THRESHOLD else 0)
+    pixels = mask.load()
+    min_pixels = max(1, round(min(width, height) * ARTWORK_MIN_SHARE))
+    columns = [
+        x for x in range(width) if sum(1 for y in range(height) if pixels[x, y]) > min_pixels
+    ]
+    rows = [
+        y for y in range(height) if sum(1 for x in range(width) if pixels[x, y]) > min_pixels
+    ]
+    if not columns or not rows:
+        return None
+    return (
+        columns[0] * scale,
+        rows[0] * scale,
+        (columns[-1] + 1) * scale,
+        (rows[-1] + 1) * scale,
+    )
+
+
+def square_around(
+    logo: Image.Image, box: tuple[float, float, float, float], margin: float
+) -> Image.Image:
+    """以 box 为中心裁一个正方形，四周留 margin 比例的边（不超出原图）。"""
+    width, height = logo.size
+    side = min(width, height, max(box[2] - box[0], box[3] - box[1]) * (1 + margin))
+    centre_x = (box[0] + box[2]) / 2
+    centre_y = (box[1] + box[3]) / 2
+    left = min(max(0.0, centre_x - side / 2), width - side)
+    top = min(max(0.0, centre_y - side / 2), height - side)
+    left, top, side = round(left), round(top), round(side)
+    return logo.crop((left, top, left + side, top + side))
+
+
 def normalize(source: Image.Image) -> Logo:
     """把任意源图归一化成正方形图标底图（纯函数，便于自检）。"""
     logo = source.convert("RGBA")
@@ -126,8 +199,10 @@ def normalize(source: Image.Image) -> Logo:
         logo = logo.crop((left, top, left + side, top + side))
     # JPG 没有 alpha 通道，转 RGBA 后整张都是不透明的
     if logo.getchannel("A").getextrema()[0] == 255:
-        # 不透明图：背景就是画面的一部分，不裁边不补白，整张满幅使用
-        return Logo(image=logo, opaque=True, backdrop=border_average(logo))
+        # 不透明图：背景是画上去的，按背景色找主体裁成正方形，主体占图标约 86%
+        box = artwork_bbox(logo)
+        cropped = square_around(logo, box, ARTWORK_MARGIN) if box else logo
+        return Logo(image=cropped, opaque=True, backdrop=border_average(cropped))
     # 透明底 logo：不同版本留白多少不一样，先裁边再统一补白，图标大小才一致
     return Logo(
         image=pad_to_fill(trim_transparent(logo)),
@@ -301,20 +376,26 @@ def selftest() -> None:
     # 不透明底（JPG）：不裁边不补白，满幅图标整张铺满、底色取边框平均色
     photo = Image.new("RGB", (80, 80), (20, 44, 110))
     photo.paste((240, 240, 240), (24, 24, 56, 56))
+    box = artwork_bbox(photo)
+    assert box is not None, box
+    assert [round(v) for v in box] == [24, 24, 56, 56], box
     opaque = normalize(photo)
     assert opaque.opaque
-    assert opaque.image.size == (80, 80), opaque.image.size
+    # 裁到主体 + 16% 边距：32 * 1.16 ≈ 37
+    assert opaque.image.size == (37, 37), opaque.image.size
     assert opaque.backdrop == (20, 44, 110), opaque.backdrop
 
     def near(pixel: tuple[int, ...], rgb: tuple[int, int, int]) -> bool:
         return all(abs(pixel[i] - rgb[i]) <= 3 for i in range(3))
 
-    # 满幅图标整张铺满：四角就是源图背景，中心是图形本身
+    # 满幅图标整张铺满：四角是源图背景，中心是图形，图形占 86% 左右
     bleed = full_bleed(opaque, 108)
     assert bleed.size == (108, 108)
     assert near(bleed.getpixel((0, 0)), (20, 44, 110)), bleed.getpixel((0, 0))
-    assert near(bleed.getpixel((4, 54)), (20, 44, 110)), bleed.getpixel((4, 54))
     assert bleed.getpixel((54, 54))[:3] > (200, 200, 200), bleed.getpixel((54, 54))
+    row = [x for x in range(108) if bleed.getpixel((x, 54))[0] > 200]
+    share = (row[-1] - row[0] + 1) / 108
+    assert 0.84 <= share <= 0.88, share
 
     # 圆形图标：四角全透明，中心是图形
     circle = circular(opaque, 96)
