@@ -443,6 +443,10 @@ just icons         # 由两份源图生成全部图标
 just icons-check   # 只校验文件是否齐全（CI 可用）
 ```
 
+脚本只依赖 Pillow。Windows 上默认的 `python` 常常没装它，所以这两个配方都经
+`tool/with_pillow.sh` 执行：依次试 `$PYTHON_ICONS`、`python3`、`py -3`、`python`，
+都没有 Pillow 时自动退回 WSL 的 `python3`，全都不行才提示 `pip install pillow`。
+
 生成的内容：
 
 | 平台 | 文件 |

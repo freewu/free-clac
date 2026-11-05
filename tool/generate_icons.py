@@ -36,7 +36,15 @@ import sys
 from dataclasses import dataclass
 from pathlib import Path
 
-from PIL import Image
+try:
+    from PIL import Image
+except ImportError:  # 直接跑脚本时也别只丢一个 ModuleNotFoundError
+    sys.exit(
+        "✗ 缺少 Pillow，无法生成图标：\n"
+        "  Windows：python -m pip install pillow\n"
+        "  WSL：    sudo apt install python3-pil\n"
+        "  或用 `just icons`（会自动挑一个装了 Pillow 的 Python）"
+    )
 
 ROOT = Path(__file__).resolve().parent.parent
 # Web / Windows 用桌面版 logo

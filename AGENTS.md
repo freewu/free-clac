@@ -130,6 +130,8 @@ cmd.exe /c "cd /d $(wslpath -w "$PWD") && flutter test"
   单位下拉与结果列表一次列全，设置卡片也只留「默认单位」（存 `convert.<工具 id>.unit`）。
 - 界面有明显变化时用 `just shots` 重新生成截图，并在 README 引用。
 - `justfile` 用到的 Python 辅助脚本（如 `tool/android_target.py`）要带 `--selftest`，并挂到 `just check` 的 `tool-check` 上。
+  需要 Pillow 的配方（`icons` / `icons-check`）一律经 `tool/with_pillow.sh` 调脚本：
+  Windows 的 `python` 常没装 Pillow，它会在 `python3` / `py -3` / `python` / WSL 的 `python3` 里挑一个能用的。
 - 需要 Android 工具链的配方（`build-apk`、`android`）先 `. tool/android-env.sh`：它会补 `JAVA_HOME` / `ANDROID_HOME`，WSL 下再用 `WSLENV` 传给 Windows 侧进程。
 - Android 自适应图标 XML（`mipmap-anydpi-v26/*.xml`）必须声明 `xmlns:android`，否则 AAPT2 编译失败；`just icons-check` 会校验这一项。
 - Web 产物必须自包含：`just build-web` 走 `--no-web-resources-cdn`（CanvasKit 取 SDK 自带副本），并把 `web/fonts/`（`tool/web_fonts.py` 下载的 Roboto / Noto 回退字体）拷进 `build/web/fonts/`，配合 `web/flutter_bootstrap.js` 的 `fontFallbackBaseUrl: "fonts/"`。改 Web 构建相关配置后，用「阻断外网 + headless Chrome 截图」验证断网可正常渲染（做法见 README《Web 部署》）。

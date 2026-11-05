@@ -276,19 +276,21 @@ preview port=port: build-web
     @{{python}} -m http.server {{port}} --directory build/web
 
 # 根据 logo.jpg / logo-android.jpg 重新生成各平台应用图标（需 python3 + Pillow）
+# Windows 的 python 常常没装 Pillow，with_pillow.sh 会自动挑一个能用的解释器
 [group('工具')]
 icons:
-    @{{python}} tool/generate_icons.py
+    @{{sh}} tool/with_pillow.sh tool/generate_icons.py
 
 # 检查图标是否齐全（CI 可用）
 [group('工具')]
 icons-check:
-    @{{python}} tool/generate_icons.py --check
+    @{{sh}} tool/with_pillow.sh tool/generate_icons.py --check
 
 # 自检 justfile 用到的 Python 辅助脚本（CI 可用）
 [group('工具')]
 tool-check:
-    @{{python}} tool/generate_icons.py --selftest
+    @{{sh}} tool/with_pillow.sh --selftest
+    @{{sh}} tool/with_pillow.sh tool/generate_icons.py --selftest
     @{{python}} tool/android_target.py --selftest
     @{{python}} tool/web_fonts.py --selftest
 
