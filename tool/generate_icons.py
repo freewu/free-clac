@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""从根目录的 logo.png 生成各平台应用图标。
+"""从根目录的 logo.jpg 生成各平台应用图标。
 
 用法：
     python3 tool/generate_icons.py            # 生成（覆盖）全部图标
@@ -11,25 +11,30 @@
     android/  mipmap-*/ic_launcher.png（旧版）+ 自适应图标前景 + anydpi-v26 XML
 
 设计约定：
-    * 保留 logo 本身的透明背景（蓝色描边图形，深浅底色都能看清）；
-    * logo 自带的留白先裁掉、再按统一比例补回（[LOGO_FILL]），这样换一版留白
-      不同的 logo，各平台图标看起来还是一样大；
-    * maskable / 自适应图标需要满幅，因此垫一层深色底并留出安全区（图形约占 72%）；
+    * 源图可以是带透明底的 PNG，也可以是不透明的 JPG，两种都支持：
+      - 透明底：保留透明背景（蓝色描边图形，深浅底色都能看清），先裁掉 logo 自带的
+        留白、再按统一比例补回（[LOGO_FILL]），换一版留白不同的 logo 图标还是一样大；
+      - 不透明底（如 logo.jpg 整张图自带深色背景）：背景本身就是画面的一部分，不裁边、
+        不补白，整张图满幅铺满图标，交给各平台的蒙版去裁切；
+    * maskable / 自适应图标需要满幅：透明底源图垫一层深色底并留出安全区（图形约占
+      72%），不透明底源图直接整张铺满，底图颜色取源图四周的平均色；
     * 生成脚本只依赖 Pillow，无需联网、不引入额外依赖。
 """
 
 from __future__ import annotations
 
 import argparse
+import math
 import sys
+from dataclasses import dataclass
 from pathlib import Path
 
-from PIL import Image
+from PIL import Image, ImageChops, ImageDraw
 
 ROOT = Path(__file__).resolve().parent.parent
-LOGO = ROOT / "logo.png"
+LOGO = ROOT / "logo.jpg"
 
-# 图标底色（与 app 深色主题背景一致），仅用于 maskable / 自适应图标
+# 透明底 logo 的满幅图标底色（与 app 深色主题背景一致）
 BACKDROP = (11, 15, 20, 255)
 
 # Android mipmap 目录 → 旧版图标尺寸、自适应前景尺寸
@@ -65,6 +70,21 @@ ANDROID_ADAPTIVE = (
 )
 
 
+@dataclass(frozen=True)
+class Logo:
+    """归一化后的图标源图。
+
+    image    正方形、可直接缩放到各平台尺寸；
+    opaque   源图没有透明背景（JPG 那种）：图标一律满幅，不裁边、不补白；
+    backdrop 自适应图标 background 用的底色（不透明图取源图四周平均色，
+             透明底沿用 [BACKDROP]）。
+    """
+
+    image: Image.Image
+    opaque: bool
+    backdrop: tuple[int, int, int]
+
+
 def trim_transparent(logo: Image.Image) -> Image.Image:
     """裁掉四周的全透明留白，让图形贴住边界。"""
     bbox = logo.getbbox()
@@ -80,17 +100,47 @@ def pad_to_fill(image: Image.Image, fill: float = LOGO_FILL) -> Image.Image:
     return canvas
 
 
-def load_logo() -> Image.Image:
-    if not LOGO.exists():
-        sys.exit(f"✗ 找不到 {LOGO.relative_to(ROOT)}，请把应用 logo 放在项目根目录")
-    logo = Image.open(LOGO).convert("RGBA")
+def border_average(logo: Image.Image) -> tuple[int, int, int]:
+    """取四周一圈像素的平均色，当不透明图标的底色。"""
+    width, height = logo.size
+    step_x, step_y = max(1, width // 64), max(1, height // 64)
+    ring = [logo.getpixel((x, 0)) for x in range(0, width, step_x)]
+    ring += [logo.getpixel((x, height - 1)) for x in range(0, width, step_x)]
+    ring += [logo.getpixel((0, y)) for y in range(0, height, step_y)]
+    ring += [logo.getpixel((width - 1, y)) for y in range(0, height, step_y)]
+    count = len(ring)
+    return (
+        sum(pixel[0] for pixel in ring) // count,
+        sum(pixel[1] for pixel in ring) // count,
+        sum(pixel[2] for pixel in ring) // count,
+    )
+
+
+def normalize(source: Image.Image) -> Logo:
+    """把任意源图归一化成正方形图标底图（纯函数，便于自检）。"""
+    logo = source.convert("RGBA")
     if logo.width != logo.height:
         side = min(logo.width, logo.height)
         left = (logo.width - side) // 2
         top = (logo.height - side) // 2
         logo = logo.crop((left, top, left + side, top + side))
-    # 不同版本的 logo 留白多少不一样，先裁边再统一补白，图标大小才一致
-    return pad_to_fill(trim_transparent(logo))
+    # JPG 没有 alpha 通道，转 RGBA 后整张都是不透明的
+    if logo.getchannel("A").getextrema()[0] == 255:
+        # 不透明图：背景就是画面的一部分，不裁边不补白，整张满幅使用
+        return Logo(image=logo, opaque=True, backdrop=border_average(logo))
+    # 透明底 logo：不同版本留白多少不一样，先裁边再统一补白，图标大小才一致
+    return Logo(
+        image=pad_to_fill(trim_transparent(logo)),
+        opaque=False,
+        backdrop=BACKDROP[:3],
+    )
+
+
+def load_logo() -> Logo:
+    if not LOGO.exists():
+        sys.exit(f"✗ 找不到 {LOGO.relative_to(ROOT)}，请把应用 logo 放在项目根目录")
+    with Image.open(LOGO) as source:
+        return normalize(source)
 
 
 def resize(logo: Image.Image, size: int) -> Image.Image:
@@ -98,11 +148,18 @@ def resize(logo: Image.Image, size: int) -> Image.Image:
 
 
 def with_backdrop(logo: Image.Image, size: int) -> Image.Image:
-    """满幅图标：深色底 + 居中缩放的 logo（用于 maskable / 自适应）。"""
+    """满幅图标：深色底 + 居中缩放的 logo（用于透明底 logo）。"""
     canvas = Image.new("RGBA", (size, size), BACKDROP)
     inner = max(1, round(size * SAFE_ZONE))
     canvas.alpha_composite(resize(logo, inner), ((size - inner) // 2,) * 2)
     return canvas
+
+
+def full_bleed(logo: Logo, size: int) -> Image.Image:
+    """maskable / 自适应图标：不透明底整张铺满，透明底垫底色缩进安全区。"""
+    if logo.opaque:
+        return resize(logo.image, size)
+    return with_backdrop(logo.image, size)
 
 
 def save_png(image: Image.Image, path: Path) -> Path:
@@ -111,47 +168,60 @@ def save_png(image: Image.Image, path: Path) -> Path:
     return path
 
 
-def build_web(logo: Image.Image) -> list[Path]:
-    written = [save_png(resize(logo, 32), ROOT / "web/favicon.png")]
+def build_web(logo: Logo) -> list[Path]:
+    written = [save_png(resize(logo.image, 32), ROOT / "web/favicon.png")]
     for name, (size, maskable) in WEB_ICONS.items():
-        image = with_backdrop(logo, size) if maskable else resize(logo, size)
+        image = full_bleed(logo, size) if maskable else resize(logo.image, size)
         written.append(save_png(image, ROOT / "web/icons" / name))
     return written
 
 
-def build_windows(logo: Image.Image) -> list[Path]:
+def build_windows(logo: Logo) -> list[Path]:
     path = ROOT / "windows/runner/resources/app_icon.ico"
     path.parent.mkdir(parents=True, exist_ok=True)
     biggest = max(WINDOWS_ICO_SIZES)
-    frames = [resize(logo, size) for size in WINDOWS_ICO_SIZES]
+    frames = [resize(logo.image, size) for size in WINDOWS_ICO_SIZES]
     # ICO 里最大的一帧作为基准图，Pillow 会按 sizes 生成多尺寸目录项
     frames[-1].save(path, format="ICO", sizes=[(s, s) for s in WINDOWS_ICO_SIZES])
     assert biggest == WINDOWS_ICO_SIZES[-1]
     return [path]
 
 
-def build_android(logo: Image.Image) -> list[Path]:
+def circular(logo: Logo, size: int) -> Image.Image:
+    """圆形图标（Android 旧版 ic_launcher_round）：整张图缩进内切圆，圆外透明。"""
+    inner = max(1, round(size / math.sqrt(2)))
+    canvas = Image.new("RGBA", (size, size), (0, 0, 0, 0))
+    canvas.alpha_composite(resize(logo.image, inner), ((size - inner) // 2,) * 2)
+    mask = Image.new("L", (size, size), 0)
+    ImageDraw.Draw(mask).ellipse((0, 0, size - 1, size - 1), fill=255)
+    canvas.putalpha(ImageChops.multiply(canvas.getchannel("A"), mask))
+    return canvas
+
+
+def build_android(logo: Logo) -> list[Path]:
     written: list[Path] = []
     res = ROOT / "android/app/src/main/res"
     for folder, legacy in ANDROID_LEGACY.items():
         target = res / folder
-        written.append(save_png(resize(logo, legacy), target / "ic_launcher.png"))
-        written.append(
-            save_png(resize(logo, legacy), target / "ic_launcher_round.png")
-        )
+        written.append(save_png(resize(logo.image, legacy), target / "ic_launcher.png"))
+        # 不透明底源图的四个角是画上去的背景，圆形图标里得裁成圆，否则看着像方块
+        round_png = circular(logo, legacy) if logo.opaque else resize(logo.image, legacy)
+        written.append(save_png(round_png, target / "ic_launcher_round.png"))
         written.append(
             save_png(
-                with_backdrop(logo, round(legacy * 108 / 48)),
+                full_bleed(logo, round(legacy * 108 / 48)),
                 target / "ic_launcher_foreground.png",
             )
         )
 
     colors = res / "values/colors.xml"
     colors.parent.mkdir(parents=True, exist_ok=True)
+    red, green, blue = logo.backdrop[:3]
     colors.write_text(
         '<?xml version="1.0" encoding="utf-8"?>\n'
         "<resources>\n"
-        '    <color name="ic_launcher_background">#0B0F14</color>\n'
+        f'    <color name="ic_launcher_background">#{red:02X}{green:02X}{blue:02X}'
+        "</color>\n"
         "</resources>\n",
         encoding="utf-8",
     )
@@ -222,12 +292,42 @@ def selftest() -> None:
         "Icon-maskable-512.png",
     }
     assert ANDROID_FOREGROUND_SCALE == 72 / 108
+
+    # 透明底 logo：裁边补白，满幅时垫底色
+    transparent = normalize(source)
+    assert not transparent.opaque
+    assert transparent.backdrop == BACKDROP[:3]
+
+    # 不透明底（JPG）：不裁边不补白，满幅图标整张铺满、底色取边框平均色
+    photo = Image.new("RGB", (80, 80), (20, 44, 110))
+    photo.paste((240, 240, 240), (24, 24, 56, 56))
+    opaque = normalize(photo)
+    assert opaque.opaque
+    assert opaque.image.size == (80, 80), opaque.image.size
+    assert opaque.backdrop == (20, 44, 110), opaque.backdrop
+
+    def near(pixel: tuple[int, ...], rgb: tuple[int, int, int]) -> bool:
+        return all(abs(pixel[i] - rgb[i]) <= 3 for i in range(3))
+
+    # 满幅图标整张铺满：四角就是源图背景，中心是图形本身
+    bleed = full_bleed(opaque, 108)
+    assert bleed.size == (108, 108)
+    assert near(bleed.getpixel((0, 0)), (20, 44, 110)), bleed.getpixel((0, 0))
+    assert near(bleed.getpixel((4, 54)), (20, 44, 110)), bleed.getpixel((4, 54))
+    assert bleed.getpixel((54, 54))[:3] > (200, 200, 200), bleed.getpixel((54, 54))
+
+    # 圆形图标：四角全透明，中心是图形
+    circle = circular(opaque, 96)
+    assert circle.size == (96, 96)
+    assert circle.getpixel((0, 0))[3] == 0, circle.getpixel((0, 0))
+    assert circle.getpixel((48, 48))[3] == 255, circle.getpixel((48, 48))
+
     print("✓ generate_icons 自检通过")
 
 
 def main() -> None:
     _force_utf8_stdout()
-    parser = argparse.ArgumentParser(description="从 logo.png 生成各平台应用图标")
+    parser = argparse.ArgumentParser(description="从 logo.jpg 生成各平台应用图标")
     parser.add_argument(
         "--check",
         action="store_true",
@@ -278,7 +378,7 @@ def main() -> None:
         return
 
     written = build_web(logo) + build_windows(logo) + build_android(logo)
-    print(f"✓ 已根据 logo.png 生成 {len(written)} 个图标文件")
+    print(f"✓ 已根据 {LOGO.name} 生成 {len(written)} 个图标文件")
     for path in written:
         print(f"  · {path.relative_to(ROOT)}")
 

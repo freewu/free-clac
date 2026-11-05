@@ -1,6 +1,6 @@
 {
-    "name": "科学计算器",
-    "short_name": "计算器",
+    "name": "Magic 计算器",
+    "short_name": "Magic 计算器",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0A0E14",

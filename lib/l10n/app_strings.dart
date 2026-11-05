@@ -93,7 +93,7 @@ class _ZhHansStrings extends AppStrings {
   const _ZhHansStrings();
 
   @override
-  String get appTitle => '科学计算器';
+  String get appTitle => 'Magic 计算器';
   @override
   String get navCalculator => '计算';
   @override
@@ -200,7 +200,7 @@ class _ZhHantStrings extends AppStrings {
   const _ZhHantStrings();
 
   @override
-  String get appTitle => '科學計算機';
+  String get appTitle => 'Magic 計算器';
   @override
   String get navCalculator => '計算';
   @override
@@ -307,7 +307,7 @@ class _EnStrings extends AppStrings {
   const _EnStrings();
 
   @override
-  String get appTitle => 'Scientific Calculator';
+  String get appTitle => 'Magic Calculator';
   @override
   String get navCalculator => 'Calc';
   @override
@@ -425,7 +425,7 @@ class _JaStrings extends AppStrings {
   const _JaStrings();
 
   @override
-  String get appTitle => '関数電卓';
+  String get appTitle => 'Magic 計算機';
   @override
   String get navCalculator => '計算';
   @override
@@ -533,7 +533,7 @@ class _EsStrings extends AppStrings {
   const _EsStrings();
 
   @override
-  String get appTitle => 'Calculadora científica';
+  String get appTitle => 'Magic Calculadora';
   @override
   String get navCalculator => 'Cálculo';
   @override

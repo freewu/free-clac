@@ -4,7 +4,8 @@
 
 ## 项目速览
 
-- **free-clac**：Flutter 科学计算器 + 2D 函数绘图，支持 Web / Windows / Android。
+- **free-clac**（应用名「Magic 计算器」）：Flutter 科学计算器 + 2D 函数绘图，支持 Web / Windows / Android。
+- 应用图标唯一来源是根目录 `logo.jpg`（不透明底，脚本满幅处理），由 `just icons` 生成各平台图标。
 - 表达式解析与求值：`lib/core/math_engine.dart`（自研词法 + 递归下降，无第三方计算库）。
 - 小工具：一个工具一个目录 `lib/ui/tools/<tool>/`，逻辑、界面、语言包、设置项、`defined.dart` 都在里面。
 - 绘图：`lib/plot/`（视口、采样器、示例曲线），状态在 `lib/state/`，界面在 `lib/ui/`。

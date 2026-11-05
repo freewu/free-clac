@@ -1,8 +1,8 @@
 # free-clac
 
-<img src="logo.png" alt="应用图标" width="96" align="right" />
+<img src="logo.jpg" alt="应用图标" width="96" align="right" />
 
-使用 Flutter 开发的一款高级科学计算器，除常规表达式计算外，还内置二维平面函数绘图。
+应用名 「Magic 计算器」，使用 Flutter 开发的一款高级科学计算器，除常规表达式计算外，还内置二维平面函数绘图。
 支持深色 / 浅色主题与五种界面语言（简体中文、繁體中文、English、日本語、Español）。
 
 ![计算器](docs/screenshots/calculator.png)
@@ -429,10 +429,10 @@ Web 端可深链：`?page=settings` 直接打开设置页，`?page=plot` / `?pag
 
 ## 应用图标
 
-`logo.png`（256×256，透明底）是唯一来源，改图后执行一次即可同步所有平台：
+`logo.jpg`（1536×1536）是唯一来源，改图后执行一次即可同步所有平台：
 
 ```bash
-just icons         # 由 logo.png 生成全部图标
+just icons         # 由 logo.jpg 生成全部图标
 just icons-check   # 只校验文件是否齐全（CI 可用）
 ```
 
@@ -444,9 +444,12 @@ just icons-check   # 只校验文件是否齐全（CI 可用）
 | Windows | `windows/runner/resources/app_icon.ico`（16–256 七种尺寸，任务栏 / 资源管理器） |
 | Android | `mipmap-*/ic_launcher.png`、`ic_launcher_round.png`，以及自适应图标 `ic_launcher_foreground.png` + `mipmap-anydpi-v26/ic_launcher.xml` |
 
-Maskable / 自适应图标需要满幅，脚本会垫一层深色底（`#0B0F14`，与深色主题一致）并让图形占 72% 安全区；普通图标保留 logo 的透明背景。
+源图两种都能用，脚本按有没有透明通道自动选处理方式：
 
-logo 自带多少留白都不影响图标大小：脚本先按不透明像素裁掉四周留白（`trim_transparent`），再按统一比例补回（`LOGO_FILL = 0.92`，图形占画布 92%），最后缩放到各平台尺寸。`just check` 里的 `tool-check` 会跑 `tool/generate_icons.py --selftest`，用内存里的合成图验证裁边、补白、安全区与平台尺寸表。
+- **不透明底（当前的 `logo.jpg`）**：背景本身就是画面的一部分，不裁边、不补白，整张图满幅铺满图标，交给各平台的蒙版裁切；满幅图标（maskable / 自适应前景）也是整张铺满，自适应图标的底色取源图四周的平均色，旧版圆形图标（`ic_launcher_round.png`）把整张图缩进内切圆、圆外透明。
+- **透明底 PNG**：保留透明背景，先按不透明像素裁掉四周留白（`trim_transparent`），再按统一比例补回（`LOGO_FILL = 0.92`，图形占画布 92%），maskable / 自适应图标垫一层深色底（`#0B0F14`，与深色主题一致）并让图形占 72% 安全区。
+
+这样 logo 自带多少留白都不影响图标大小。`just check` 里的 `tool-check` 会跑 `tool/generate_icons.py --selftest`，用内存里的合成图验证裁边、补白、安全区与平台尺寸表。
 项目暂无 iOS / macOS 目录，如需新增平台，脚本里加一段尺寸表即可。
 
 ## 运行
@@ -513,7 +516,7 @@ just devices      # 列出设备
 | 构建 | `just ci` | 依赖 → 检查 → 构建 |
 | 工具 | `just preview` | 构建并本地预览（<http://localhost:8765>） |
 | 工具 | `just shots` | 重新生成 `docs/screenshots` 截图 |
-| 工具 | `just icons` / `just icons-check` | 由 `logo.png` 生成 / 校验各平台图标（`--selftest` 已在 `tool-check` 里跑） |
+| 工具 | `just icons` / `just icons-check` | 由 `logo.jpg` 生成 / 校验各平台图标（`--selftest` 已在 `tool-check` 里跑） |
 | 工具 | `just clean` / `just outdated` | 清理产物 / 查看可升级依赖 |
 
 ## Android 构建
