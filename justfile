@@ -275,7 +275,7 @@ preview port=port: build-web
     @echo "预览：http://localhost:{{port}}"
     @{{python}} -m http.server {{port}} --directory build/web
 
-# 根据 logo.jpg 重新生成各平台应用图标（Web / Windows / Android，需 python3 + Pillow）
+# 根据 logo.jpg / logo-android.jpg 重新生成各平台应用图标（需 python3 + Pillow）
 [group('工具')]
 icons:
     @{{python}} tool/generate_icons.py

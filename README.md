@@ -429,10 +429,17 @@ Web 端可深链：`?page=settings` 直接打开设置页，`?page=plot` / `?pag
 
 ## 应用图标
 
-`logo.jpg`（1536×1536）是唯一来源，改图后执行一次即可同步所有平台：
+根目录下两份 1536×1536 的源图，按平台取用：
+
+| 源图 | 用在哪 |
+| --- | --- |
+| `logo.jpg` | Web、Windows |
+| `logo-android.jpg` | Android（已按自适应图标构图：满幅、四周不留白） |
+
+改图后执行一次即可同步所有平台：
 
 ```bash
-just icons         # 由 logo.jpg 生成全部图标
+just icons         # 由两份源图生成全部图标
 just icons-check   # 只校验文件是否齐全（CI 可用）
 ```
 
@@ -444,10 +451,20 @@ just icons-check   # 只校验文件是否齐全（CI 可用）
 | Windows | `windows/runner/resources/app_icon.ico`（16–256 七种尺寸，任务栏 / 资源管理器） |
 | Android | `mipmap-*/ic_launcher.png`、`ic_launcher_round.png`，以及自适应图标 `ic_launcher_foreground.png` + `mipmap-anydpi-v26/ic_launcher.xml` |
 
-源图两种都能用，脚本按有没有透明通道自动选处理方式：
+处理规则：
 
-- **不透明底（当前的 `logo.jpg`）**：原图本身就是一张完整的方形画面，**不裁剪、不补白**，整张按原比例缩放到各平台尺寸；maskable / 自适应前景也直接整张铺满，自适应图标的底色取源图四周一圈像素的平均色（当前 `#162E6F`）。换 logo 就是换 `logo.jpg` 再跑一次 `just icons`，图标构图完全取决于原图。
-- **透明底 PNG**：保留透明背景，先按不透明像素裁掉四周留白（`trim_transparent`），再按统一比例补回（`LOGO_FILL = 0.92`，图形占画布 92%），maskable / 自适应图标垫一层深色底（`#0B0F14`，与深色主题一致）并让图形占 72% 安全区。
+- **不透明底（两份源图都是）**：原图就是一张完整画面，**不裁剪、不补白**，整张按原比例缩放。
+  普通图标（favicon、Web 图标、Windows ico、Android 旧版 `ic_launcher`）就是这张原图的等比缩略。
+- **会被系统蒙版裁切的图层**不能铺满：Web 的 maskable 图标系统只保证中间 80% 可见
+  （`MASKABLE_SAFE_ZONE = 0.80`），整张图缩进去、外圈用源图底色补；
+  Android 8+ 的自适应图标在 108dp 画布里只有中间 72dp 一定可见，所以前景直接用
+  `logo-android.jpg`——它本来就是按满幅构图画的，边缘被蒙版裁掉也无所谓。
+- 自适应图标的 `ic_launcher_background` 取 Android 源图四周一圈像素的平均色（当前 `#20397E`），
+  蒙版把前景裁成圆形 / 方形时露出的就是这个色，和源图底色无缝。
+
+**透明底 PNG** 也能直接替换：保留透明背景，按不透明像素裁掉四周留白（`trim_transparent`），
+再按统一比例补回（`LOGO_FILL = 0.92`）；maskable / 自适应这类蒙版图层会垫一层深色底
+（`#0B0F14`，与深色主题一致）并把图形缩进 `SAFE_ZONE = 0.72`，避免被裁边。
 
 透明底 logo 自带多少留白都不影响图标大小。`just check` 里的 `tool-check` 会跑 `tool/generate_icons.py --selftest`，用内存里的合成图验证裁边、补白、安全区与平台尺寸表。
 项目暂无 iOS / macOS 目录，如需新增平台，脚本里加一段尺寸表即可。
@@ -516,7 +533,7 @@ just devices      # 列出设备
 | 构建 | `just ci` | 依赖 → 检查 → 构建 |
 | 工具 | `just preview` | 构建并本地预览（<http://localhost:8765>） |
 | 工具 | `just shots` | 重新生成 `docs/screenshots` 截图 |
-| 工具 | `just icons` / `just icons-check` | 由 `logo.jpg` 生成 / 校验各平台图标（`--selftest` 已在 `tool-check` 里跑） |
+| 工具 | `just icons` / `just icons-check` | 由 `logo.jpg` / `logo-android.jpg` 生成 / 校验各平台图标（`--selftest` 已在 `tool-check` 里跑） |
 | 工具 | `just clean` / `just outdated` | 清理产物 / 查看可升级依赖 |
 
 ## Android 构建

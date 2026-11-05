@@ -1,9 +1,13 @@
 #!/usr/bin/env python3
-"""从根目录的 logo.jpg 生成各平台应用图标。
+"""从根目录的 logo.jpg / logo-android.jpg 生成各平台应用图标。
 
 用法：
     python3 tool/generate_icons.py            # 生成（覆盖）全部图标
     python3 tool/generate_icons.py --check    # 只检查是否存在，不写入
+
+源图两份，按平台取用：
+    logo.jpg                Web / Windows
+    logo-android.jpg        Android（已按自适应图标构图，四周不留白，整张铺满）
 
 覆盖平台：
     web/      favicon.png + icons/Icon-*.png（含 maskable）
@@ -16,8 +20,12 @@
         留白、再按统一比例补回（[LOGO_FILL]），换一版留白不同的 logo 图标还是一样大；
       - 不透明底（如 logo.jpg 整张图自带深色背景）：原图就是一张完整的方形画面，
         不裁剪、不缩放构图，整张按原比例缩放到各平台尺寸；
-    * maskable / 自适应图标需要满幅：透明底源图垫一层深色底并留出安全区（图形约占
-      72%），不透明底源图直接整张铺满，底图颜色取源图四周的平均色；
+    * 会被系统蒙版裁切的图层不能乱铺：
+      - Web maskable：整张缩进 80% 安全区，外圈用源图底色补；
+      - Android 自适应前景：用 logo-android.jpg（本来就是满幅构图）直接铺满；
+        若把通用 logo 塞进来（透明底图形），则垫底色缩进 72dp 安全区，
+        因为 108dp 画布里只有中间 72dp 一定可见；
+    * 底色（maskable 外圈 / 自适应图标的 background）取源图四周一圈像素的平均色；
     * 生成脚本只依赖 Pillow，无需联网、不引入额外依赖。
 """
 
@@ -31,7 +39,10 @@ from pathlib import Path
 from PIL import Image
 
 ROOT = Path(__file__).resolve().parent.parent
+# Web / Windows 用桌面版 logo
 LOGO = ROOT / "logo.jpg"
+# Android 用手机版 logo：已经按自适应图标构图（满幅、四周不留白），可以直接铺满
+LOGO_ANDROID = ROOT / "logo-android.jpg"
 
 # 透明底 logo 的满幅图标底色（与 app 深色主题背景一致）
 BACKDROP = (11, 15, 20, 255)
@@ -56,8 +67,12 @@ WEB_ICONS = {
 
 WINDOWS_ICO_SIZES = (16, 24, 32, 48, 64, 128, 256)
 
-# maskable / 自适应图标：图形占画布的比例（四周留白，避免被裁切）
+# 自适应图标（Android 8+）：108dp 画布里只有中间 72dp 一定可见，外面会被启动器蒙版裁掉，
+# 所以整张图只铺到 72%，保证任何蒙版下画面都是完整的
 SAFE_ZONE = 0.72
+
+# maskable（Web PWA）：可见区是中间 80%，整张图铺到 80% 即可
+MASKABLE_SAFE_ZONE = 0.80
 
 # 普通图标里图形占画布的比例：logo 自带多少留白都统一成这个值
 LOGO_FILL = 0.92
@@ -135,10 +150,10 @@ def normalize(source: Image.Image) -> Logo:
     )
 
 
-def load_logo() -> Logo:
-    if not LOGO.exists():
-        sys.exit(f"✗ 找不到 {LOGO.relative_to(ROOT)}，请把应用 logo 放在项目根目录")
-    with Image.open(LOGO) as source:
+def load_logo(path: Path = LOGO) -> Logo:
+    if not path.exists():
+        sys.exit(f"✗ 找不到 {path.relative_to(ROOT)}，请把应用 logo 放在项目根目录")
+    with Image.open(path) as source:
         return normalize(source)
 
 
@@ -146,19 +161,27 @@ def resize(logo: Image.Image, size: int) -> Image.Image:
     return logo.resize((size, size), Image.LANCZOS)
 
 
-def with_backdrop(logo: Image.Image, size: int) -> Image.Image:
-    """满幅图标：深色底 + 居中缩放的 logo（用于透明底 logo）。"""
-    canvas = Image.new("RGBA", (size, size), BACKDROP)
-    inner = max(1, round(size * SAFE_ZONE))
+def with_backdrop(
+    logo: Image.Image,
+    size: int,
+    backdrop: tuple[int, int, int, int] = BACKDROP,
+    fill: float = SAFE_ZONE,
+) -> Image.Image:
+    """满幅图标：垫一层底色 + 居中缩放到安全区内的 logo。
+
+    系统蒙版（启动器 / PWA）会裁掉外圈，画面只有落在安全区里才不会被切，
+    所以这里一律缩进去，而不是把图铺满整张画布。
+    """
+    canvas = Image.new("RGBA", (size, size), backdrop)
+    inner = max(1, round(size * fill))
     canvas.alpha_composite(resize(logo, inner), ((size - inner) // 2,) * 2)
     return canvas
 
 
-def full_bleed(logo: Logo, size: int) -> Image.Image:
-    """maskable / 自适应图标：不透明底整张铺满，透明底垫底色缩进安全区。"""
-    if logo.opaque:
-        return resize(logo.image, size)
-    return with_backdrop(logo.image, size)
+def masked(logo: Logo, size: int, fill: float = SAFE_ZONE) -> Image.Image:
+    """maskable / 自适应图标：整张图缩进安全区，外圈用源图自己的底色补。"""
+    backdrop = (*logo.backdrop, 255) if logo.opaque else BACKDROP
+    return with_backdrop(logo.image, size, backdrop, fill)
 
 
 def save_png(image: Image.Image, path: Path) -> Path:
@@ -170,7 +193,11 @@ def save_png(image: Image.Image, path: Path) -> Path:
 def build_web(logo: Logo) -> list[Path]:
     written = [save_png(resize(logo.image, 32), ROOT / "web/favicon.png")]
     for name, (size, maskable) in WEB_ICONS.items():
-        image = full_bleed(logo, size) if maskable else resize(logo.image, size)
+        image = (
+            masked(logo, size, MASKABLE_SAFE_ZONE)
+            if maskable
+            else resize(logo.image, size)
+        )
         written.append(save_png(image, ROOT / "web/icons" / name))
     return written
 
@@ -186,6 +213,18 @@ def build_windows(logo: Logo) -> list[Path]:
     return [path]
 
 
+def adaptive_foreground(logo: Logo, size: int) -> Image.Image:
+    """自适应图标前景（108dp）。
+
+    logo-android.jpg 这种不透明、四周不留白的源图是专门按 Android 构图的，
+    整张铺满即可（外圈本来就是要被蒙版裁掉的部分）；透明底的通用 logo 图形
+    只占中间，得缩进 72dp 安全区，否则会被启动器裁边。
+    """
+    if logo.opaque:
+        return resize(logo.image, size)
+    return masked(logo, size)
+
+
 def build_android(logo: Logo) -> list[Path]:
     written: list[Path] = []
     res = ROOT / "android/app/src/main/res"
@@ -197,7 +236,7 @@ def build_android(logo: Logo) -> list[Path]:
         )
         written.append(
             save_png(
-                full_bleed(logo, round(legacy * 108 / 48)),
+                adaptive_foreground(logo, round(legacy * 108 / 48)),
                 target / "ic_launcher_foreground.png",
             )
         )
@@ -295,21 +334,40 @@ def selftest() -> None:
     assert opaque.image.size == (80, 80), opaque.image.size
     assert opaque.backdrop == (20, 44, 110), opaque.backdrop
 
-    # 满幅图标整张铺满：四角是源图背景，中心是图形本身
-    bleed = full_bleed(opaque, 108)
+    # 满幅图标：整张图缩进安全区（72%），外圈用源图底色补，蒙版裁掉外圈也不丢画面
+    bleed = masked(opaque, 108)
     assert bleed.size == (108, 108)
     for corner in ((0, 0), (107, 0), (0, 107), (107, 107)):
-        assert bleed.getpixel(corner)[:3] == (20, 44, 110), (corner, bleed.getpixel(corner))
+        assert bleed.getpixel(corner) == (20, 44, 110, 255), (corner, bleed.getpixel(corner))
     assert bleed.getpixel((54, 54))[:3] == (240, 240, 240), bleed.getpixel((54, 54))
-    # 不透明源图的 maskable 图标不做安全区缩进，图形保持原比例
-    assert bleed.getpixel((4, 54))[:3] == (20, 44, 110), bleed.getpixel((4, 54))
+    # 图形（源图 80 里的 32）现在只占画布 32 / 80 * 72%
+    run = [x for x in range(108) if bleed.getpixel((x, 54))[0] > 200]
+    share = (run[-1] - run[0] + 1) / 108
+    assert 0.27 <= share <= 0.30, share
+    # maskable 用 80% 安全区，图形占 32 / 80 * 80% = 32%
+    wide = masked(opaque, 100, MASKABLE_SAFE_ZONE)
+    run = [x for x in range(100) if wide.getpixel((x, 50))[0] > 200]
+    assert 0.30 <= (run[-1] - run[0] + 1) / 100 <= 0.34, run
+
+    # 自适应前景：Android 专用源图本来满幅，整张铺满不缩；通用透明底 logo 缩进安全区
+    foreground = adaptive_foreground(opaque, 108)
+    for corner in ((0, 0), (107, 0), (0, 107), (107, 107)):
+        assert foreground.getpixel(corner)[:3] == (20, 44, 110), foreground.getpixel(corner)
+    run = [x for x in range(108) if foreground.getpixel((x, 54))[0] > 200]
+    share = (run[-1] - run[0] + 1) / 108
+    assert 0.38 <= share <= 0.42, share  # 32 / 80，铺满画布
+    sprite = adaptive_foreground(transparent, 108)
+    run = [x for x in range(108) if sprite.getpixel((x, 54)) != BACKDROP]
+    assert 0.70 <= (run[-1] - run[0] + 1) / 108 <= 0.74, run
 
     print("✓ generate_icons 自检通过")
 
 
 def main() -> None:
     _force_utf8_stdout()
-    parser = argparse.ArgumentParser(description="从 logo.jpg 生成各平台应用图标")
+    parser = argparse.ArgumentParser(
+        description="从 logo.jpg / logo-android.jpg 生成各平台应用图标"
+    )
     parser.add_argument(
         "--check",
         action="store_true",
@@ -326,7 +384,8 @@ def main() -> None:
         selftest()
         return
 
-    logo = load_logo()
+    logo = load_logo(LOGO)
+    android_logo = load_logo(LOGO_ANDROID)
 
     if args.check:
         expected = [
@@ -359,8 +418,13 @@ def main() -> None:
         print(f"✓ 图标齐全（{len(expected)} 个文件）")
         return
 
-    written = build_web(logo) + build_windows(logo) + build_android(logo)
-    print(f"✓ 已根据 {LOGO.name} 生成 {len(written)} 个图标文件")
+    written = (
+        build_web(logo) + build_windows(logo) + build_android(android_logo)
+    )
+    print(
+        f"✓ 已根据 {LOGO.name}（Web / Windows）与 {LOGO_ANDROID.name}"
+        f"（Android）生成 {len(written)} 个图标文件"
+    )
     for path in written:
         print(f"  · {path.relative_to(ROOT)}")
 
