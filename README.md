@@ -5,10 +5,10 @@
 应用名 「Magic 计算器」，使用 Flutter 开发的一款高级科学计算器，除常规表达式计算外，还内置二维平面函数绘图。
 支持深色 / 浅色主题与五种界面语言（简体中文、繁體中文、English、日本語、Español）。
 
-![计算器](docs/screenshots/calculator.png)
-![函数绘图](docs/screenshots/plot.png)
-![示例曲线：心形函数](docs/screenshots/heart.png)
-![隐式方程：等值线心形](docs/screenshots/implicit.png)
+![计算器](docs/screenshots/zh-Hans/calculator.png)
+![函数绘图](docs/screenshots/zh-Hans/plot.png)
+![示例曲线：心形函数](docs/screenshots/zh-Hans/heart.png)
+![隐式方程：等值线心形](docs/screenshots/zh-Hans/implicit.png)
 
 ## 功能
 
@@ -106,11 +106,11 @@ Web 端可直接深链到示例：`?page=plot&preset=0`（`preset` 为示例下�
 最新的排在最前，最多留 20 条，存在本地（键 `history.<工具 id>`，值是 JSON 数组），
 每条都能一键删除或整体清空（清空前会确认）。
 
-![工具](docs/screenshots/tools.png)
+![工具](docs/screenshots/zh-Hans/tools.png)
 
 #### BMI 计算
 
-![BMI 计算](docs/screenshots/bmi.png)
+![BMI 计算](docs/screenshots/zh-Hans/bmi.png)
 
 - 公制 / 英制一键切换，切换时按当前数值自动换算，BMI 结果不变
   - 公制：身高 `cm` + 体重 `kg`
@@ -122,7 +122,7 @@ Web 端可直接深链到示例：`?page=plot&preset=0`（`preset` 为示例下�
 
 #### 基础代谢 BMR
 
-![基础代谢 BMR](docs/screenshots/bmr.png)
+![基础代谢 BMR](docs/screenshots/zh-Hans/bmr.png)
 
 - Mifflin-St Jeor 公式（最常用）算基础代谢，输入即算，无需点按钮
   - 男性：`BMR = 10×体重(kg) + 6.25×身高(cm) − 5×年龄 + 5`
@@ -136,7 +136,7 @@ Web 端可直接深链到示例：`?page=plot&preset=0`（`preset` 为示例下�
 
 #### 复利计算
 
-![复利计算](docs/screenshots/compound.png)
+![复利计算](docs/screenshots/zh-Hans/compound.png)
 
 - 期初本金 / 年利率 / 年限三个输入框按 2 : 1 : 1 排一行（本金占两份宽），
   手机上自动折成「本金一行 + 利率 / 年限一行」
@@ -146,7 +146,7 @@ Web 端可直接深链到示例：`?page=plot&preset=0`（`preset` 为示例下�
 
 #### 时薪计算器
 
-![时薪计算器](docs/screenshots/hourly.png)
+![时薪计算器](docs/screenshots/zh-Hans/hourly.png)
 
 - 输入月薪、工作日制度与每日工作时长，即时算出时薪：`时薪 = 月薪 ÷ (工作天数 × 每日工时)`
 - 工作天数按 `21.75 天/月` 为基准，四种制度一键切换（切换时顺带填上该制度的每日工时，
@@ -164,7 +164,7 @@ Web 端可直接深链到示例：`?page=plot&preset=0`（`preset` 为示例下�
 
 #### 长度换算
 
-![长度换算](docs/screenshots/distance.png)
+![长度换算](docs/screenshots/zh-Hans/distance.png)
 
 - 公制 / 英制 / 市制共 25 个单位互转，输入数值即算，点结果行即可复制
   - 公制：千米 / 米 / 分米 / 厘米 / 毫米 / 微米 / 纳米 / 皮米 / 海里
@@ -179,7 +179,7 @@ Web 端可直接深链到示例：`?page=plot&preset=0`（`preset` 为示例下�
 
 #### 面积换算
 
-![面积换算](docs/screenshots/area.png)
+![面积换算](docs/screenshots/zh-Hans/area.png)
 
 - 公制 / 英制 / 市制共 19 个单位互转，界面与长度换算一致：下拉框选体系与单位、结果分三个 tab、点行复制
   - 公制：平方千米 / 公顷 / 公亩 / 平方米 / 平方分米 / 平方厘米 / 平方毫米
@@ -192,7 +192,7 @@ Web 端可直接深链到示例：`?page=plot&preset=0`（`preset` 为示例下�
 
 #### 重量换算
 
-![重量换算](docs/screenshots/weight.png)
+![重量换算](docs/screenshots/zh-Hans/weight.png)
 
 - 公制 / 英制 / 市制共 17 个单位互转
   - 公制：吨 / 千克 / 克 / 毫克 / 微克
@@ -205,7 +205,7 @@ Web 端可直接深链到示例：`?page=plot&preset=0`（`preset` 为示例下�
 
 #### 容量换算
 
-![容量换算](docs/screenshots/volume.png)
+![容量换算](docs/screenshots/zh-Hans/volume.png)
 
 - 公制 / 英制 / 市制共 17 个单位互转
   - 公制：立方米 / 升 / 分升 / 厘升 / 毫升 / 微升
@@ -218,7 +218,7 @@ Web 端可直接深链到示例：`?page=plot&preset=0`（`preset` 为示例下�
 
 #### 温度换算
 
-![温度换算](docs/screenshots/temperature.png)
+![温度换算](docs/screenshots/zh-Hans/temperature.png)
 
 - 摄氏度 / 华氏度 / 开尔文 / 兰氏度互转。温度是「一种量、几套温标」，不像长度那样分公制 /
   英制，所以这个页面**不分体系**：没有「计量体系」下拉与结果 tab，一个单位下拉列出四种温标，
@@ -230,7 +230,7 @@ Web 端可直接深链到示例：`?page=plot&preset=0`（`preset` 为示例下�
 
 #### 热量换算
 
-![热量换算](docs/screenshots/energy.png)
+![热量换算](docs/screenshots/zh-Hans/energy.png)
 
 - 热量也是「一种量、几套并列单位」，所以和温度一样**不分体系**：一个单位下拉列出 8 个单位，
   结果一次全部列出
@@ -244,7 +244,7 @@ Web 端可直接深链到示例：`?page=plot&preset=0`（`preset` 为示例下�
 
 #### 压力换算
 
-![压力换算](docs/screenshots/pressure.png)
+![压力换算](docs/screenshots/zh-Hans/pressure.png)
 
 - 同样**不分体系**，一个单位下拉列出 7 个单位：帕 / 百帕 / 千帕 / 兆帕 / 巴 / 托 /
   磅力每平方英寸（psi）
@@ -255,7 +255,7 @@ Web 端可直接深链到示例：`?page=plot&preset=0`（`preset` 为示例下�
 
 #### 速度换算
 
-![速度换算](docs/screenshots/speed.png)
+![速度换算](docs/screenshots/zh-Hans/speed.png)
 
 - 公制 / 英制 / 市制共 11 个单位互转
   - 公制：千米/小时 / 米/秒 / 千米/秒 / 节 / 马赫
@@ -268,7 +268,7 @@ Web 端可直接深链到示例：`?page=plot&preset=0`（`preset` 为示例下�
 
 #### 利率计算
 
-![利率计算](docs/screenshots/interest.png)
+![利率计算](docs/screenshots/zh-Hans/interest.png)
 
 - 双向换算，一个页面搞定：
   - **由期付算年化**：输入本金 + 日付 / 月付 / 年付金额，反推年化率
@@ -279,7 +279,7 @@ Web 端可直接深链到示例：`?page=plot&preset=0`（`preset` 为示例下�
 
 #### 贷款计算器
 
-![贷款计算器](docs/screenshots/loan.png)
+![贷款计算器](docs/screenshots/zh-Hans/loan.png)
 
 - 支持等额本息与等额本金两种还款方式，输入金额、年利率、期限（年 / 月可切换）即算
 - 首屏给出月供（等额本金为首月，并标出逐月递减额）、贷款总额、总利息与总还款
@@ -294,7 +294,7 @@ Web 端可直接深链到示例：`?page=plot&preset=0`（`preset` 为示例下�
 
 #### 个人所得税
 
-![个人所得税](docs/screenshots/tax.png)
+![个人所得税](docs/screenshots/zh-Hans/tax.png)
 
 - 输入税前月薪、缴费基数（留空按税前月薪算）与专项附加扣除，自动算五险一金、个税与到手工资
 - 五险一金按**比例**填写：养老 8% / 医疗 2% / 失业 0.5% / 公积金 12% 为默认值，四项都可改，
@@ -307,7 +307,7 @@ Web 端可直接深链到示例：`?page=plot&preset=0`（`preset` 为示例下�
 
 #### 养老金计算器
 
-![养老金计算器](docs/screenshots/pension.png)
+![养老金计算器](docs/screenshots/zh-Hans/pension.png)
 
 - 输入当前年龄、已缴费年限、月缴费工资、当地社平工资与个人账户余额，算出退休后每月能领多少
 - 结果拆成**基础养老金**与**个人账户养老金**两条对比条，并给出替代率、平均缴费指数、
@@ -321,7 +321,7 @@ Web 端可直接深链到示例：`?page=plot&preset=0`（`preset` 为示例下�
 
 #### 退休年龄计算器
 
-![退休年龄计算器](docs/screenshots/retirement.png)
+![退休年龄计算器](docs/screenshots/zh-Hans/retirement.png)
 
 - 只需出生年月与人员类别（男职工 / 法定退休年龄 55 岁的女职工 / 50 岁的女职工），
   立刻算出**哪年哪月退休**、改革后的法定退休年龄、延迟了几个月、最低缴费年限与弹性区间
@@ -345,7 +345,7 @@ Web 端可深链：`?page=tools` 打开工具页（`?page=settings` 打开设置
 导航栏第四项「设置」里可以切换外观与界面语言，选择立刻生效并记在本机
 （Web 用 `localStorage`，Windows / Android 写入用户配置目录的 `free-clac/settings.json`）。
 
-![设置](docs/screenshots/settings.png)
+![设置](docs/screenshots/zh-Hans/settings.png)
 
 - **外观**：跟随系统 / 浅色 / 深色。深色与浅色各有一套完整配色
   （`lib/theme/app_theme.dart` 的 `kDarkPalette` / `kLightPalette`），
@@ -375,7 +375,7 @@ Web 端可深链：`?page=tools` 打开工具页（`?page=settings` 打开设置
 
 浅色模式下的计算器（按键、显示屏、绘图网格都已跟着变浅）：
 
-![浅色模式](docs/screenshots/light.png)
+![浅色模式](docs/screenshots/zh-Hans/calculator-light.png)
 
 Web 端可深链：`?page=settings` 直接打开设置页，`?page=plot` / `?page=tools` 同理；
 `?theme=light` / `?theme=dark` 用指定配色启动，`?lang=zh-Hant`（或 `zh-Hans` / `en` / `ja` / `es`）
@@ -383,8 +383,8 @@ Web 端可深链：`?page=settings` 直接打开设置页，`?page=plot` / `?pag
 
 同一批页面在英文与繁体中文下的样子：
 
-![英文界面](docs/screenshots/english.png)
-![繁体界面](docs/screenshots/zh-hant.png)
+![英文界面](docs/screenshots/en/calculator.png)
+![繁体界面](docs/screenshots/zh-Hant/calculator.png)
 
 ### 多语言的组织方式
 
@@ -499,6 +499,34 @@ Web 端可用 `?page=plot` 直接打开绘图页，`?page=plot&preset=0` 还会�
 `Failed to load font Roboto at https://fonts.gstatic.com/...` 与
 `Failed to fetch dynamically imported module: https://www.gstatic.com/flutter-canvaskit/...`。
 
+## 官网（docs/）
+
+`docs/` 是一份不依赖构建的静态站点：深色 / 浅色两套配色、五种语言、主页面与全部工具的截图，
+直接用浏览器打开 `docs/index.html` 即可，也可以整体丢到 GitHub Pages / 任意静态服务器。
+
+- **深色 / 浅色**：右上角切换，记在本机 `localStorage`；首屏截图会跟着换（深色配 `calculator.png`，
+  浅色配 `calculator-light.png`），「配色」一节并排展示同一页的两套主题
+- **五种语言**：简中 / 繁中 / English / 日本語 / Español，切换后**整套截图**一起换成同一语言的那一套；
+  养老金、退休年龄、个税三项只在简繁中文视图出现，与 App 内一致
+- **工具文案不手写**：卡片名称、卖点、强调色由 `tool/site_data.py` 从 `lib/ui/tools/` 导出到
+  `docs/assets/tools-data.js`，改了语言包跑 `just site-data` 即可
+
+```
+docs/
+├── index.html              页面骨架（内容由 assets/site.js 按语言渲染）
+├── assets/
+│   ├── site.css            配色变量与布局（深色 / 浅色各一套）
+│   ├── site.js             多语言文案、语言切换、主题切换、灯箱
+│   ├── tools-data.js       工具卡片数据（tool/site_data.py 生成，勿手改）
+│   └── icon-*.png          站点图标（取自 web/icons/）
+├── screenshots/<语言>/     每语言一套截图：主页面 9 张 + 工具 14（中文 17）张
+└── README.md               站点自身的说明
+```
+
+截图由 `just shots` 用无头 Chrome 对着 `build/web` 真跑一遍生成，所以语言、配色、
+数据都是 App 真实的样子：`?lang=zh-Hant` / `?theme=light` / `?page=tools&tool=bmi`
+这类深链就是它逐张截图时用的地址。
+
 ## 开发命令（just）
 
 项目用 [just](https://github.com/casey/just) 管理常用任务，`just` 不带参数即可列出全部命令。
@@ -536,7 +564,9 @@ just devices      # 列出设备
 | 构建 | `just build` | Web + APK |
 | 构建 | `just ci` | 依赖 → 检查 → 构建 |
 | 工具 | `just preview` | 构建并本地预览（<http://localhost:8765>） |
-| 工具 | `just shots` | 重新生成 `docs/screenshots` 截图 |
+| 工具 | `just shots` | 重新生成 `docs/screenshots/<语言>/` 截图（`just shots zh-Hans en` 只截指定语言） |
+| 工具 | `just site-data` / `site-check` | 生成 / 校验官网工具数据（`--check` 已在 `just check` 里跑） |
+| 工具 | `just site-preview` | 本地预览官网（<http://localhost:8780>） |
 | 工具 | `just icons` / `just icons-check` | 由 `logo.jpg` / `logo-android.jpg` 生成 / 校验各平台图标（`--selftest` 已在 `tool-check` 里跑） |
 | 工具 | `just clean` / `just outdated` | 清理产物 / 查看可升级依赖 |
 
@@ -666,7 +696,8 @@ lib/
 └── theme/      深色 / 浅色两套配色与 ThemeData
 test/           引擎、LaTeX、工具算法、绘图、Widget 测试
 integration_test/ 需真机 / 模拟器的测试（Android 导出落盘）
-tool/           辅助脚本（截图、图标生成、Android 环境探测）
+tool/           辅助脚本（截图、官网数据导出、图标生成、Android 环境探测）
+docs/           官网（静态页面 + 每语言一套截图）
 justfile        常用开发任务
 ```
 

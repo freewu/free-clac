@@ -1,0 +1,226 @@
+<!doctype html>
+<html lang="zh-Hans" data-theme="dark">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Magic 计算器</title>
+    <meta
+      name="description"
+      content="Flutter 写的科学计算器：表达式引擎、函数绘图与离线小工具。"
+    />
+    <meta name="color-scheme" content="dark light" />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Magic 计算器" />
+    <meta
+      property="og:description"
+      content="Flutter 写的科学计算器：表达式引擎、函数绘图与离线小工具。"
+    />
+    <meta property="og:image" content="screenshots/zh-Hans/calculator.png" />
+    <link rel="icon" type="image/png" href="assets/favicon.png" />
+    <link rel="apple-touch-icon" href="assets/icon-192.png" />
+    <link rel="stylesheet" href="assets/site.css" />
+  </head>
+  <body>
+    <a class="skip-link" href="#main" data-i18n="skip"></a>
+
+    <header class="topbar">
+      <div class="topbar-inner">
+        <a class="brand" href="#hero">
+          <img
+            class="brand-logo"
+            src="assets/icon-64.png"
+            width="32"
+            height="32"
+            alt=""
+          />
+          <span class="brand-name" id="brand-name">Magic 计算器</span>
+        </a>
+
+        <nav class="nav" id="nav" aria-label="nav"></nav>
+
+        <div class="topbar-actions">
+          <label class="lang-picker">
+            <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
+              <path
+                d="M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18Zm0 0c2.5 2.2 4 5.4 4 9s-1.5 6.8-4 9m0-18c-2.5 2.2-4 5.4-4 9s1.5 6.8 4 9M3.6 9h16.8M3.6 15h16.8"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.6"
+                stroke-linecap="round"
+              />
+            </svg>
+            <select id="lang-select" aria-label="Language"></select>
+          </label>
+
+          <button class="icon-button" id="theme-toggle" type="button">
+            <span class="theme-icon" data-icon="sun"></span>
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <main id="main">
+      <section class="hero" id="hero">
+        <div class="container hero-grid">
+          <div class="hero-copy">
+            <span class="badge" data-slot="badge"></span>
+            <h1 data-slot="title"></h1>
+            <p class="lead" data-slot="lead"></p>
+            <div class="hero-actions">
+              <a class="button primary" href="#shots" data-slot="cta-shots"></a>
+              <a
+                class="button ghost"
+                id="hero-repo"
+                href="https://github.com/freewu/free-clac"
+                target="_blank"
+                rel="noreferrer"
+                data-slot="cta-repo"
+              ></a>
+            </div>
+            <ul class="hero-stats" id="hero-stats"></ul>
+          </div>
+
+          <div class="hero-figure">
+            <figure class="window">
+              <div class="window-bar">
+                <span class="dot"></span><span class="dot"></span
+                ><span class="dot"></span>
+                <span class="window-title" data-slot="window-title"></span>
+              </div>
+              <img
+                id="hero-shot"
+                src="screenshots/zh-Hans/calculator.png"
+                alt=""
+              />
+            </figure>
+            <div class="hero-glow" aria-hidden="true"></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="section" id="features">
+        <div class="container">
+          <header class="section-head">
+            <p class="eyebrow" data-slot="features-eyebrow"></p>
+            <h2 data-slot="features-title"></h2>
+            <p class="lead" data-slot="features-lead"></p>
+          </header>
+          <div class="feature-grid" id="feature-grid"></div>
+        </div>
+      </section>
+
+      <section class="section" id="shots">
+        <div class="container">
+          <header class="section-head">
+            <p class="eyebrow" data-slot="shots-eyebrow"></p>
+            <h2 data-slot="shots-title"></h2>
+            <p class="lead" data-slot="shots-lead"></p>
+          </header>
+          <div class="shot-grid" id="shot-grid"></div>
+
+          <div class="phone-row">
+            <figure class="phone">
+              <img id="phone-shot" src="" alt="" />
+            </figure>
+            <div class="phone-copy">
+              <h3 data-slot="phone-title"></h3>
+              <p data-slot="phone-lead"></p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="section" id="theme">
+        <div class="container">
+          <header class="section-head">
+            <p class="eyebrow" data-slot="theme-eyebrow"></p>
+            <h2 data-slot="theme-title"></h2>
+            <p class="lead" data-slot="theme-lead"></p>
+          </header>
+          <div class="theme-pair" id="theme-pair"></div>
+        </div>
+      </section>
+
+      <section class="section" id="tools">
+        <div class="container">
+          <header class="section-head">
+            <p class="eyebrow" data-slot="tools-eyebrow"></p>
+            <h2 data-slot="tools-title"></h2>
+            <p class="lead" data-slot="tools-lead"></p>
+            <p class="hint" data-slot="tools-hint"></p>
+          </header>
+          <div class="tool-grid" id="tool-grid"></div>
+        </div>
+      </section>
+
+      <section class="section" id="languages">
+        <div class="container">
+          <header class="section-head">
+            <p class="eyebrow" data-slot="languages-eyebrow"></p>
+            <h2 data-slot="languages-title"></h2>
+            <p class="lead" data-slot="languages-lead"></p>
+          </header>
+          <div class="language-grid" id="language-grid"></div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <div class="container footer-inner">
+        <div class="footer-brand">
+          <img src="assets/icon-64.png" width="28" height="28" alt="" />
+          <span data-slot="footer-brand"></span>
+        </div>
+        <p class="footer-note" data-slot="footer-note"></p>
+        <div class="footer-links">
+          <a
+            href="https://github.com/freewu/free-clac"
+            target="_blank"
+            rel="noreferrer"
+            data-slot="footer-repo"
+          ></a>
+          <a
+            href="https://github.com/freewu/free-clac/blob/main/README.md"
+            target="_blank"
+            rel="noreferrer"
+            data-slot="footer-docs"
+          ></a>
+          <a
+            href="https://github.com/freewu/free-clac/blob/main/LICENSE"
+            target="_blank"
+            rel="noreferrer"
+            data-slot="footer-license"
+          ></a>
+        </div>
+      </div>
+    </footer>
+
+    <div class="lightbox" id="lightbox" hidden>
+      <button class="lightbox-close" id="lightbox-close" type="button">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path
+            d="M6 6l12 12M18 6L6 18"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.8"
+            stroke-linecap="round"
+          />
+        </svg>
+      </button>
+      <figure class="lightbox-figure">
+        <img id="lightbox-image" src="" alt="" />
+        <figcaption id="lightbox-caption"></figcaption>
+      </figure>
+    </div>
+
+    <noscript>
+      <p style="padding: 24px; text-align: center">
+        This page renders with JavaScript. Screenshots live in
+        <code>docs/screenshots/</code>.
+      </p>
+    </noscript>
+
+    <script src="assets/tools-data.js"></script>
+    <script src="assets/site.js"></script>
+  </body>
+</html>

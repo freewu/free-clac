@@ -12,6 +12,7 @@ set windows-shell := ["sh", "-uc"]
 # 项目根目录与本地预览端口
 root := justfile_directory()
 port := "8765"
+site-port := "8780"
 
 # ---------------------------------------------------------------- 运行环境
 # WSL 里 flutter 是 Windows 程序，需要经 cmd.exe 执行；这里把两种平台统一成
@@ -293,11 +294,32 @@ tool-check:
     @{{sh}} tool/with_pillow.sh tool/generate_icons.py --selftest
     @{{python}} tool/android_target.py --selftest
     @{{python}} tool/web_fonts.py --selftest
+    @{{python}} tool/site_data.py --selftest
+    @{{python}} tool/site_data.py --check
 
-# 重新生成 README 截图（docs/screenshots，离线构建以免 CDN 不可达时白屏）
+# 重新生成官网 / README 截图（docs/screenshots/<语言>/，离线构建以免 CDN 不可达时白屏）
+#
+# 默认五种语言各截一套；只要一部分时直接点名：just shots zh-Hans en
 [group('工具')]
-shots: build-web-offline
-    @{{sh}} tool/screenshot.sh "{{port}}"
+shots langs='zh-Hans zh-Hant en ja es': build-web-offline
+    @{{sh}} tool/screenshot.sh "{{port}}" {{langs}}
+
+# 重新生成官网的工具数据（docs/assets/tools-data.js，从 lib/ui/tools/ 导出）
+[group('工具')]
+site-data:
+    @{{python}} tool/site_data.py
+
+# 只检查官网工具数据是否过期（CI 可用）
+[group('工具')]
+site-check:
+    @{{python}} tool/site_data.py --selftest
+    @{{python}} tool/site_data.py --check
+
+# 本地预览官网（docs/，默认 http://localhost:8780）
+[group('工具')]
+site-preview: site-data
+    @echo "官网预览：http://localhost:{{site-port}}/index.html"
+    @{{python}} -m http.server {{site-port}} --directory docs
 
 # 清理构建产物
 [group('工具')]
