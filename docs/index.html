@@ -39,18 +39,37 @@
         <nav class="nav" id="nav" aria-label="nav"></nav>
 
         <div class="topbar-actions">
-          <label class="lang-picker">
-            <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
-              <path
-                d="M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18Zm0 0c2.5 2.2 4 5.4 4 9s-1.5 6.8-4 9m0-18c-2.5 2.2-4 5.4-4 9s1.5 6.8 4 9M3.6 9h16.8M3.6 15h16.8"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="1.6"
-                stroke-linecap="round"
-              />
-            </svg>
-            <select id="lang-select" aria-label="Language"></select>
-          </label>
+          <div class="lang-picker" id="lang-picker">
+            <button
+              class="lang-button"
+              id="lang-button"
+              type="button"
+              aria-haspopup="listbox"
+              aria-expanded="false"
+            >
+              <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
+                <path
+                  d="M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18Zm0 0c2.5 2.2 4 5.4 4 9s-1.5 6.8-4 9m0-18c-2.5 2.2-4 5.4-4 9s1.5 6.8 4 9M3.6 9h16.8M3.6 15h16.8"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.6"
+                  stroke-linecap="round"
+                />
+              </svg>
+              <span class="lang-label" id="lang-label"></span>
+              <svg class="chevron" viewBox="0 0 24 24" aria-hidden="true">
+                <path
+                  d="m6 9 6 6 6-6"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.8"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                />
+              </svg>
+            </button>
+            <div class="lang-menu" id="lang-menu" role="listbox" hidden></div>
+          </div>
 
           <button class="icon-button" id="theme-toggle" type="button">
             <span class="theme-icon" data-icon="sun"></span>

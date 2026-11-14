@@ -23,6 +23,7 @@
       title: 'Magic 计算器 · 科学计算与函数绘图',
       description:
         'Flutter 写的科学计算器：自研表达式引擎、四种曲线绘图、17 个离线小工具，深色 / 浅色与五种界面语言。',
+      langPicker: '界面语言',
       skip: '跳到正文',
       brand: 'Magic 计算器',
       nav: {
@@ -151,6 +152,7 @@
       title: 'Magic 計算器 · 科學計算與函數繪圖',
       description:
         'Flutter 寫的科學計算器：自研運算式引擎、四種曲線繪圖、17 個離線小工具，深色 / 淺色與五種介面語言。',
+      langPicker: '介面語言',
       skip: '跳至內容',
       brand: 'Magic 計算器',
       nav: {
@@ -279,6 +281,7 @@
       title: 'Magic Calculator · Scientific calculation and function plots',
       description:
         'A Flutter scientific calculator with a hand-written expression engine, four kinds of plots and 14 offline tools — dark and light themes, five UI languages.',
+      langPicker: 'Language',
       skip: 'Skip to content',
       brand: 'Magic Calculator',
       nav: {
@@ -414,6 +417,7 @@
       title: 'Magic 計算機 · 関数電卓とグラフ描画',
       description:
         'Flutter 製の関数電卓。自前の数式エンジン、4 種類のグラフ、14 個のオフラインツール、ダーク / ライトと 5 言語の UI。',
+      langPicker: '表示言語',
       skip: '本文へ',
       brand: 'Magic 計算機',
       nav: {
@@ -546,6 +550,7 @@
       title: 'Magic Calculadora · Cálculo científico y gráficas',
       description:
         'Una calculadora científica hecha con Flutter: motor de expresiones propio, cuatro tipos de gráficas y 14 herramientas sin conexión — temas claro y oscuro, cinco idiomas.',
+      langPicker: 'Idioma',
       skip: 'Ir al contenido',
       brand: 'Magic Calculadora',
       nav: {
@@ -1096,8 +1101,7 @@
     renderLanguages(t);
     renderFooter(t);
 
-    var select = $('#lang-select');
-    if (select) select.value = code;
+    syncLangPicker();
     var skip = document.querySelector('.skip-link');
     if (skip) skip.textContent = t.skip;
 
@@ -1191,16 +1195,143 @@
   }
 
   /* ── 初始化 ─────────────────────────────────────────────────── */
+  /* ── 顶栏语言下拉 ─────────────────────────────────────────────── */
+  /* 用原生 <select> 时，深色下展开的面板由系统配色决定，常出现浅底浅字；
+     这里自己画按钮 + 列表，颜色全部来自 CSS 变量。 */
+  var CHECK_SVG =
+    '<svg class="check" viewBox="0 0 24 24" aria-hidden="true">' +
+    '<path d="m5 13 4 4 10-10" fill="none" stroke="currentColor" ' +
+    'stroke-width="2" stroke-linecap="round" stroke-linejoin="round" /></svg>';
+
+  function buildLangMenu() {
+    var menu = $('#lang-menu');
+    if (!menu) return;
+    menu.innerHTML = LANGS.map(function (lang) {
+      return (
+        '<button type="button" class="lang-option" role="option" ' +
+        'data-code="' + lang.code + '" lang="' + lang.htmlLang + '">' +
+        '<span>' + lang.label + '</span>' + CHECK_SVG +
+        '</button>'
+      );
+    }).join('');
+  }
+
+  function langMenuItems() {
+    return Array.prototype.slice.call(
+      document.querySelectorAll('#lang-menu .lang-option')
+    );
+  }
+
+  function langMenuOpen() {
+    var menu = $('#lang-menu');
+    return !!menu && !menu.hidden;
+  }
+
+  function openLangMenu(index) {
+    var menu = $('#lang-menu');
+    var button = $('#lang-button');
+    if (!menu || !button) return;
+    menu.hidden = false;
+    button.setAttribute('aria-expanded', 'true');
+    var items = langMenuItems();
+    var target = typeof index === 'number' ? index : currentLangIndex();
+    if (target < 0) target = items.length - 1;
+    if (items[target]) items[target].focus();
+  }
+
+  function closeLangMenu(returnFocus) {
+    var menu = $('#lang-menu');
+    var button = $('#lang-button');
+    if (!menu || !button) return;
+    menu.hidden = true;
+    button.setAttribute('aria-expanded', 'false');
+    if (returnFocus) button.focus();
+  }
+
+  function currentLangIndex() {
+    for (var i = 0; i < LANGS.length; i++) {
+      if (LANGS[i].code === state.lang) return i;
+    }
+    return 0;
+  }
+
+  function syncLangPicker() {
+    var button = $('#lang-button');
+    var label = $('#lang-label');
+    if (!button || !label) return;
+    var meta = LANGS[currentLangIndex()];
+    label.textContent = meta.label;
+    label.lang = meta.htmlLang;
+    button.setAttribute('aria-label', I18N[state.lang].langPicker);
+    langMenuItems().forEach(function (item) {
+      var selected = item.getAttribute('data-code') === state.lang;
+      item.setAttribute('aria-selected', selected ? 'true' : 'false');
+      item.classList.toggle('is-current', selected);
+    });
+  }
+
+  function initLangPicker() {
+    var button = $('#lang-button');
+    var menu = $('#lang-menu');
+    if (!button || !menu) return;
+
+    buildLangMenu();
+
+    button.addEventListener('click', function () {
+      if (langMenuOpen()) closeLangMenu(true);
+      else openLangMenu();
+    });
+
+    button.addEventListener('keydown', function (event) {
+      if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
+        event.preventDefault();
+        openLangMenu(event.key === 'ArrowUp' ? -1 : 0);
+      }
+    });
+
+    menu.addEventListener('click', function (event) {
+      var item = event.target.closest('.lang-option');
+      if (!item) return;
+      closeLangMenu(true);
+      if (item.getAttribute('data-code') !== state.lang) {
+        applyLang(item.getAttribute('data-code'));
+      }
+    });
+
+    menu.addEventListener('keydown', function (event) {
+      var items = langMenuItems();
+      var index = items.indexOf(document.activeElement);
+      if (event.key === 'ArrowDown') {
+        event.preventDefault();
+        items[(index + 1) % items.length].focus();
+      } else if (event.key === 'ArrowUp') {
+        event.preventDefault();
+        items[(index - 1 + items.length) % items.length].focus();
+      } else if (event.key === 'Home') {
+        event.preventDefault();
+        items[0].focus();
+      } else if (event.key === 'End') {
+        event.preventDefault();
+        items[items.length - 1].focus();
+      } else if (event.key === 'Escape') {
+        event.preventDefault();
+        closeLangMenu(true);
+      } else if (event.key === 'Tab') {
+        closeLangMenu(false);
+      }
+    });
+
+    document.addEventListener('click', function (event) {
+      if (!langMenuOpen()) return;
+      if (event.target.closest && event.target.closest('#lang-picker')) return;
+      closeLangMenu(false);
+    });
+  }
+
   function init() {
     state.lang = detectLang();
 
-    var select = $('#lang-select');
-    LANGS.forEach(function (lang) {
-      select.appendChild(h('option', { value: lang.code, text: lang.label }));
-    });
-    select.addEventListener('change', function () {
-      applyLang(select.value);
-    });
+    initLangPicker();
 
     $('#theme-toggle').addEventListener('click', function () {
       applyTheme(state.theme === 'dark' ? 'light' : 'dark');

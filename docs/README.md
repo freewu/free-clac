@@ -37,6 +37,10 @@ just site-preview      # http://localhost:8780/index.html
 3. **配色只用 CSS 变量**：`assets/site.css` 顶部两组变量（`:root` 深色、
    `:root[data-theme='light']` 浅色），不要在别处硬编码颜色；工具卡片的强调色是
    行内 `--accent-dark` / `--accent-light`，两套主题各取一个。
+4. **顶栏语言切换不用原生 `<select>`**：原生下拉的展开面板由系统配色决定，
+   深色下会出现浅底浅字（看不清）。现在是自己画的按钮 + `role="listbox"` 列表，
+   底色文字色都来自变量（对比度 > 15:1），键盘也能全用（`↑` `↓` `Home` `End` `Enter` `Esc`）。
+   以后要加下拉（如货币）也照这个来。
 
 ## 改了 App 之后
 
