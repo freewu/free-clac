@@ -827,6 +827,7 @@
     if (brand) brand.textContent = t.brand;
 
     var nav = $('#nav');
+    nav.setAttribute('aria-label', t.nav.features + ' / ' + t.nav.tools);
     nav.innerHTML = '';
     [
       ['#features', t.nav.features],
@@ -862,6 +863,23 @@
         ])
       );
     });
+  }
+
+  // 让图片能用鼠标和键盘打开灯箱（截图本身也是可交互内容，别只给鼠标用）
+  function zoomable(node, src, caption) {
+    node.setAttribute('tabindex', '0');
+    node.setAttribute('role', 'button');
+    node.setAttribute('aria-label', caption);
+    node.addEventListener('click', function () {
+      openLightbox(src, caption);
+    });
+    node.addEventListener('keydown', function (event) {
+      if (event.key === 'Enter' || event.key === ' ') {
+        event.preventDefault();
+        openLightbox(src, caption);
+      }
+    });
+    return node;
   }
 
   function renderFeatures(t) {
@@ -906,9 +924,7 @@
         alt: meta.name + ' — ' + meta.desc,
         loading: 'lazy',
       });
-      image.addEventListener('click', function () {
-        openLightbox(shotPath(code, key), meta.name + ' · ' + meta.desc);
-      });
+      zoomable(image, shotPath(code, key), meta.name + ' · ' + meta.desc);
       figure.firstChild.appendChild(image);
       grid.appendChild(figure);
     });
@@ -918,9 +934,7 @@
     var phone = $('#phone-shot');
     phone.src = shotPath(code, 'mobile');
     phone.alt = t.shots.phoneTitle;
-    phone.addEventListener('click', function () {
-      openLightbox(shotPath(code, 'mobile'), t.shots.phoneTitle);
-    });
+    zoomable(phone, shotPath(code, 'mobile'), t.shots.phoneTitle);
   }
 
   function renderTheme(t, code) {
@@ -945,9 +959,7 @@
         alt: t.hero.windowTitle + ' — ' + entry[1],
         loading: 'lazy',
       });
-      image.addEventListener('click', function () {
-        openLightbox(shotPath(code, entry[0]), t.hero.windowTitle + ' · ' + entry[1]);
-      });
+      zoomable(image, shotPath(code, entry[0]), t.hero.windowTitle + ' · ' + entry[1]);
       figure.appendChild(image);
       pair.appendChild(figure);
     });
@@ -991,9 +1003,7 @@
         ]
       );
       var image = card.querySelector('img');
-      image.addEventListener('click', function () {
-        openLightbox(shotPath(code, tool.id), text.name + ' — ' + text.tagline);
-      });
+      zoomable(image, shotPath(code, tool.id), text.name + ' — ' + text.tagline);
       grid.appendChild(card);
     });
 
@@ -1112,6 +1122,7 @@
     var hero = $('#hero-shot');
     if (hero) {
       hero.src = shotPath(state.lang, theme === 'light' ? 'calculator-light' : 'calculator');
+      hero.alt = I18N[state.lang].hero.windowTitle;
     }
     syncUrl();
   }
@@ -1119,18 +1130,24 @@
   /* ── 灯箱 ───────────────────────────────────────────────────── */
   var lightbox = $('#lightbox');
 
+  var lastFocused = null;
+
   function openLightbox(src, caption) {
+    lastFocused = document.activeElement;
     $('#lightbox-image').src = src;
     $('#lightbox-image').alt = caption || '';
     $('#lightbox-caption').textContent = caption || '';
     lightbox.hidden = false;
     document.body.classList.add('is-locked');
+    $('#lightbox-close').focus();
   }
 
   function closeLightbox() {
     lightbox.hidden = true;
-    $('#lightbox-image').src = '';
+    $('#lightbox-image').removeAttribute('src');
     document.body.classList.remove('is-locked');
+    if (lastFocused && lastFocused.focus) lastFocused.focus();
+    lastFocused = null;
   }
 
   /* ── 入场动画 ───────────────────────────────────────────────── */

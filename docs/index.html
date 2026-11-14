@@ -120,7 +120,7 @@
 
           <div class="phone-row">
             <figure class="phone">
-              <img id="phone-shot" src="" alt="" />
+              <img id="phone-shot" alt="" />
             </figure>
             <div class="phone-copy">
               <h3 data-slot="phone-title"></h3>
@@ -195,7 +195,14 @@
       </div>
     </footer>
 
-    <div class="lightbox" id="lightbox" hidden>
+    <div
+      class="lightbox"
+      id="lightbox"
+      role="dialog"
+      aria-modal="true"
+      aria-label="screenshot"
+      hidden
+    >
       <button class="lightbox-close" id="lightbox-close" type="button">
         <svg viewBox="0 0 24 24" aria-hidden="true">
           <path
@@ -208,7 +215,7 @@
         </svg>
       </button>
       <figure class="lightbox-figure">
-        <img id="lightbox-image" src="" alt="" />
+        <img id="lightbox-image" alt="" />
         <figcaption id="lightbox-caption"></figcaption>
       </figure>
     </div>
