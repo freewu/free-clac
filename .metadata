@@ -24,6 +24,11 @@ migration:
     - platform: windows
       create_revision: 924134a44c189315be2148659913dda1671cbe99
       base_revision: 924134a44c189315be2148659913dda1671cbe99
+    # iOS 工程晚于其它平台加入（先有 Web / Windows / Android，后补 iPhone），
+    # 所以它的 revision 比上面几条新：flutter create --platforms=ios 时由 3.47 生成
+    - platform: ios
+      create_revision: 737ba8f885dc774b53b442759999a312c9461e4e
+      base_revision: 737ba8f885dc774b53b442759999a312c9461e4e
 
   # User provided section
 

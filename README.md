@@ -3,7 +3,8 @@
 <img src="logo.jpg" alt="应用图标" width="96" align="right" />
 
 应用名 「Magic 计算器」，使用 Flutter 开发的一款高级科学计算器，除常规表达式计算外，还内置二维平面函数绘图。
-支持深色 / 浅色主题与五种界面语言（简体中文、繁體中文、English、日本語、Español）。
+支持深色 / 浅色主题与五种界面语言（简体中文、繁體中文、English、日本語、Español），
+可打包 Web、Windows、Android 与 iPhone / iPad（`iOS`）版本。
 
 ![计算器](docs/screenshots/zh-Hans/calculator.png)
 ![函数绘图](docs/screenshots/zh-Hans/plot.png)
@@ -433,7 +434,7 @@ Web 端可深链：`?page=settings` 直接打开设置页，`?page=plot` / `?pag
 
 | 源图 | 用在哪 |
 | --- | --- |
-| `logo.jpg` | Web、Windows |
+| `logo.jpg` | Web、Windows、iOS |
 | `logo-android.jpg` | Android（已按自适应图标构图：满幅、四周不留白） |
 
 改图后执行一次即可同步所有平台：
@@ -454,6 +455,7 @@ just icons-check   # 只校验文件是否齐全（CI 可用）
 | Web | `web/favicon.png`、`web/icons/Icon-192/512.png`、`web/icons/Icon-maskable-192/512.png` |
 | Windows | `windows/runner/resources/app_icon.ico`（16–256 七种尺寸，任务栏 / 资源管理器） |
 | Android | `mipmap-*/ic_launcher.png`、`ic_launcher_round.png`，以及自适应图标 `ic_launcher_foreground.png` + `mipmap-anydpi-v26/ic_launcher.xml` |
+| iOS | `ios/Runner/Assets.xcassets/AppIcon.appiconset/`（iPhone / iPad / App Store 共 15 张，最大 1024） |
 
 处理规则：
 
@@ -471,7 +473,8 @@ just icons-check   # 只校验文件是否齐全（CI 可用）
 （`#0B0F14`，与深色主题一致）并把图形缩进 `SAFE_ZONE = 0.72`，避免被裁边。
 
 透明底 logo 自带多少留白都不影响图标大小。`just check` 里的 `tool-check` 会跑 `tool/generate_icons.py --selftest`，用内存里的合成图验证裁边、补白、安全区与平台尺寸表。
-项目暂无 iOS / macOS 目录，如需新增平台，脚本里加一段尺寸表即可。
+iOS 图标一律转成不透明 RGB——App Store 不接受带 alpha 的 1024 图标。
+暂无 macOS 目录，如需新增平台，脚本里加一段尺寸表即可。
 
 ## 运行
 
@@ -480,6 +483,7 @@ flutter pub get
 flutter run -d chrome       # Web
 flutter run -d windows      # Windows 桌面
 flutter run                 # Android 设备 / 模拟器
+flutter build ios           # iOS（需 macOS + Xcode）
 ```
 
 Web 端可用 `?page=plot` 直接打开绘图页，`?page=plot&preset=0` 还会同时载入第一个示例。
@@ -562,6 +566,8 @@ just devices      # 列出设备
 | 构建 | `just web-fonts` | 下载 Web 离线字体到 `web/fonts/`（约 3 MB） |
 | 构建 | `just build-web-offline` | `just build-web` 的旧名字 |
 | 构建 | `just build` | Web + APK |
+| 构建 | `just bump 1.2.0` | 改 `pubspec.yaml` 版本号（构建号自动 +1），push 后自动发布 |
+| 构建 | `just notes [版本]` | 预览发布说明（流水线用同一份脚本生成） |
 | 构建 | `just ci` | 依赖 → 检查 → 构建 |
 | 工具 | `just preview` | 构建并本地预览（<http://localhost:8765>） |
 | 工具 | `just shots` | 重新生成 `docs/screenshots/<语言>/` 截图（`just shots zh-Hans en` 只截指定语言） |
@@ -569,6 +575,46 @@ just devices      # 列出设备
 | 工具 | `just site-preview` | 本地预览官网（<http://localhost:8780>） |
 | 工具 | `just icons` / `just icons-check` | 由 `logo.jpg` / `logo-android.jpg` 生成 / 校验各平台图标（`--selftest` 已在 `tool-check` 里跑） |
 | 工具 | `just clean` / `just outdated` | 清理产物 / 查看可升级依赖 |
+
+## 发布版本（APK + IPA）
+
+版本号就是开关：`pubspec.yaml` 的 `version` 一变，`.github/workflows/release.yml` 就打 APK 与 IPA，
+建一个 `v<版本号>` 标签和 GitHub Release，**发布说明就是这个版本改了什么**。
+
+```bash
+just bump 1.1.0        # 改 pubspec.yaml（构建号自动 +1）
+git commit -am "发布 v1.1.0"
+git push               # → Actions 自动打包并发布
+```
+
+也可以在 Actions 页面手动 Run workflow，临时指定版本号与更新说明，
+并勾选「强制重新发布」来重打已存在的版本。
+
+流水线分五步：
+
+| 步骤 | 做什么 |
+| --- | --- |
+| prepare | 读 `pubspec.yaml` 的版本号，拼出标签 `v1.1.0`；标签已存在就不发布 |
+| verify | `dart format` 检查 + `flutter analyze` + `flutter test`，过不了不打包 |
+| apk | `flutter build apk --release`，产出 `free-clac-1.1.0.apk` |
+| ipa | macOS 上 `flutter build ios --release --no-codesign`，打包成 `free-clac-1.1.0.ipa` |
+| publish | 生成发布说明，建 Release 并挂上两个安装包 |
+
+发布说明的取值顺序：手动填写的正文 → `CHANGELOG.md` 里 `## [版本号]` 那一节 →
+**上一个 `v*` 标签以来的提交记录**（本仓库的提交信息就是「一行摘要 + 若干条正文」，
+直接摊成 Markdown 列表）。最后再拼一张下载表与构建信息。生成脚本是 `tool/release.py`，
+本地 `just notes` 看到的和 Release 页上的一模一样。
+
+两个安装包的说明：
+
+- **APK**：用调试密钥签名（`android/app/build.gradle.kts` 里的默认配置），可直接侧载安装；
+  要上架 Google Play 得自己生成 keystore 并配 `signingConfigs`。
+- **IPA**：仓库里没有 Apple 开发者证书，只能出**未签名**包，需要用 Sideloadly / AltStore
+  自签后安装；上架 App Store 需要在 macOS 上配好证书重打。
+
+iOS 工程（`ios/`）由 `flutter create --platforms=ios` 生成，`Info.plist` 里额外做了两件事：
+`CFBundleDisplayName` 改成「Magic 计算器」，并声明 `CFBundleLocalizations` 的五个语言——
+不声明的话 iOS 只把 `en` 交给 App，应用内的自动语言就会一直英文。
 
 ## Android 构建
 

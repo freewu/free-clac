@@ -4,8 +4,8 @@
 
 ## 项目速览
 
-- **free-clac**（应用名「Magic 计算器」）：Flutter 科学计算器 + 2D 函数绘图，支持 Web / Windows / Android。
-- 应用图标来源是根目录两份不透明 JPG：`logo.jpg`（Web / Windows）、`logo-android.jpg`（Android，满幅构图，自适应前景直接铺满），脚本整张等比缩放、不裁剪，由 `just icons` 生成各平台图标。
+- **free-clac**（应用名「Magic 计算器」）：Flutter 科学计算器 + 2D 函数绘图，支持 Web / Windows / Android / iOS。
+- 应用图标来源是根目录两份不透明 JPG：`logo.jpg`（Web / Windows / iOS）、`logo-android.jpg`（Android，满幅构图，自适应前景直接铺满），脚本整张等比缩放、不裁剪，由 `just icons` 生成各平台图标。
 - 表达式解析与求值：`lib/core/math_engine.dart`（自研词法 + 递归下降，无第三方计算库）。
 - 小工具：一个工具一个目录 `lib/ui/tools/<tool>/`，逻辑、界面、语言包、设置项、`defined.dart` 都在里面。
 - 绘图：`lib/plot/`（视口、采样器、示例曲线），状态在 `lib/state/`，界面在 `lib/ui/`。
@@ -32,6 +32,8 @@ cmd.exe /c "cd /d $(wslpath -w "$PWD") && flutter test"
 | `just shots [语言...]` | 重新生成 `docs/screenshots/<语言>/` 截图（默认五种语言，需 Chrome 与 `build/web`） |
 | `just site-data` / `just site-check` | 由源码导出 / 校验官网工具数据 `docs/assets/tools-data.js` |
 | `just site-preview` | 本地预览官网 `docs/`（<http://localhost:8780>） |
+| `just bump 1.2.0` | 改 `pubspec.yaml` 版本号（构建号自动 +1），push 后 Actions 自动发版 |
+| `just notes [版本]` | 预览发布说明（与 Release 页同一份脚本 `tool/release.py`） |
 
 ## 提交与推送（硬性要求）
 
@@ -139,6 +141,16 @@ cmd.exe /c "cd /d $(wslpath -w "$PWD") && flutter test"
 - **截图按语言分目录**：`docs/screenshots/<zh-Hans|zh-Hant|en|ja|es>/<名字>.png`，
   由 `tool/screenshot.sh` 用无头 Chrome 打开 `build/web` 加 `?lang=` / `?theme=` / `?page=` 深链生成，
   不要在别处存一套扁平截图。官网切换语言时整张图集一起换，所以新增页面截图要五种语言都截。
+- **发布靠版本号触发**：`.github/workflows/release.yml` 监听 `pubspec.yaml`，
+  `version` 一变就打 APK + IPA 并建 `v<版本号>` Release，正文由 `tool/release.py` 生成
+  （手写说明 → `CHANGELOG.md` 对应小节 → 上个标签以来的提交）。发版用 `just bump 1.2.0`
+  （构建号自动 +1），**不要手改 `version` 行之外的构建号**，否则 Android versionCode 会倒退。
+  IPA 是未签名的（仓库没有 Apple 证书），改 iOS 打包步骤时保留 `--no-codesign` + 手工 zip。
+- **iOS 工程是 `flutter create --platforms=ios` 生成的**：`ios/` 下的 Xcode 工程不要手改
+  `project.pbxproj`（`.metadata` 里已把它列为 unmanaged）；会动到的是 `ios/Runner/Info.plist`
+  的 `CFBundleDisplayName` 与 `CFBundleLocalizations`——**五个语言必须都列全**，否则 iOS
+  只把 `en` 传给 App，应用内界面会固定英文。图标由 `tool/generate_icons.py` 的 `build_ios`
+  生成（15 张，全部转成不透明 RGB，App Store 不收带 alpha 的 1024 图标）。
 - `justfile` 用到的 Python 辅助脚本（如 `tool/android_target.py`）要带 `--selftest`，并挂到 `just check` 的 `tool-check` 上。
   需要 Pillow 的配方（`icons` / `icons-check`）一律经 `tool/with_pillow.sh` 调脚本：
   Windows 的 `python` 常没装 Pillow，它会在 `python3` / `py -3` / `python` / WSL 的 `python3` 里挑一个能用的。

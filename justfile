@@ -220,6 +220,18 @@ web-fonts:
 # 解释器路径，而 Git for Windows 默认只把 cmd/ 和 bin/ 放进 PATH，
 # 缺少 cygpath 时直接报 “could not find `cygpath`”。
 # 普通配方 + 行连接（\）在 PowerShell 与 WSL 下行为一致。
+# 改版本号（构建号自动 +1），push 后 GitHub Actions 自动打包并发布
+#
+# 例：just bump 1.1.0
+[group('构建')]
+bump version:
+    @{{python}} tool/release.py bump {{version}}
+
+# 预览本版本的发布说明（流水线用的是同一份脚本）
+[group('构建')]
+notes version="":
+    @{{python}} tool/release.py notes {{if version == '' { '' } else { '--version ' + version }}}
+
 [group('构建')]
 build-apk:
     @. tool/android-env.sh; \
@@ -296,6 +308,7 @@ tool-check:
     @{{python}} tool/web_fonts.py --selftest
     @{{python}} tool/site_data.py --selftest
     @{{python}} tool/site_data.py --check
+    @{{python}} tool/release.py --selftest
 
 # 重新生成官网 / README 截图（docs/screenshots/<语言>/，离线构建以免 CDN 不可达时白屏）
 #

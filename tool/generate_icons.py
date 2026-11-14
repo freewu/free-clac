@@ -13,6 +13,7 @@
     web/      favicon.png + icons/Icon-*.png（含 maskable）
     windows/  windows/runner/resources/app_icon.ico（多尺寸）
     android/  mipmap-*/ic_launcher.png（旧版）+ 自适应图标前景 + anydpi-v26 XML
+    ios/      Runner/Assets.xcassets/AppIcon.appiconset（iPhone / iPad / App Store）
 
 设计约定：
     * 源图可以是带透明底的 PNG，也可以是不透明的 JPG，两种都支持：
@@ -74,6 +75,27 @@ WEB_ICONS = {
 }
 
 WINDOWS_ICO_SIZES = (16, 24, 32, 48, 64, 128, 256)
+
+# iOS 图标：文件名沿用 Flutter 模板，Contents.json 里已经按这些名字登记好了
+IOS_ICONS = {
+    "Icon-App-20x20@1x.png": 20,
+    "Icon-App-20x20@2x.png": 40,
+    "Icon-App-20x20@3x.png": 60,
+    "Icon-App-29x29@1x.png": 29,
+    "Icon-App-29x29@2x.png": 58,
+    "Icon-App-29x29@3x.png": 87,
+    "Icon-App-40x40@1x.png": 40,
+    "Icon-App-40x40@2x.png": 80,
+    "Icon-App-40x40@3x.png": 120,
+    "Icon-App-60x60@2x.png": 120,
+    "Icon-App-60x60@3x.png": 180,
+    "Icon-App-76x76@1x.png": 76,
+    "Icon-App-76x76@2x.png": 152,
+    "Icon-App-83.5x83.5@2x.png": 167,
+    "Icon-App-1024x1024@1x.png": 1024,
+}
+
+IOS_APPICON_DIR = "ios/Runner/Assets.xcassets/AppIcon.appiconset"
 
 # 自适应图标（Android 8+）：108dp 画布里只有中间 72dp 一定可见，外面会被启动器蒙版裁掉，
 # 所以整张图只铺到 72%，保证任何蒙版下画面都是完整的
@@ -221,6 +243,24 @@ def build_windows(logo: Logo) -> list[Path]:
     return [path]
 
 
+def build_ios(logo: Logo) -> list[Path]:
+    """iOS 图标：跟 Web / Windows 用同一份 logo。
+
+    App Store 不接受带 alpha 的 1024 图标，这里一律转成不透明 RGB 再存，
+    圆形 / 超椭圆蒙版由系统自己裁，我们只管给一张正方形满幅图。
+    """
+    written: list[Path] = []
+    target = ROOT / IOS_APPICON_DIR
+    for name, size in IOS_ICONS.items():
+        image = resize(logo.image, size)
+        if image.mode != "RGB":
+            flat = Image.new("RGB", image.size, logo.backdrop if logo.opaque else BACKDROP[:3])
+            flat.paste(image, (0, 0), image if image.mode == "RGBA" else None)
+            image = flat
+        written.append(save_png(image, target / name))
+    return written
+
+
 def adaptive_foreground(logo: Logo, size: int) -> Image.Image:
     """自适应图标前景（108dp）。
 
@@ -328,6 +368,11 @@ def selftest() -> None:
     }
     assert ANDROID_FOREGROUND_SCALE == 72 / 108
 
+    # iOS 清单：15 张（iPhone / iPad / App Store），最大的 1024 必须是 RGB 不透明
+    assert len(IOS_ICONS) == 15, len(IOS_ICONS)
+    assert IOS_ICONS["Icon-App-1024x1024@1x.png"] == 1024
+    assert max(IOS_ICONS.values()) == 1024
+
     # 透明底 logo：裁边补白，满幅时垫底色
     transparent = normalize(source)
     assert not transparent.opaque
@@ -406,6 +451,7 @@ def main() -> None:
                 for name in ("ic_launcher.png", "ic_launcher_foreground.png")
             ),
             *(ROOT / name for name in ANDROID_ADAPTIVE),
+            *(ROOT / IOS_APPICON_DIR / name for name in IOS_ICONS),
         ]
         missing = [str(path.relative_to(ROOT)) for path in expected if not path.exists()]
         if missing:
@@ -427,10 +473,13 @@ def main() -> None:
         return
 
     written = (
-        build_web(logo) + build_windows(logo) + build_android(android_logo)
+        build_web(logo)
+        + build_windows(logo)
+        + build_android(android_logo)
+        + build_ios(logo)
     )
     print(
-        f"✓ 已根据 {LOGO.name}（Web / Windows）与 {LOGO_ANDROID.name}"
+        f"✓ 已根据 {LOGO.name}（Web / Windows / iOS）与 {LOGO_ANDROID.name}"
         f"（Android）生成 {len(written)} 个图标文件"
     )
     for path in written:
