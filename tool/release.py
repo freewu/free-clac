@@ -34,7 +34,7 @@ MAX_COMMITS = 50
 # 单条提交的正文最多保留多少行
 MAX_BODY_LINES = 8
 
-VERSION_LINE = re.compile(r"^version:\s*(\S+)\s*$", re.MULTILINE)
+VERSION_LINE = re.compile(r"^version:[ \t]*(\S+)[ \t]*$", re.MULTILINE)
 
 
 # ── 纯函数部分（自检只测这里） ───────────────────────────────────────
@@ -220,12 +220,21 @@ def build_notes(version: str, since: str | None, note: str) -> str:
 
 
 def selftest() -> None:
-    pubspec = "name: demo\nversion: 1.2.3+7\ndependencies:\n  flutter:\n    sdk: flutter\n"
+    pubspec = (
+        "name: demo\n"
+        "version: 1.2.3+7\n"
+        "\n"
+        "dependencies:\n"
+        "  flutter:\n"
+        "    sdk: flutter\n"
+    )
     assert parse_version(pubspec) == ("1.2.3", "7")
     assert parse_version("version: 2.0.0\n") == ("2.0.0", "1")
 
     bumped = bump_version(pubspec, "1.3.0")
     assert "version: 1.3.0+8" in bumped
+    # 只替换 version 那一行，别把后面的空行吃掉
+    assert "version: 1.3.0+8\n\ndependencies:" in bumped
     assert bumped.replace("version: 1.3.0+8", "version: 1.2.3+7") == pubspec
     assert "version: 1.3.0+9" in bump_version(pubspec, "1.3.0", build="9")
 
