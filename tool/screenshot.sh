@@ -6,8 +6,11 @@
 #   bash tool/screenshot.sh              # 五种语言全部重跑
 #   bash tool/screenshot.sh 8765 zh-Hans en
 #
-# 产物落在 docs/screenshots/<语言>/<名字>.png，同一个语言的官网截图
-# 与界面语言一致（?lang= 深链），方便官网按语言切换整组图片。
+# 产物落在 docs/screenshots/<语言>/，两套：
+#   <名字>.png        桌面尺寸（1440 宽），给 README 用；
+#                     只有简体全套，其它语言只出 calculator.png 当语言示例
+#   <名字>-phone.png  手机尺寸（390×844，2 倍图），官网全部用它
+# 同一语言的截图都带 ?lang= 深链，与界面语言一致，官网切语言就换整组图片。
 set -euo pipefail
 
 PORT="${1:-8765}"
@@ -17,6 +20,10 @@ if [[ $# -gt 0 ]]; then
 else
   LANGS=(zh-Hans zh-Hant en ja es)
 fi
+
+# 手机视口：iPhone 15 的 CSS 尺寸，2 倍图（780×1688）在网页上才够清晰
+PHONE_SIZE="390,844"
+PHONE_SCALE="2"
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 OUT="$ROOT/docs/screenshots"
@@ -143,7 +150,7 @@ fi
 
 
 shoot() {
-  local lang="$1" name="$2" size="$3" path="$4"
+  local lang="$1" name="$2" size="$3" path="$4" scale="${5:-1}"
   local url="$URL/$path"
   case "$path" in
     *\?*) url="$url&lang=$lang" ;;
@@ -155,11 +162,15 @@ shoot() {
   echo "› $lang/$name.png ($size)"
   local attempt bytes
   for attempt in 1 2; do
+    local dpr=""
+    if (( scale > 1 )); then
+      dpr="--force-device-scale-factor=$scale"
+    fi
     timeout 90 "$CHROME" \
       --headless=new --no-sandbox --hide-scrollbars \
       --no-first-run --no-default-browser-check \
       --user-data-dir="$(win_path "$PROFILE_ROOT/$lang-$name-$attempt")" \
-      --window-size="$size" --virtual-time-budget=60000 \
+      --window-size="$size" --virtual-time-budget=60000 $dpr \
       --screenshot="$(win_path "$file")" \
       "$url" >/dev/null 2>&1 || true
     bytes="$(stat -c %s "$file" 2>/dev/null || echo 0)"
@@ -176,9 +187,14 @@ shoot() {
   echo "  ✓ ${bytes} 字节"
 }
 
-# 主要的几页：深浅两套配色各留一张，官网「主题」一节并排展示
-shoot_pages() {
+# 桌面截图：README 用。简体全套，其它语言只留 calculator.png 当语言示例
+# （官网已经全换成手机截图，别的语言出桌面图没人用）
+shoot_pages_desktop() {
   local lang="$1"
+  if [[ "$lang" != zh-Hans ]]; then
+    shoot "$lang" calculator 1440,900 "index.html"
+    return
+  fi
   shoot "$lang" calculator       1440,900  "index.html"
   shoot "$lang" calculator-light 1440,900  "index.html?theme=light"
   shoot "$lang" plot             1440,900  "index.html?page=plot"
@@ -187,12 +203,26 @@ shoot_pages() {
   shoot "$lang" implicit         1440,900  "index.html?page=plot&preset=6"
   shoot "$lang" tools            1440,900  "index.html?page=tools"
   shoot "$lang" settings         1440,2220 "index.html?page=settings"
-  shoot "$lang" mobile           414,896   "index.html"
 }
 
-# 工具页截图；养老金 / 退休年龄 / 个税只在简繁中文界面出现，其余语言没有这三项
-shoot_tools() {
+# 手机截图：官网（docs/）全部用这一套
+shoot_pages_phone() {
   local lang="$1"
+  local size="$PHONE_SIZE" scale="$PHONE_SCALE"
+  shoot "$lang" calculator-phone       "$size" "index.html"                    "$scale"
+  shoot "$lang" calculator-light-phone "$size" "index.html?theme=light"         "$scale"
+  shoot "$lang" plot-phone             "$size" "index.html?page=plot"           "$scale"
+  shoot "$lang" plot-light-phone       "$size" "index.html?page=plot&theme=light" "$scale"
+  shoot "$lang" heart-phone            "$size" "index.html?page=plot&preset=0"  "$scale"
+  shoot "$lang" implicit-phone         "$size" "index.html?page=plot&preset=6"  "$scale"
+  shoot "$lang" tools-phone            "$size" "index.html?page=tools"          "$scale"
+  shoot "$lang" settings-phone         "$size" "index.html?page=settings"       "$scale"
+}
+
+# 工具页的桌面截图：只有 README 要，所以只出简体
+shoot_tools_desktop() {
+  local lang="$1"
+  [[ "$lang" == zh-Hans ]] || return 0
   shoot "$lang" bmi         1440,900 "index.html?page=tools&tool=bmi"
   shoot "$lang" bmr         1440,900 "index.html?page=tools&tool=bmr"
   shoot "$lang" compound    1440,900 "index.html?page=tools&tool=compound"
@@ -207,11 +237,27 @@ shoot_tools() {
   shoot "$lang" speed       1440,900 "index.html?page=tools&tool=speed"
   shoot "$lang" interest    1440,900 "index.html?page=tools&tool=interest"
   shoot "$lang" loan        1440,900 "index.html?page=tools&tool=loan&method=equalPrincipal"
+  shoot "$lang" pension    1440,1000 "index.html?page=tools&tool=pension"
+  shoot "$lang" retirement 1440,700  "index.html?page=tools&tool=retirement"
+  shoot "$lang" tax        1440,980  "index.html?page=tools&tool=tax"
+}
+
+# 工具页的手机截图：官网工具卡片用，五种语言都要
+# 养老金 / 退休年龄 / 个税只在中国内地口径下提供，只在简繁中文界面出现
+shoot_tools_phone() {
+  local lang="$1" size="$PHONE_SIZE" scale="$PHONE_SCALE"
+  local tool
+  for tool in bmi bmr compound hourly distance area volume weight \
+    temperature energy pressure speed interest; do
+    shoot "$lang" "$tool-phone" "$size" "index.html?page=tools&tool=$tool" "$scale"
+  done
+  shoot "$lang" loan-phone "$size" \
+    "index.html?page=tools&tool=loan&method=equalPrincipal" "$scale"
   case "$lang" in
     zh-Hans | zh-Hant)
-      shoot "$lang" pension    1440,1000 "index.html?page=tools&tool=pension"
-      shoot "$lang" retirement 1440,700  "index.html?page=tools&tool=retirement"
-      shoot "$lang" tax        1440,980  "index.html?page=tools&tool=tax"
+      for tool in pension retirement tax; do
+        shoot "$lang" "$tool-phone" "$size" "index.html?page=tools&tool=$tool" "$scale"
+      done
       ;;
   esac
 }
@@ -224,9 +270,11 @@ for lang in "${LANGS[@]}"; do
     stop_server
     start_server
   fi
-  shoot_pages "$lang" || failed=1
-  shoot_tools "$lang" || failed=1
+  shoot_pages_desktop "$lang" || failed=1
+  shoot_tools_desktop "$lang" || failed=1
+  shoot_pages_phone "$lang" || failed=1
+  shoot_tools_phone "$lang" || failed=1
 done
 
 (( failed == 0 )) || { echo "✗ 有截图失败，检查上面的日志"; exit 1; }
-echo "✓ 截图已更新：docs/screenshots/<语言>/"
+echo "✓ 截图已更新：docs/screenshots/<语言>/（<名字>.png 桌面 + <名字>-phone.png 手机）"

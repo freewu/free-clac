@@ -523,13 +523,17 @@ docs/
 │   ├── site.js             多语言文案、语言切换、主题切换、灯箱
 │   ├── tools-data.js       工具卡片数据（tool/site_data.py 生成，勿手改）
 │   └── icon-*.png          站点图标（取自 web/icons/）
-├── screenshots/<语言>/     每语言一套截图：主页面 9 张 + 工具 14（中文 17）张
+├── screenshots/<语言>/     每语言一套截图：手机版（官网用）主页面 8 张 +
+│                           工具 14（中文 17）张；桌面版（README 用）只简体全套
 └── README.md               站点自身的说明
 ```
 
 截图由 `just shots` 用无头 Chrome 对着 `build/web` 真跑一遍生成，所以语言、配色、
 数据都是 App 真实的样子：`?lang=zh-Hant` / `?theme=light` / `?page=tools&tool=bmi`
 这类深链就是它逐张截图时用的地址。
+
+官网以**手机截图**为主（`<名字>-phone.png`，390×844 两倍图，五种语言齐备），
+README 里的图是桌面尺寸（`<名字>.png`，1440 宽，只有简体出全套）。
 
 ## 开发命令（just）
 

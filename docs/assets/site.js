@@ -745,8 +745,14 @@
     });
   }
 
-  function shotPath(code, name) {
-    return 'screenshots/' + code + '/' + name + '.png';
+  // 官网全部用手机截图（tool/screenshot.sh 出的 <名字>-phone.png，390×844 两倍图）
+  function phonePath(code, name) {
+    return 'screenshots/' + code + '/' + name + '-phone.png';
+  }
+
+  // og:image 要横图，用桌面截图；桌面版每种语言都留了一张 calculator.png
+  function desktopPath(code) {
+    return 'screenshots/' + code + '/calculator.png';
   }
 
   function toolsFor(code) {
@@ -852,7 +858,14 @@
     setSlot('lead', t.hero.lead);
     setSlot('cta-shots', t.hero.ctaShots);
     setSlot('cta-repo', t.hero.ctaRepo);
-    setSlot('window-title', t.hero.windowTitle);
+
+    var heroShot = $('#hero-shot');
+    if (heroShot) {
+      var heroCaption = t.shots.items.calculator.name;
+      heroShot.src = phonePath(code, 'calculator');
+      heroShot.alt = heroCaption;
+      zoomable(heroShot, phonePath(code, 'calculator'), heroCaption);
+    }
 
     var repo = $('#hero-repo');
     if (repo) repo.href = REPO;
@@ -871,17 +884,23 @@
   }
 
   // 让图片能用鼠标和键盘打开灯箱（截图本身也是可交互内容，别只给鼠标用）
+  // 同一个 <img> 可以重复调用（切语言、切主题会换图），
+  // 图源与说明存在 dataset 上，事件只绑一次，免得点开还是旧图
   function zoomable(node, src, caption) {
+    node.dataset.zoomSrc = src;
+    node.dataset.zoomCaption = caption;
     node.setAttribute('tabindex', '0');
     node.setAttribute('role', 'button');
     node.setAttribute('aria-label', caption);
+    if (node.dataset.zoomBound) return node;
+    node.dataset.zoomBound = '1';
     node.addEventListener('click', function () {
-      openLightbox(src, caption);
+      openLightbox(node.dataset.zoomSrc, node.dataset.zoomCaption);
     });
     node.addEventListener('keydown', function (event) {
       if (event.key === 'Enter' || event.key === ' ') {
         event.preventDefault();
-        openLightbox(src, caption);
+        openLightbox(node.dataset.zoomSrc, node.dataset.zoomCaption);
       }
     });
     return node;
@@ -914,32 +933,26 @@
     grid.innerHTML = '';
     ['calculator', 'plot', 'heart', 'implicit', 'tools', 'settings'].forEach(function (key) {
       var meta = t.shots.items[key];
-      var figure = h('figure', { class: 'shot-card reveal' }, [
-        h('div', {
-          class: 'shot-frame',
-          'data-shot': code,
-        }, []),
-        h('figcaption', {}, [
-          h('span', { class: 'shot-name', text: meta.name }),
-          h('span', { class: 'shot-desc', text: meta.desc }),
-        ]),
-      ]);
+      var src = phonePath(code, key);
       var image = h('img', {
-        src: shotPath(code, key),
+        src: src,
         alt: meta.name + ' — ' + meta.desc,
         loading: 'lazy',
       });
-      zoomable(image, shotPath(code, key), meta.name + ' · ' + meta.desc);
-      figure.firstChild.appendChild(image);
-      grid.appendChild(figure);
+      zoomable(image, src, meta.name + ' · ' + meta.desc);
+      grid.appendChild(
+        h('figure', { class: 'shot-card reveal' }, [
+          h('div', { class: 'device' }, [image]),
+          h('figcaption', {}, [
+            h('span', { class: 'shot-name', text: meta.name }),
+            h('span', { class: 'shot-desc', text: meta.desc }),
+          ]),
+        ])
+      );
     });
 
-    setSlot('phone-title', t.shots.phoneTitle);
-    setSlot('phone-lead', t.shots.phoneLead);
-    var phone = $('#phone-shot');
-    phone.src = shotPath(code, 'mobile');
-    phone.alt = t.shots.phoneTitle;
-    zoomable(phone, shotPath(code, 'mobile'), t.shots.phoneTitle);
+    setSlot('shots-note-title', t.shots.phoneTitle);
+    setSlot('shots-note-lead', t.shots.phoneLead);
   }
 
   function renderTheme(t, code) {
@@ -953,20 +966,23 @@
       ['calculator', t.theme.dark, 'dark'],
       ['calculator-light', t.theme.light, 'light'],
     ].forEach(function (entry) {
-      var figure = h('figure', { class: 'theme-card reveal' }, [
-        h('figcaption', {}, [
-          h('span', { class: 'theme-dot theme-dot-' + entry[2] }),
-          h('span', { text: entry[1] }),
-        ]),
-      ]);
+      var src = phonePath(code, entry[0]);
+      var caption = t.hero.windowTitle + ' · ' + entry[1];
       var image = h('img', {
-        src: shotPath(code, entry[0]),
-        alt: t.hero.windowTitle + ' — ' + entry[1],
+        src: src,
+        alt: caption,
         loading: 'lazy',
       });
-      zoomable(image, shotPath(code, entry[0]), t.hero.windowTitle + ' · ' + entry[1]);
-      figure.appendChild(image);
-      pair.appendChild(figure);
+      zoomable(image, src, caption);
+      pair.appendChild(
+        h('figure', { class: 'theme-card reveal' }, [
+          h('div', { class: 'device' }, [image]),
+          h('figcaption', {}, [
+            h('span', { class: 'theme-dot theme-dot-' + entry[2] }),
+            h('span', { text: entry[1] }),
+          ]),
+        ])
+      );
     });
   }
 
@@ -996,7 +1012,7 @@
         [
           h('div', { class: 'tool-shot' }, [
             h('img', {
-              src: shotPath(code, tool.id),
+              src: phonePath(code, tool.id),
               alt: text.name,
               loading: 'lazy',
             }),
@@ -1008,7 +1024,7 @@
         ]
       );
       var image = card.querySelector('img');
-      zoomable(image, shotPath(code, tool.id), text.name + ' — ' + text.tagline);
+      zoomable(image, phonePath(code, tool.id), text.name + ' — ' + text.tagline);
       grid.appendChild(card);
     });
 
@@ -1080,7 +1096,7 @@
     var ogDesc = document.querySelector('meta[property="og:description"]');
     if (ogDesc) ogDesc.setAttribute('content', t.description);
     var ogImage = document.querySelector('meta[property="og:image"]');
-    if (ogImage) ogImage.setAttribute('content', shotPath(state.lang, 'calculator'));
+    if (ogImage) ogImage.setAttribute('content', desktopPath(state.lang));
   }
 
   function render() {
@@ -1125,8 +1141,14 @@
     }
     var hero = $('#hero-shot');
     if (hero) {
-      hero.src = shotPath(state.lang, theme === 'light' ? 'calculator-light' : 'calculator');
-      hero.alt = I18N[state.lang].hero.windowTitle;
+      var heroSrc = phonePath(
+        state.lang,
+        theme === 'light' ? 'calculator-light' : 'calculator'
+      );
+      var heroCaption = I18N[state.lang].shots.items.calculator.name;
+      hero.src = heroSrc;
+      hero.alt = heroCaption;
+      zoomable(hero, heroSrc, heroCaption);
     }
     syncUrl();
   }

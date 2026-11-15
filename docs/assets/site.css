@@ -472,44 +472,47 @@ a {
   position: relative;
 }
 
-.window {
+/* 手机外壳：官网全部用手机截图，所以统一套这个壳 */
+.device {
   position: relative;
   margin: 0;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
-  background: var(--surface);
-  overflow: hidden;
+  padding: 9px;
+  border: 1px solid var(--border-strong);
+  border-radius: 38px;
+  background: linear-gradient(160deg, var(--surface-2), var(--surface));
   box-shadow: var(--shadow);
 }
 
-.window-bar {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  padding: 10px 14px;
-  border-bottom: 1px solid var(--border);
-  background: var(--surface-2);
+/* 屏幕边缘的一道高光，让外壳不至于太平 */
+.device::after {
+  content: '';
+  position: absolute;
+  inset: 9px;
+  border-radius: 30px;
+  box-shadow: inset 0 0 0 1px rgba(127, 160, 200, 0.16);
+  pointer-events: none;
 }
 
-.dot {
-  width: 9px;
-  height: 9px;
-  border-radius: 50%;
-  background: var(--border-strong);
-}
-
-.window-title {
-  margin-left: 10px;
-  font-size: 0.78rem;
-  color: var(--muted);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.window img {
+.device img {
   width: 100%;
   height: auto;
+  border-radius: 30px;
+  background: var(--bg-soft);
+}
+
+/* 浅色下外壳与页面底色太接近，靠更深的描边 + 投影把手机框出来 */
+[data-theme='light'] .device {
+  background: linear-gradient(160deg, var(--surface), var(--surface-2));
+  border-color: var(--border-strong);
+}
+
+.device-hero {
+  width: min(320px, 100%);
+  margin: 0 auto;
+}
+
+.device-hero img {
+  cursor: zoom-in;
 }
 
 .hero-glow {
@@ -604,51 +607,55 @@ a {
 }
 
 /* ── 截图 ─────────────────────────────────────────────────── */
+/* 六张手机截图排成 3 列，卡片里的手机限宽，免得整块太高 */
 .shot-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
-  gap: 18px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 26px 20px;
 }
 
 .shot-card {
   margin: 0;
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  background: var(--surface);
-  overflow: hidden;
-  transition: border-color 0.18s ease, transform 0.18s ease;
+  transition: transform 0.18s ease;
 }
 
-.shot-card:hover {
-  border-color: var(--border-strong);
-  transform: translateY(-2px);
+/* 入场动画的 .reveal.is-in 会把 transform 写回 none，这里用更高权重盖住它 */
+.shot-card:hover,
+.shot-card.is-in:hover {
+  transform: translateY(-3px);
 }
 
-.shot-frame {
-  aspect-ratio: 16 / 10;
-  overflow: hidden;
-  background: var(--surface-2);
+.shot-card .device {
+  width: min(240px, 100%);
+  margin: 0 auto;
+  padding: 7px;
+  border-radius: 30px;
+}
+
+.shot-card .device::after {
+  inset: 7px;
+  border-radius: 24px;
+}
+
+.shot-card .device img {
+  border-radius: 24px;
   cursor: zoom-in;
-}
-
-.shot-frame img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  object-position: top center;
   transition: transform 0.35s ease;
 }
 
-.shot-card:hover .shot-frame img {
+.shot-card:hover .device img {
   transform: scale(1.015);
 }
 
 figcaption {
   display: flex;
   align-items: baseline;
-  gap: 10px;
-  padding: 13px 16px;
-  font-size: 0.88rem;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 12px 4px 0;
+  font-size: 0.86rem;
+  text-align: center;
 }
 
 .shot-name {
@@ -660,57 +667,34 @@ figcaption {
   color: var(--muted);
 }
 
-.phone-row {
-  display: flex;
-  align-items: center;
-  gap: 40px;
-  margin-top: 48px;
-}
-
-.phone {
-  flex: none;
-  width: 244px;
-  margin: 0;
-  padding: 10px;
-  border: 1px solid var(--border-strong);
-  border-radius: 34px;
-  background: var(--surface-2);
-  box-shadow: var(--shadow);
-}
-
-.phone img {
-  width: 100%;
-  border-radius: 26px;
-  cursor: zoom-in;
-}
-
-.phone-copy h3 {
-  margin-bottom: 8px;
-  font-size: 1.15rem;
-}
-
-.phone-copy p {
+/* 「手机上也好用」一句话说明，放在截图网格下面 */
+.shots-note {
+  margin: 30px auto 0;
+  max-width: 62ch;
   color: var(--muted);
-  max-width: 42ch;
+  font-size: 0.9rem;
+  text-align: center;
 }
 
-/* ── 配色对比 ─────────────────────────────────────────────── */
+.shots-note strong {
+  color: var(--text);
+  font-weight: 650;
+  margin-right: 6px;
+}
+
 .theme-pair {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-  gap: 18px;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 40px;
 }
 
 .theme-card {
+  flex: 0 1 268px;
   margin: 0;
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  background: var(--surface);
-  overflow: hidden;
 }
 
-.theme-card img {
-  width: 100%;
+.theme-card .device img {
   cursor: zoom-in;
 }
 
@@ -737,7 +721,7 @@ figcaption {
 /* ── 工具 ─────────────────────────────────────────────────── */
 .tool-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(232px, 1fr));
   gap: 16px;
 }
 
@@ -761,10 +745,12 @@ figcaption {
   box-shadow: var(--shadow-soft);
 }
 
+/* 工具卡片放手机截图的「上半屏」：标题 + 输入区，点开看全长图 */
 .tool-shot {
-  aspect-ratio: 16 / 10;
+  aspect-ratio: 3 / 4;
   overflow: hidden;
   background: var(--surface-2);
+  border-bottom: 1px solid var(--border);
   cursor: zoom-in;
 }
 
@@ -772,7 +758,7 @@ figcaption {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  object-position: left top;
+  object-position: top center;
   transition: transform 0.35s ease;
 }
 
@@ -992,10 +978,8 @@ figcaption {
     margin-left: auto;
   }
 
-  .phone-row {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 24px;
+  .theme-pair {
+    gap: 26px;
   }
 }
 
@@ -1041,5 +1025,15 @@ figcaption {
 
   .lightbox {
     padding: 12px;
+  }
+
+  .shot-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px;
+  }
+
+  .tool-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
   }
 }

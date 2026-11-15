@@ -312,6 +312,8 @@ tool-check:
 
 # 重新生成官网 / README 截图（docs/screenshots/<语言>/，离线构建以免 CDN 不可达时白屏）
 #
+# 一次出两套：<名字>-phone.png（390×844 手机版，官网用，五种语言）
+# 与 <名字>.png（1440 宽桌面版，README 用，只有简体全套）
 # 默认五种语言各截一套；只要一部分时直接点名：just shots zh-Hans en
 [group('工具')]
 shots langs='zh-Hans zh-Hant en ja es': build-web-offline
