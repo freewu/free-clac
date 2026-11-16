@@ -25,10 +25,15 @@ just site-preview      # http://localhost:8780/index.html
 
 点任意截图可放大（灯箱，`Esc` 关闭）。
 
+**截图跟着主题走**：点右上角的深 / 浅切换，首屏、截图区与工具卡片会一起换成
+同一批浅色截图（`screenshots/<语言>/<名字>-light-phone.png`，`site.js` 的
+`shotPath()` + `refreshShotTheme()`）。唯一不跟的是配色区那两张——它就是
+「深色一张 / 浅色一张」的对照。
+
 首屏那张手机图底部盖了四格透明热区，对上图里 App 自己的导航条（计算器 / 绘图 /
 工具 / 设置，各占 1/4，高 62 / 844）：点哪格就换成那一页的手机截图，当前格用
 `aria-current` 标记。实现在 `site.js` 的 `HERO_PAGES` / `.hero-hotspot`，截图都带
-同样的底部导航，所以换任何一张都对得上；浅色主题下计算器仍是 `calculator-light`。
+同样的底部导航，所以换任何一张都对得上。浅色主题下换的是对应的浅色截图。
 
 **整站以手机截图为主**：App 是「手机优先」的界面，官网也只用 390×844 的竖屏图，
 配齐五种语言；桌面截图（1440 宽）只留给 README，不出现在官网上。
@@ -40,8 +45,9 @@ just site-preview      # http://localhost:8780/index.html
    改完语言包执行 `just site-data`（`just check` 里的 `site-check` 会检查有没有过期）。
 2. **截图按语言分目录**：`screenshots/<语言>/`，语言代码与 App 里一致
    （`zh-Hans`、`zh-Hant`、`en`、`ja`、`es`）。两种规格：
-   - `<名字>-phone.png`（390×844，2 倍图）——官网用的手机截图，五种语言齐备；
-   - `<名字>.png`（1440 宽）——README 用的桌面截图，只有简体出全套，
+   - `<名字>-phone.png`（390×844，2 倍图）——官网用的手机截图，深色一套；
+   - `<名字>-light-phone.png`——同一页面的浅色主题版本，切浅色时换这套；
+   - `<名字>.png`（1440 宽）——README 用的桌面截图（只有深色），只有简体出全套，
      其它语言只留 `calculator.png` 当语言示例。
 
    全部由 `just shots` 重新生成，脚本用无头 Chrome 打开 `build/web` 并带

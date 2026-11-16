@@ -312,15 +312,15 @@ tool-check:
 
 # 重新生成官网 / README 截图（docs/screenshots/<语言>/，离线构建以免 CDN 不可达时白屏）
 #
-# 一次出两套：<名字>-phone.png（390×844 手机版，官网用，五种语言）
-# 与 <名字>.png（1440 宽桌面版，README 用，只有简体全套）
+# 手机图有深 / 浅两套：<名字>-phone.png（官网切主题就换它）与
+# <名字>-light-phone.png；桌面图只有深色 <名字>.png（README 用，只有简体全套）
 # 默认五种语言各截一套；只要一部分时直接点名：just shots zh-Hans en
 [group('工具')]
 shots langs='zh-Hans zh-Hant en ja es': build-web-offline
     @{{sh}} tool/screenshot.sh "{{port}}" {{langs}}
 
 # 只重新生成手机版截图（docs/screenshots/<语言>/*-phone.png，官网只用这一套）
-# 桌面版（README 用的 <名字>.png）不动，省一半截图时间
+# 桌面版（README 用的 <名字>.png）不动；只要浅色那套时 SHOTS_THEME=light
 [group('工具')]
 shots-phone langs='zh-Hans zh-Hant en ja es': build-web-offline
     @SHOTS_SET=phone {{sh}} tool/screenshot.sh "{{port}}" {{langs}}

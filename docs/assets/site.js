@@ -757,6 +757,26 @@
     return 'screenshots/' + code + '/' + name + '-phone.png';
   }
 
+  // 手机截图有深 / 浅两套：浅色主题下换成 <名字>-light-phone.png
+  // （名字已经带 -light 的不再接着加）
+  function shotPath(code, name) {
+    if (state.theme === 'light' && !/-light$/.test(name)) {
+      return 'screenshots/' + code + '/' + name + '-light-phone.png';
+    }
+    return phonePath(code, name);
+  }
+
+  // 切主题时把页面上所有「跟着主题走」的截图换成另一套
+  // （配色区那两张是深 / 浅各一张的对照，不在此列）
+  function refreshShotTheme() {
+    document.querySelectorAll('img[data-shot]').forEach(function (image) {
+      var name = image.dataset.shot;
+      var src = shotPath(state.lang, name);
+      image.src = src;
+      zoomable(image, src, image.dataset.zoomCaption || name);
+    });
+  }
+
   // og:image 要横图，用桌面截图；桌面版每种语言都留了一张 calculator.png
   function desktopPath(code) {
     return 'screenshots/' + code + '/calculator.png';
@@ -775,11 +795,8 @@
   /* ── 状态 ───────────────────────────────────────────────────── */
   var state = { lang: 'zh-Hans', theme: 'dark', heroPage: 'calculator' };
 
-  // 计算器在浅色主题下有单独一张截图，其余页面只有深色那一套
+  // 首屏图也是跟着主题 / 语言变的截图
   function heroShotName() {
-    if (state.heroPage === 'calculator' && state.theme === 'light') {
-      return 'calculator-light';
-    }
     return state.heroPage;
   }
 
@@ -791,10 +808,11 @@
   function renderHeroShot(t, code) {
     var shot = $('#hero-shot');
     if (!shot) return;
-    var src = phonePath(code, heroShotName());
+    var src = shotPath(code, heroShotName());
     var caption = heroMeta(t).name;
     shot.src = src;
     shot.alt = caption;
+    shot.dataset.shot = state.heroPage;
     zoomable(shot, src, caption);
   }
 
@@ -1000,11 +1018,12 @@
     grid.innerHTML = '';
     ['calculator', 'plot', 'heart', 'implicit', 'tools', 'settings'].forEach(function (key) {
       var meta = t.shots.items[key];
-      var src = phonePath(code, key);
+      var src = shotPath(code, key);
       var image = h('img', {
         src: src,
         alt: meta.name + ' — ' + meta.desc,
         loading: 'lazy',
+        'data-shot': key,
       });
       zoomable(image, src, meta.name + ' · ' + meta.desc);
       grid.appendChild(
@@ -1029,6 +1048,7 @@
 
     var pair = $('#theme-pair');
     pair.innerHTML = '';
+    // 配色区固定「深色一张 + 浅色一张」作对照，不跟当前主题走
     [
       ['calculator', t.theme.dark, 'dark'],
       ['calculator-light', t.theme.light, 'light'],
@@ -1079,9 +1099,10 @@
         [
           h('div', { class: 'tool-shot' }, [
             h('img', {
-              src: phonePath(code, tool.id),
+              src: shotPath(code, tool.id),
               alt: text.name,
               loading: 'lazy',
+              'data-shot': tool.id,
             }),
           ]),
           h('figcaption', {}, [
@@ -1091,7 +1112,7 @@
         ]
       );
       var image = card.querySelector('img');
-      zoomable(image, phonePath(code, tool.id), text.name + ' — ' + text.tagline);
+      zoomable(image, shotPath(code, tool.id), text.name + ' — ' + text.tagline);
       grid.appendChild(card);
     });
 
@@ -1210,6 +1231,7 @@
     if (hero) {
       renderHeroShot(I18N[state.lang], state.lang);
     }
+    refreshShotTheme();
     syncUrl();
   }
 

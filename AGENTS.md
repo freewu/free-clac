@@ -30,7 +30,8 @@ cmd.exe /c "cd /d $(wslpath -w "$PWD") && flutter test"
 | `just icons-check` | 校验图标文件齐全 |
 | `just run` / `just build-web` | 本地运行 / 构建 Web |
 | `just shots [语言...]` | 重新生成 `docs/screenshots/<语言>/` 截图（默认五种语言，需 Chrome 与 `build/web`） |
-| `just shots-phone [语言...]` | 同上但只出手机版（`*-phone.png`，官网那套；`SHOTS_SET=phone`） |
+| `just shots-phone [语言...]` | 同上但只出手机版（`*-phone.png`，官网那套；`SHOTS_SET=phone`；
+  `SHOTS_THEME=light` 只重截浅色那套） |
 | `just site-data` / `just site-check` | 由源码导出 / 校验官网工具数据 `docs/assets/tools-data.js` |
 | `just site-preview` | 本地预览官网 `docs/`（<http://localhost:8780>） |
 | `just bump 1.2.0` | 改 `pubspec.yaml` 版本号（构建号自动 +1），push 后 Actions 自动发版 |
@@ -133,8 +134,9 @@ cmd.exe /c "cd /d $(wslpath -w "$PWD") && flutter test"
 - 每个小工具的东西都放在自己目录 `lib/ui/tools/<tool>/`：纯逻辑（如 `bmi.dart`、`loan.dart`，仍不依赖 Flutter）、界面（`<tool>_page.dart`）、语言包（`<tool>_lang.dart`）、`defined.dart` 与 `setting.dart` 并列放，不再有 `lib/tools/` 与 `lang/` 子目录。共用的输入框与比例条放在 `lib/ui/tools/widgets/`（`tool_field.dart`、`tool_unit_picker.dart`、`tool_select.dart`、`tool_bars.dart`），不要在每个工具里各写一份。每个工具的 `ToolInfo`（名称、卖点、图标、配色、页面构造器）写在**自己目录的 `defined.dart`** 里，`lib/ui/tools/tool_catalog.dart` 只汇总 `kTools`；新增工具 = 新建 `<tool>/<tool>.dart`（逻辑）+ `<tool>/<tool>_page.dart` + `<tool>/defined.dart` + `<tool>/<tool>_lang.dart`（五种语言）+ 在 `kTools` 追加一行 + `tool/screenshot.sh` 加一条 `shoot`。单位换算类工具共用的 `unit_catalog.dart` 放在 `lib/ui/tools/`。
   `MeasureCatalog.groupedBySystem: false` 表示不按体系分组（目前只有温度）：页面不显示「计量体系」下拉与结果 tab，
   单位下拉与结果列表一次列全，设置卡片也只留「默认单位」（存 `convert.<工具 id>.unit`）。
-- 界面有明显变化时用 `just shots` 重新生成截图（手机版 + 桌面版一起出）；只改了官网用得到的东西时
-  用 `just shots-phone`（内部 `SHOTS_SET=phone`，桌面图不动），并在 README / 官网引用。
+- 界面有明显变化时用 `just shots` 重新生成截图（手机版深 / 浅两套 + 桌面版一起出）；只改了官网用得到的东西时
+  用 `just shots-phone`（内部 `SHOTS_SET=phone`，桌面图不动），只重截浅色那套时加 `SHOTS_THEME=light`，
+  并在 README / 官网引用。
 - **官网就是 `docs/`，不引入构建步骤**：`docs/index.html` + `docs/assets/{site.css,site.js,tools-data.js}`，
   深色 / 浅色与五种语言都靠 CSS 变量与 JS 切换，不要改成需要打包的框架。
   工具卡片的名字、卖点、强调色**不许手写**，统一由 `tool/site_data.py` 从
@@ -145,12 +147,16 @@ cmd.exe /c "cd /d $(wslpath -w "$PWD") && flutter test"
   这里与 `shoot` 列表要一起改。
   **官网整站以手机截图为主**：首屏一部手机、截图区六部、配色区深色 / 浅色并排、
   工具卡片用 3:4 裁切的上半屏，别再往站里塞桌面截图（`calculator.png` 只用于 `og:image`）。
+  首屏、截图区、工具卡片三处的图**跟着站点主题走**：浅色下换成 `<名字>-light-phone.png`
+  （`site.js` 的 `shotPath()` / `refreshShotTheme()`，图片带 `data-shot` 标记），
+  只有配色区那两张是固定「深一张浅一张」的对照，新增截图时别把它算进去。
 - **截图按语言分目录、分两种规格**：`docs/screenshots/<zh-Hans|zh-Hant|en|ja|es>/`，
   由 `tool/screenshot.sh` 用无头 Chrome 打开 `build/web` 加 `?lang=` / `?theme=` / `?page=` 深链生成，
   不要在别处存一套扁平截图。
   - `<名字>-phone.png`：手机视口 390×844、2 倍图，**官网（docs/）只用这套**，五种语言齐备；
-  - `<名字>.png`：桌面 1440 宽，只给 README 用，简体出全套，其它语言只留 `calculator.png`。
-  官网切换语言时整张图集一起换，所以新增页面截图要五种语言都截手机版。
+  - `<名字>-light-phone.png`：同一页面的浅色主题版，官网切浅色时换它（`SHOTS_THEME=light` 只出这套）；
+  - `<名字>.png`：桌面 1440 宽（只有深色），只给 README 用，简体出全套，其它语言只留 `calculator.png`。
+  官网切换语言时整张图集一起换，所以新增页面截图要五种语言、深 / 浅两套都截。
 - **发布靠版本号触发**：`.github/workflows/release.yml` 监听 `pubspec.yaml`，
   `version` 一变就打 APK + IPA 并建 `v<版本号>` Release，正文由 `tool/release.py` 生成
   （手写说明 → `CHANGELOG.md` 对应小节 → 上个标签以来的提交）。发版用 `just bump 1.2.0`

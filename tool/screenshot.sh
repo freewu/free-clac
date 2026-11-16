@@ -11,10 +11,16 @@
 #   SHOTS_SET=desktop bash tool/screenshot.sh    # 只出桌面 *.png
 # 不设 SHOTS_SET 时两套都出。
 #
+# 手机截图有深色 / 浅色两套，官网切主题就跟着换：
+#   SHOTS_THEME=dark  bash tool/screenshot.sh    # 只出深色（*‑phone.png）
+#   SHOTS_THEME=light bash tool/screenshot.sh    # 只出浅色（*-light-phone.png）
+# 不设 SHOTS_THEME 时两套都出（默认）。桌面版历来只有深色（加两张浅色示例图）。
+#
 # 产物落在 docs/screenshots/<语言>/，两套：
-#   <名字>.png        桌面尺寸（1440 宽），给 README 用；
-#                     只有简体全套，其它语言只出 calculator.png 当语言示例
-#   <名字>-phone.png  手机尺寸（390×844，2 倍图），官网全部用它
+#   <名字>.png             桌面尺寸（1440 宽），给 README 用；
+#                         只有简体全套，其它语言只出 calculator.png 当语言示例
+#   <名字>-phone.png       手机尺寸（390×844，2 倍图）+ 浅色版
+#   <名字>-light-phone.png <名字>-phone.png 的浅色主题版本，官网全部用它
 # 同一语言的截图都带 ?lang= 深链，与界面语言一致，官网切语言就换整组图片。
 #
 # 为什么套一层 iframe：Windows 上的 Chrome 会把 --window-size 的窗口宽度卡在
@@ -38,6 +44,16 @@ case "$SET" in
   both | phone | desktop) ;;
   *)
     echo "SHOTS_SET 只能是 both / phone / desktop（收到：$SET）"
+    exit 1
+    ;;
+esac
+
+# both（默认）/ dark / light：手机截图出哪几套配色
+THEME_SET="${SHOTS_THEME:-both}"
+case "$THEME_SET" in
+  both | dark | light) ;;
+  *)
+    echo "SHOTS_THEME 只能是 both / dark / light（收到：$THEME_SET）"
     exit 1
     ;;
 esac
@@ -245,18 +261,34 @@ shoot_pages_desktop() {
   shoot "$lang" settings         1440,2220 "index.html?page=settings"
 }
 
-# 手机截图：官网（docs/）全部用这一套
+# 手机截图：官网（docs/）全部用这一套，深色 + 浅色两版
+# （浅色图名是 <名字>-light-phone.png，官网切主题就换这一套）
+shoot_phone() {
+  local lang="$1" name="$2" path="$3" scale="${4:-$PHONE_SCALE}"
+  local light_path="$path" status=0
+  case "$light_path" in
+    *theme=light*) light_path="" ;;
+    *\?*) light_path="$light_path&theme=light" ;;
+    *) light_path="$light_path?theme=light" ;;
+  esac
+  if [[ "$THEME_SET" != light ]]; then
+    shoot "$lang" "$name-phone" "$PHONE_SIZE" "$path" "$scale" || status=1
+  fi
+  if [[ -n "$light_path" && "$THEME_SET" != dark ]]; then
+    shoot "$lang" "$name-light-phone" "$PHONE_SIZE" "$light_path" "$scale" ||
+      status=1
+  fi
+  return $status
+}
+
 shoot_pages_phone() {
   local lang="$1"
-  local size="$PHONE_SIZE" scale="$PHONE_SCALE"
-  shoot "$lang" calculator-phone       "$size" "index.html"                    "$scale"
-  shoot "$lang" calculator-light-phone "$size" "index.html?theme=light"         "$scale"
-  shoot "$lang" plot-phone             "$size" "index.html?page=plot"           "$scale"
-  shoot "$lang" plot-light-phone       "$size" "index.html?page=plot&theme=light" "$scale"
-  shoot "$lang" heart-phone            "$size" "index.html?page=plot&preset=0"  "$scale"
-  shoot "$lang" implicit-phone         "$size" "index.html?page=plot&preset=6"  "$scale"
-  shoot "$lang" tools-phone            "$size" "index.html?page=tools"          "$scale"
-  shoot "$lang" settings-phone         "$size" "index.html?page=settings"       "$scale"
+  shoot_phone "$lang" calculator "index.html"
+  shoot_phone "$lang" plot       "index.html?page=plot"
+  shoot_phone "$lang" heart      "index.html?page=plot&preset=0"
+  shoot_phone "$lang" implicit   "index.html?page=plot&preset=6"
+  shoot_phone "$lang" tools      "index.html?page=tools"
+  shoot_phone "$lang" settings   "index.html?page=settings"
 }
 
 # 工具页的桌面截图：只有 README 要，所以只出简体
@@ -285,18 +317,17 @@ shoot_tools_desktop() {
 # 工具页的手机截图：官网工具卡片用，五种语言都要
 # 养老金 / 退休年龄 / 个税只在中国内地口径下提供，只在简繁中文界面出现
 shoot_tools_phone() {
-  local lang="$1" size="$PHONE_SIZE" scale="$PHONE_SCALE"
-  local tool
-  for tool in bmi bmr compound hourly distance area volume weight \
-    temperature energy pressure speed interest; do
-    shoot "$lang" "$tool-phone" "$size" "index.html?page=tools&tool=$tool" "$scale"
+  local lang="$1" tool
+  for tool in bmi bmr compound hourly distance area volume weight temperature \
+    energy pressure speed interest; do
+    shoot_phone "$lang" "$tool" "index.html?page=tools&tool=$tool"
   done
-  shoot "$lang" loan-phone "$size" \
-    "index.html?page=tools&tool=loan&method=equalPrincipal" "$scale"
+  shoot_phone "$lang" loan \
+    "index.html?page=tools&tool=loan&method=equalPrincipal"
   case "$lang" in
     zh-Hans | zh-Hant)
       for tool in pension retirement tax; do
-        shoot "$lang" "$tool-phone" "$size" "index.html?page=tools&tool=$tool" "$scale"
+        shoot_phone "$lang" "$tool" "index.html?page=tools&tool=$tool"
       done
       ;;
   esac
@@ -310,7 +341,8 @@ for lang in "${LANGS[@]}"; do
     stop_server
     start_server
   fi
-  if [[ "$SET" != phone ]]; then
+  # 桌面图只有深色（README 用）：只要浅色时整段跳过
+  if [[ "$SET" != phone && "$THEME_SET" != light ]]; then
     shoot_pages_desktop "$lang" || failed=1
     shoot_tools_desktop "$lang" || failed=1
   fi
@@ -322,8 +354,9 @@ done
 
 rm -f "$FRAME_PAGE"
 (( failed == 0 )) || { echo "✗ 有截图失败，检查上面的日志"; exit 1; }
-case "$SET" in
-  phone) echo "✓ 手机截图已更新：docs/screenshots/<语言>/*-phone.png" ;;
-  desktop) echo "✓ 桌面截图已更新：docs/screenshots/<语言>/<名字>.png" ;;
-  *) echo "✓ 截图已更新：docs/screenshots/<语言>/（<名字>.png 桌面 + <名字>-phone.png 手机）" ;;
+case "$SET/$THEME_SET" in
+  phone/dark | both/dark) echo "✓ 手机截图已更新（深色）" ;;
+  phone/light | both/light) echo "✓ 手机截图已更新（浅色 *-light-phone.png）" ;;
+  phone/* | both/*) echo "✓ 手机截图已更新（深 / 浅两套）" ;;
+  desktop/*) echo "✓ 桌面截图已更新：docs/screenshots/<语言>/<名字>.png" ;;
 esac
