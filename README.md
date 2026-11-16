@@ -575,6 +575,7 @@ just devices      # 列出设备
 | 构建 | `just ci` | 依赖 → 检查 → 构建 |
 | 工具 | `just preview` | 构建并本地预览（<http://localhost:8765>） |
 | 工具 | `just shots` | 重新生成 `docs/screenshots/<语言>/` 截图（`just shots zh-Hans en` 只截指定语言） |
+| 工具 | `just shots-phone` | 只重新生成手机版（`*-phone.png`，官网那套，五种语言） |
 | 工具 | `just site-data` / `site-check` | 生成 / 校验官网工具数据（`--check` 已在 `just check` 里跑） |
 | 工具 | `just site-preview` | 本地预览官网（<http://localhost:8780>） |
 | 工具 | `just icons` / `just icons-check` | 由 `logo.jpg` / `logo-android.jpg` 生成 / 校验各平台图标（`--selftest` 已在 `tool-check` 里跑） |

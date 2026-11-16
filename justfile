@@ -319,6 +319,12 @@ tool-check:
 shots langs='zh-Hans zh-Hant en ja es': build-web-offline
     @{{sh}} tool/screenshot.sh "{{port}}" {{langs}}
 
+# 只重新生成手机版截图（docs/screenshots/<语言>/*-phone.png，官网只用这一套）
+# 桌面版（README 用的 <名字>.png）不动，省一半截图时间
+[group('工具')]
+shots-phone langs='zh-Hans zh-Hant en ja es': build-web-offline
+    @SHOTS_SET=phone {{sh}} tool/screenshot.sh "{{port}}" {{langs}}
+
 # 重新生成官网的工具数据（docs/assets/tools-data.js，从 lib/ui/tools/ 导出）
 [group('工具')]
 site-data:

@@ -6,11 +6,22 @@
 #   bash tool/screenshot.sh              # 五种语言全部重跑
 #   bash tool/screenshot.sh 8765 zh-Hans en
 #
+# 只出其中一套（官网只要手机版，README 只要桌面版）：
+#   SHOTS_SET=phone   bash tool/screenshot.sh    # 只出 *-phone.png
+#   SHOTS_SET=desktop bash tool/screenshot.sh    # 只出桌面 *.png
+# 不设 SHOTS_SET 时两套都出。
+#
 # 产物落在 docs/screenshots/<语言>/，两套：
 #   <名字>.png        桌面尺寸（1440 宽），给 README 用；
 #                     只有简体全套，其它语言只出 calculator.png 当语言示例
 #   <名字>-phone.png  手机尺寸（390×844，2 倍图），官网全部用它
 # 同一语言的截图都带 ?lang= 深链，与界面语言一致，官网切语言就换整组图片。
+#
+# 为什么套一层 iframe：Windows 上的 Chrome 会把 --window-size 的窗口宽度卡在
+# 下限（约 540 DIP），传 390 时页面实际按 488 宽排版，截图却只截 390 宽，
+# 右边被切掉一截（官网手机截图「左边没显示全」就是这么来的）。
+# 改成截「一个正好 <宽>×<高> 的 iframe」：iframe 有自己的视口，宽度不受窗口下限
+# 影响，截出来的图就是纯应用界面，左右留白对称。
 set -euo pipefail
 
 PORT="${1:-8765}"
@@ -20,6 +31,16 @@ if [[ $# -gt 0 ]]; then
 else
   LANGS=(zh-Hans zh-Hant en ja es)
 fi
+
+# both（默认）/ phone / desktop：只跑其中一套，省掉一半截图时间
+SET="${SHOTS_SET:-both}"
+case "$SET" in
+  both | phone | desktop) ;;
+  *)
+    echo "SHOTS_SET 只能是 both / phone / desktop（收到：$SET）"
+    exit 1
+    ;;
+esac
 
 # 手机视口：iPhone 15 的 CSS 尺寸，2 倍图（780×1688）在网页上才够清晰
 PHONE_SIZE="390,844"
@@ -95,6 +116,7 @@ stop_server() {
 cleanup() {
   stop_server
   rm -rf "$PROFILE_ROOT"
+  rm -f "$ROOT/build/web/_shot.html"
 }
 trap cleanup EXIT
 
@@ -149,6 +171,22 @@ else
 fi
 
 
+# 截图用的壳页：一个正好 w×h 的 iframe，铺在页面左上角
+FRAME_PAGE="$ROOT/build/web/_shot.html"
+write_frame() {
+  local w="$1" h="$2" src="$3"
+  cat > "$FRAME_PAGE" <<HTML
+<!doctype html>
+<meta charset="utf-8">
+<title>screenshot frame</title>
+<style>
+  html, body { margin: 0; padding: 0; overflow: hidden; background: #000; }
+  iframe { display: block; width: ${w}px; height: ${h}px; border: 0; }
+</style>
+<iframe src="$src" scrolling="no"></iframe>
+HTML
+}
+
 shoot() {
   local lang="$1" name="$2" size="$3" path="$4" scale="${5:-1}"
   local url="$URL/$path"
@@ -160,19 +198,21 @@ shoot() {
   local file="$dir/$name.png"
   mkdir -p "$dir"
   echo "› $lang/$name.png ($size)"
+  local vw="${size%%,*}" vh="${size##*,}"
   local attempt bytes
   for attempt in 1 2; do
     local dpr=""
     if (( scale > 1 )); then
       dpr="--force-device-scale-factor=$scale"
     fi
+    write_frame "$vw" "$vh" "$url"
     timeout 90 "$CHROME" \
       --headless=new --no-sandbox --hide-scrollbars \
       --no-first-run --no-default-browser-check \
       --user-data-dir="$(win_path "$PROFILE_ROOT/$lang-$name-$attempt")" \
       --window-size="$size" --virtual-time-budget=60000 $dpr \
       --screenshot="$(win_path "$file")" \
-      "$url" >/dev/null 2>&1 || true
+      "$URL/_shot.html" >/dev/null 2>&1 || true
     bytes="$(stat -c %s "$file" 2>/dev/null || echo 0)"
     (( bytes >= 15000 )) && break
     # 跑多了以后静态服务器偶尔会卡住（端口还在，但不再响应）：重启后再试一次
@@ -270,11 +310,20 @@ for lang in "${LANGS[@]}"; do
     stop_server
     start_server
   fi
-  shoot_pages_desktop "$lang" || failed=1
-  shoot_tools_desktop "$lang" || failed=1
-  shoot_pages_phone "$lang" || failed=1
-  shoot_tools_phone "$lang" || failed=1
+  if [[ "$SET" != phone ]]; then
+    shoot_pages_desktop "$lang" || failed=1
+    shoot_tools_desktop "$lang" || failed=1
+  fi
+  if [[ "$SET" != desktop ]]; then
+    shoot_pages_phone "$lang" || failed=1
+    shoot_tools_phone "$lang" || failed=1
+  fi
 done
 
+rm -f "$FRAME_PAGE"
 (( failed == 0 )) || { echo "✗ 有截图失败，检查上面的日志"; exit 1; }
-echo "✓ 截图已更新：docs/screenshots/<语言>/（<名字>.png 桌面 + <名字>-phone.png 手机）"
+case "$SET" in
+  phone) echo "✓ 手机截图已更新：docs/screenshots/<语言>/*-phone.png" ;;
+  desktop) echo "✓ 桌面截图已更新：docs/screenshots/<语言>/<名字>.png" ;;
+  *) echo "✓ 截图已更新：docs/screenshots/<语言>/（<名字>.png 桌面 + <名字>-phone.png 手机）" ;;
+esac
