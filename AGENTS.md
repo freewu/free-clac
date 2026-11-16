@@ -140,6 +140,9 @@ cmd.exe /c "cd /d $(wslpath -w "$PWD") && flutter test"
   工具卡片的名字、卖点、强调色**不许手写**，统一由 `tool/site_data.py` 从
   `tool_catalog.dart` / `defined.dart` / `<tool>_lang.dart` / `app_theme.dart` 导出；
   改了这些文件就 `just site-data`（`just check` 的 `site-check` 会卡过期）。
+  首屏手机图底部盖了四格透明热区（`.hero-hotspot`，对应 App 导航条的四页，高 62 / 844），
+  点哪格就把首屏图换成那一页的手机截图（`site.js` 的 `HERO_PAGES`）；新增导航项时
+  这里与 `shoot` 列表要一起改。
   **官网整站以手机截图为主**：首屏一部手机、截图区六部、配色区深色 / 浅色并排、
   工具卡片用 3:4 裁切的上半屏，别再往站里塞桌面截图（`calculator.png` 只用于 `og:image`）。
 - **截图按语言分目录、分两种规格**：`docs/screenshots/<zh-Hans|zh-Hant|en|ja|es>/`，

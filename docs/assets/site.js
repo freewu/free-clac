@@ -42,6 +42,7 @@
         ctaShots: '看看界面',
         ctaRepo: '源码与文档',
         windowTitle: 'Magic 计算器',
+        hint: '点手机底部的导航条，直接看那一页的截图',
       },
       stats: [
         { value: '48', label: '内置函数' },
@@ -171,6 +172,7 @@
         ctaShots: '看看介面',
         ctaRepo: '原始碼與文件',
         windowTitle: 'Magic 計算器',
+        hint: '點手機底部的導覽列，直接看那一頁的截圖',
       },
       stats: [
         { value: '48', label: '內建函數' },
@@ -300,6 +302,8 @@
         ctaShots: 'See the screenshots',
         ctaRepo: 'Source & docs',
         windowTitle: 'Magic Calculator',
+        hint:
+          'Tap the tabs at the bottom of the phone to jump to that screen',
       },
       stats: [
         { value: '48', label: 'built-in functions' },
@@ -436,6 +440,7 @@
         ctaShots: '画面を見る',
         ctaRepo: 'ソースとドキュメント',
         windowTitle: 'Magic 計算機',
+        hint: 'スマホ下部のタブを押すと、その画面のキャプチャに切り替わります',
       },
       stats: [
         { value: '48', label: '組み込み関数' },
@@ -569,6 +574,8 @@
         ctaShots: 'Ver las capturas',
         ctaRepo: 'Código y documentación',
         windowTitle: 'Magic Calculadora',
+        hint:
+          'Toca las pestañas de abajo del móvil para ver esa pantalla',
       },
       stats: [
         { value: '48', label: 'funciones incluidas' },
@@ -755,6 +762,9 @@
     return 'screenshots/' + code + '/calculator.png';
   }
 
+  // 首屏手机图底部就是 App 自己的导航条：四格热区对应四个页面截图
+  var HERO_PAGES = ['calculator', 'plot', 'tools', 'settings'];
+
   function toolsFor(code) {
     var all = window.FREE_CLAC_TOOLS || [];
     return all.filter(function (tool) {
@@ -763,7 +773,65 @@
   }
 
   /* ── 状态 ───────────────────────────────────────────────────── */
-  var state = { lang: 'zh-Hans', theme: 'dark' };
+  var state = { lang: 'zh-Hans', theme: 'dark', heroPage: 'calculator' };
+
+  // 计算器在浅色主题下有单独一张截图，其余页面只有深色那一套
+  function heroShotName() {
+    if (state.heroPage === 'calculator' && state.theme === 'light') {
+      return 'calculator-light';
+    }
+    return state.heroPage;
+  }
+
+  function heroMeta(t) {
+    return t.shots.items[state.heroPage] || t.shots.items.calculator;
+  }
+
+  // 换图后同步 alt 与灯箱用的图源（灯箱读的是 dataset）
+  function renderHeroShot(t, code) {
+    var shot = $('#hero-shot');
+    if (!shot) return;
+    var src = phonePath(code, heroShotName());
+    var caption = heroMeta(t).name;
+    shot.src = src;
+    shot.alt = caption;
+    zoomable(shot, src, caption);
+  }
+
+  // 四个热区：文案取截图表里的名字，状态用 aria-current 标记
+  function renderHeroHotspots(t) {
+    var layer = $('#hero-hotspots');
+    if (!layer) return;
+    layer.innerHTML = '';
+    layer.setAttribute(
+      'aria-label',
+      HERO_PAGES.map(function (key) {
+        return (t.shots.items[key] || {}).name || key;
+      }).join(' / ')
+    );
+    HERO_PAGES.forEach(function (key) {
+      var meta = t.shots.items[key];
+      if (!meta) return;
+      var button = h('button', {
+        class: 'hero-hotspot',
+        type: 'button',
+        title: meta.name,
+        'aria-label': meta.name + ' — ' + meta.desc,
+      });
+      button.dataset.heroPage = key;
+      if (key === state.heroPage) button.setAttribute('aria-current', 'true');
+      layer.appendChild(button);
+    });
+  }
+
+  function setHeroPage(page) {
+    if (!page || page === state.heroPage) return;
+    if (HERO_PAGES.indexOf(page) < 0) return;
+    state.heroPage = page;
+    var t = I18N[state.lang];
+    renderHeroHotspots(t);
+    renderHeroShot(t, state.lang);
+  }
 
   function detectLang() {
     var fromUrl = new URLSearchParams(location.search).get('lang');
@@ -861,11 +929,10 @@
 
     var heroShot = $('#hero-shot');
     if (heroShot) {
-      var heroCaption = t.shots.items.calculator.name;
-      heroShot.src = phonePath(code, 'calculator');
-      heroShot.alt = heroCaption;
-      zoomable(heroShot, phonePath(code, 'calculator'), heroCaption);
+      renderHeroShot(t, code);
+      renderHeroHotspots(t);
     }
+    setSlot('hero-hint', t.hero.hint);
 
     var repo = $('#hero-repo');
     if (repo) repo.href = REPO;
@@ -1141,14 +1208,7 @@
     }
     var hero = $('#hero-shot');
     if (hero) {
-      var heroSrc = phonePath(
-        state.lang,
-        theme === 'light' ? 'calculator-light' : 'calculator'
-      );
-      var heroCaption = I18N[state.lang].shots.items.calculator.name;
-      hero.src = heroSrc;
-      hero.alt = heroCaption;
-      zoomable(hero, heroSrc, heroCaption);
+      renderHeroShot(I18N[state.lang], state.lang);
     }
     syncUrl();
   }
@@ -1360,6 +1420,16 @@
     });
 
     $('#lightbox-close').addEventListener('click', closeLightbox);
+
+    // 首屏手机图上的导航热区：点一下就换成那一页的截图
+    var hotspots = $('#hero-hotspots');
+    if (hotspots) {
+      hotspots.addEventListener('click', function (event) {
+        var button = event.target.closest('.hero-hotspot');
+        if (button) setHeroPage(button.dataset.heroPage);
+      });
+    }
+
     lightbox.addEventListener('click', function (event) {
       if (event.target === lightbox) closeLightbox();
     });

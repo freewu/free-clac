@@ -101,13 +101,23 @@
 
           <div class="hero-figure">
             <figure class="device device-hero">
-              <img
-                id="hero-shot"
-                src="screenshots/zh-Hans/calculator-phone.png"
-                alt=""
-              />
+              <div class="device-screen">
+                <img
+                  id="hero-shot"
+                  src="screenshots/zh-Hans/calculator-phone.png"
+                  alt=""
+                />
+                <!-- 手机底部导航条上的透明热区：点哪一格就换成那一页的截图 -->
+                <div
+                  class="hero-hotspots"
+                  id="hero-hotspots"
+                  role="group"
+                  aria-label="nav"
+                ></div>
+              </div>
             </figure>
             <div class="hero-glow" aria-hidden="true"></div>
+            <p class="hero-hint" data-slot="hero-hint"></p>
           </div>
         </div>
       </section>
